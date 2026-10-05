@@ -1,0 +1,36 @@
+---
+/** Not found: in every configured language, with a way back home. */
+import { getRelativeLocaleUrl } from 'astro:i18n';
+import { labelsFor } from '../i18n/labels';
+import Document from '../layouts/Document.astro';
+import { defaultLocale, locales } from '../site/context';
+---
+
+<Document lang={defaultLocale} title={labelsFor(defaultLocale).notFound.title} noindex>
+  <main class="page notfound">
+    {locales.map((locale) => {
+      const labels = labelsFor(locale);
+      return (
+        <section lang={locale}>
+          <h1>{labels.notFound.title}</h1>
+          <p>{labels.notFound.body}</p>
+          <p>
+            <a href={getRelativeLocaleUrl(locale)}>{labels.notFound.home}</a>
+          </p>
+        </section>
+      );
+    })}
+  </main>
+</Document>
+
+<style>
+  .notfound {
+    padding-top: 4rem;
+  }
+  section + section {
+    margin-top: 2.5rem;
+  }
+  h1 {
+    font-size: var(--step-3);
+  }
+</style>

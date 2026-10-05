@@ -1,0 +1,96 @@
+---
+/** Education, certifications and languages: what a recruiter checks together. */
+import { formatDate, formatRange } from '../../core/dates';
+import type { Resume } from '../../core/schema';
+import { joinParts } from '../../core/text';
+import type { Labels } from '../../i18n/labels';
+
+interface Props {
+  resume: Resume;
+  locale: string;
+  labels: Labels;
+}
+
+const { resume, locale, labels } = Astro.props;
+const date = (value?: string) => formatDate(value, locale, labels.ongoing);
+const certificateDetails = (certificate: Resume['certificates'][number]) =>
+  joinParts(
+    [
+      certificate.issuer,
+      certificate.date && date(certificate.date),
+      certificate['x-validUntil'] && `${labels.validUntil} ${date(certificate['x-validUntil'])}`,
+    ],
+    ', ',
+  );
+---
+
+<dl class="pairs">
+  {resume.education.map((entry) => (
+    <div>
+      <dt>{joinParts([entry.studyType, entry.area], ', ') || entry.institution}</dt>
+      <dd>
+        {entry.url ? <a href={entry.url}>{entry.institution}</a> : entry.institution}
+        {(entry.startDate || entry.endDate) && (
+          <span class="muted"> · {formatRange(entry.startDate, entry.endDate, locale, labels.ongoing)}</span>
+        )}
+      </dd>
+    </div>
+  ))}
+  {resume.certificates.length > 0 && (
+    <div>
+      <dt>{labels.sections.certificates}</dt>
+      <dd>
+        <ul>
+          {resume.certificates.map((certificate) => (
+            <li>
+              {certificate.url ? <a href={certificate.url}>{certificate.name}</a> : certificate.name}
+              <span class="muted">{certificateDetails(certificate) && `, ${certificateDetails(certificate)}`}</span>
+            </li>
+          ))}
+        </ul>
+      </dd>
+    </div>
+  )}
+  {resume.languages.length > 0 && (
+    <div>
+      <dt>{labels.sections.languages}</dt>
+      <dd>
+        {resume.languages
+          .map((entry) => joinParts([entry.language, entry.fluency && `(${entry.fluency})`], ' '))
+          .join(', ')}
+      </dd>
+    </div>
+  )}
+</dl>
+
+<style>
+  .pairs {
+    margin: 0;
+    max-width: 52rem;
+  }
+  .pairs > div {
+    display: grid;
+    grid-template-columns: minmax(9rem, 14rem) 1fr;
+    gap: 0.25rem 1.5rem;
+    padding: 0.6rem 0;
+    border-top: 1px solid var(--linea);
+  }
+  .pairs > div:last-child {
+    border-bottom: 1px solid var(--linea);
+  }
+  dt {
+    font-weight: 650;
+  }
+  dd {
+    margin: 0;
+  }
+  dd ul {
+    list-style: none;
+    padding: 0;
+  }
+  @media (max-width: 36rem) {
+    .pairs > div {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

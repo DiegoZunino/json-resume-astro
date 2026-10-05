@@ -1,0 +1,172 @@
+/*
+ * Colours of Genoa: slate roofs (ardesia), the sea (mare), stone (pietra) and the
+ * yellow of the harbour cranes (gru). Every colour has one role; yellow is a mark,
+ * never text and never the only carrier of information.
+ */
+:root {
+  --ardesia: #22303c; /* text */
+  --mare: #1f4e79; /* links, buttons, focus */
+  --mare-ink: #ffffff; /* text on --mare */
+  --pietra: #eef1f3; /* page */
+  --superficie: #f8fafb; /* raised surfaces */
+  --nebbia: #56636e; /* secondary text */
+  --gru: #f2b705; /* the wire that connects */
+  --linea: #cfd7de; /* rules */
+  --barra: #8fa6bb; /* timeline bars */
+  --focus: var(--mare);
+  color-scheme: light;
+
+  --step--1: 0.875rem;
+  --step-0: 1.0625rem;
+  --step-1: 1.25rem;
+  --step-2: 1.5rem;
+  --step-3: 2.125rem;
+  --step-4: clamp(2.125rem, 1.4rem + 3.4vw, 3.25rem);
+  --measure: 40rem;
+  --page: 68rem;
+  --radius: 0.5rem;
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --step-0: 1.125rem;
+    --step-2: 1.75rem;
+  }
+}
+
+/* Dark theme: from the system unless the visitor chose light, or chosen explicitly. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --ardesia: #e4eaef;
+    --mare: #9cc4ea;
+    --mare-ink: #10202e;
+    --pietra: #15202a;
+    --superficie: #1b2834;
+    --nebbia: #a3b0bb;
+    --linea: #2f3f4d;
+    --barra: #48667f;
+    --focus: var(--gru);
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --ardesia: #e4eaef;
+  --mare: #9cc4ea;
+  --mare-ink: #10202e;
+  --pietra: #15202a;
+  --superficie: #1b2834;
+  --nebbia: #a3b0bb;
+  --linea: #2f3f4d;
+  --barra: #48667f;
+  --focus: var(--gru);
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  background: var(--pietra);
+  color: var(--ardesia);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: var(--step-0);
+  line-height: 1.6;
+}
+/* Components set their own display; the hidden attribute must still win. */
+[hidden] {
+  display: none !important;
+}
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+a {
+  color: var(--mare);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+a:hover {
+  text-decoration-thickness: 2px;
+}
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+h2 {
+  font-size: var(--step-2);
+  font-weight: 650;
+  margin: 0 0 1.25rem;
+}
+h3 {
+  font-size: var(--step-0);
+  font-weight: 650;
+  margin: 0;
+}
+p {
+  margin: 0 0 1rem;
+}
+ul {
+  margin: 0;
+}
+
+.page {
+  max-width: var(--page);
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+.measure {
+  max-width: var(--measure);
+}
+.muted {
+  color: var(--nebbia);
+}
+.small {
+  font-size: var(--step--1);
+}
+.section {
+  margin-top: clamp(3.5rem, 8vw, 5.5rem);
+  scroll-margin-top: 1rem;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  :root {
+    --gru: CanvasText;
+    --barra: CanvasText;
+    --linea: CanvasText;
+  }
+}

@@ -1,0 +1,292 @@
+---
+/**
+ * Career timeline (WAI-ARIA accordion pattern: heading > button[aria-expanded]).
+ * Server-rendered fully expanded, so it works without JavaScript and in print; the
+ * script then collapses all but the most recent roles and adds "expand all".
+ * Bars are SVG geometry, not inline styles, so they survive a strict CSP and are
+ * repainted with system colours in forced-colours mode.
+ */
+import { formatRange } from '../core/dates';
+import type { WorkItem } from '../core/schema';
+import { buildTimeline } from '../core/timeline';
+import type { Labels } from '../i18n/labels';
+import Icon from './Icon.astro';
+
+interface Props {
+  work: WorkItem[];
+  locale: string;
+  labels: Labels;
+  reference: Date;
+  /** Number of roles, from the top, left open after the script runs. */
+  expanded: number;
+  idPrefix?: string;
+}
+
+const { work, locale, labels, reference, expanded, idPrefix = 'role' } = Astro.props;
+const { entries, years } = buildTimeline(work, reference);
+---
+
+<div class="timeline" data-timeline data-open={expanded}>
+  <div class="tools">
+    <button
+      type="button"
+      class="toggle-all"
+      data-toggle-all
+      data-expand={labels.expandAll}
+      data-collapse={labels.collapseAll}
+      hidden
+    >
+      {labels.expandAll}
+    </button>
+  </div>
+  {years.length > 0 && (
+    <div class="axis" aria-hidden="true">
+      <span />
+      <svg class="years" width="100%" height="28" focusable="false">
+        {years.map((tick, index) => (
+          <>
+            <text x={`${tick.x}%`} y="13" text-anchor={index === 0 ? 'start' : 'middle'}>
+              {tick.year}
+            </text>
+            <line x1={`${tick.x}%`} x2={`${tick.x}%`} y1="19" y2="27" />
+          </>
+        ))}
+      </svg>
+    </div>
+  )}
+  <ol class="roles">
+    {entries.map(({ item, current, bar }, index) => (
+      <li class:list={['role', { current }]}>
+        <h3>
+          <button type="button" aria-expanded="true" aria-controls={`${idPrefix}-${index}`}>
+            <span class="what">
+              <span class="position">{item.position ?? item.name}</span>
+              {item.position && item.name && <span class="org muted">{item.name}</span>}
+            </span>
+            <span class="when muted">{formatRange(item.startDate, item.endDate, locale, labels.ongoing)}</span>
+            <Icon name="chevron" size={18} class="chevron" />
+          </button>
+        </h3>
+        {bar && (
+          <svg class="bar" width="100%" height="12" aria-hidden="true" focusable="false">
+            <rect class="track" x="0" y="3" width="100%" height="6" rx="3" />
+            <rect class="span" x={`${bar.x}%`} y="3" width={`${bar.width}%`} height="6" rx="3" />
+          </svg>
+        )}
+        <div class="panel" id={`${idPrefix}-${index}`}>
+          {item.summary && <p>{item.summary}</p>}
+          {item.highlights?.length ? (
+            <ul>
+              {item.highlights.map((highlight) => (
+                <li>{highlight}</li>
+              ))}
+            </ul>
+          ) : null}
+          {item.description && <p class="context muted small">{item.description}</p>}
+        </div>
+      </li>
+    ))}
+  </ol>
+</div>
+
+<script>
+  import { initTimelines } from '../site/timeline';
+  initTimelines();
+</script>
+
+<style>
+  .timeline {
+    --label: minmax(14rem, 22rem);
+  }
+  .tools {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -0.75rem;
+  }
+  .toggle-all {
+    min-height: 2.75rem;
+    padding: 0 0.75rem;
+    border: 0;
+    background: transparent;
+    color: var(--mare);
+    font: inherit;
+    font-size: var(--step--1);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+  .axis {
+    display: none;
+  }
+  .roles {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--linea);
+  }
+  .role {
+    border-bottom: 1px solid var(--linea);
+  }
+  h3 {
+    margin: 0;
+    font-size: inherit;
+  }
+  h3 > button {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: baseline;
+    gap: 0.25rem 1rem;
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.85rem 0.25rem;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  h3 > button:hover .position {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .what {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 0.6rem;
+    align-items: baseline;
+  }
+  .position {
+    font-weight: 650;
+  }
+  .org,
+  .when {
+    font-weight: 400;
+    font-size: var(--step--1);
+  }
+  .when {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  :global(.chevron) {
+    align-self: center;
+    color: var(--mare);
+    transition: transform 0.2s;
+  }
+  h3 > button[aria-expanded='true'] :global(.chevron) {
+    transform: rotate(90deg);
+  }
+  .bar {
+    display: none;
+  }
+  .track {
+    fill: color-mix(in srgb, var(--linea) 70%, transparent);
+  }
+  .span {
+    fill: var(--barra);
+  }
+  .current .span {
+    fill: var(--gru);
+  }
+  .panel {
+    max-width: var(--measure);
+    padding: 0 0.25rem 1.25rem;
+  }
+  .panel ul {
+    padding-left: 1.1rem;
+  }
+  .panel li {
+    margin-bottom: 0.35rem;
+  }
+  .panel ul + .context,
+  .panel p + .context {
+    margin-top: 0.75rem;
+  }
+  .context {
+    margin-bottom: 0;
+  }
+  :global(h3:has(> button[aria-expanded='false'])) ~ .panel {
+    display: none;
+  }
+
+  /* Wide screens: the time axis, one bar per role. */
+  @media (min-width: 52rem) {
+    .axis {
+      display: grid;
+      grid-template-columns: var(--label) 1fr;
+      column-gap: 1.5rem;
+      margin-bottom: 0.25rem;
+      color: var(--nebbia);
+    }
+    .years {
+      grid-column: 2;
+      overflow: visible;
+    }
+    .years text {
+      fill: currentColor;
+      font-size: 0.8125rem;
+    }
+    .years line {
+      stroke: var(--linea);
+    }
+    .role {
+      display: grid;
+      grid-template-columns: var(--label) 1fr;
+      column-gap: 1.5rem;
+      align-items: center;
+    }
+    h3 {
+      grid-column: 1;
+    }
+    h3 > button {
+      grid-template-columns: 1fr auto;
+    }
+    .what {
+      flex-direction: column;
+    }
+    .when {
+      grid-column: 1;
+      grid-row: 2;
+    }
+    :global(.chevron) {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+    }
+    .bar {
+      display: block;
+      grid-column: 2;
+      width: 100%;
+      height: 0.75rem;
+    }
+    .panel {
+      grid-column: 2;
+    }
+  }
+
+  @media print {
+    .tools,
+    .axis,
+    .bar,
+    :global(.chevron) {
+      display: none;
+    }
+    .role {
+      display: block;
+    }
+    .panel {
+      display: block !important;
+    }
+  }
+  @media (forced-colors: active) {
+    .span,
+    .current .span {
+      fill: CanvasText;
+    }
+    .track {
+      fill: Canvas;
+      stroke: CanvasText;
+      stroke-width: 0.5;
+    }
+  }
+</style>

@@ -1,0 +1,107 @@
+---
+/** Skip link, theme switch and language links. */
+import type { LocaleLink } from '../site/context';
+import type { Labels } from '../i18n/labels';
+import Icon from './Icon.astro';
+
+interface Props {
+  labels: Labels;
+  otherLocales: LocaleLink[];
+}
+
+const { labels, otherLocales } = Astro.props;
+---
+
+<header class="topbar page">
+  <a class="skip" href="#content">
+    {labels.skipToContent}
+  </a>
+  <button
+    class="theme"
+    type="button"
+    data-theme-switch
+    data-label={labels.theme.label}
+    data-system={labels.theme.system}
+    data-light={labels.theme.light}
+    data-dark={labels.theme.dark}
+    hidden
+  >
+    <Icon name="theme" size={18} />
+    <span data-theme-text>{labels.theme.label}</span>
+  </button>
+  {otherLocales.length > 0 && (
+    <nav aria-label={labels.languageNav}>
+      <ul>
+        {otherLocales.map((link) => (
+          <li>
+            <a href={link.href} hreflang={link.locale} lang={link.locale}>
+              {link.name}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )}
+</header>
+
+<script>
+  import { initThemeSwitch } from '../site/theme';
+  initThemeSwitch();
+</script>
+
+<style>
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1.25rem;
+    min-height: 3.5rem;
+    padding-top: 0.75rem;
+    font-size: 0.95rem;
+  }
+  .skip {
+    position: absolute;
+    left: 1rem;
+    top: -10rem;
+    padding: 0.5rem 0.9rem;
+    background: var(--mare);
+    color: var(--mare-ink);
+    border-radius: var(--radius);
+    z-index: 10;
+  }
+  .skip:focus {
+    top: 0.75rem;
+  }
+  .theme {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.75rem;
+    padding: 0 0.6rem;
+    border: 0;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--ardesia);
+    font: inherit;
+    cursor: pointer;
+  }
+  .theme:hover {
+    background: color-mix(in srgb, var(--mare) 9%, transparent);
+  }
+  nav ul {
+    display: flex;
+    gap: 1rem;
+    list-style: none;
+    padding: 0;
+  }
+  nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+  @media print {
+    .topbar {
+      display: none;
+    }
+  }
+</style>

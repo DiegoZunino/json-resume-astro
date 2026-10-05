@@ -1,0 +1,53 @@
+---
+/** Web page frame: document metadata, top bar, main content, footer. */
+import { getAbsoluteLocaleUrl } from 'astro:i18n';
+import Footer from '../components/Footer.astro';
+import TopBar from '../components/TopBar.astro';
+import { referenceDate } from '../core/dates';
+import { profilePage } from '../core/jsonld';
+import { joinParts } from '../core/text';
+import { alternatesFor, ogLocale, type PageContext } from '../site/context';
+import Document, { type Alternate } from './Document.astro';
+
+interface Props {
+  context: PageContext;
+  /** Page title; defaults to "Name · Label". */
+  title?: string;
+  /** Canonical URL; the home page by default. */
+  canonical?: string;
+  alternates?: Alternate[];
+  /** The home page carries the structured data. */
+  structuredData?: boolean;
+}
+
+const { context, title, canonical, alternates, structuredData = false } = Astro.props;
+const { resume, labels, locale } = context;
+const pageTitle = title ?? joinParts([resume.basics.name, resume.basics.label]);
+const updated = resume.meta.lastModified ? referenceDate(resume.meta.lastModified, new Date(0)) : undefined;
+---
+
+<Document
+  lang={locale}
+  title={pageTitle}
+  description={context.description}
+  canonical={canonical ?? context.absoluteHomeUrl}
+  alternates={alternates ?? alternatesFor((other) => getAbsoluteLocaleUrl(other))}
+  ogImage={context.ogImageUrl}
+  ogLocale={ogLocale(locale)}
+  jsonLd={structuredData ? profilePage(resume, context.absoluteHomeUrl, resume.basics.image) : undefined}
+  dataAlternate={context.dataUrl}
+>
+  <TopBar labels={labels} otherLocales={context.otherLocales} />
+  <main id="content" class="page" tabindex="-1">
+    <slot />
+  </main>
+  <Footer
+    labels={labels}
+    locale={locale}
+    updated={updated}
+    repository={context.repository}
+    accessibilityUrl={context.accessibilityUrl}
+    dataUrl={context.dataUrl}
+    otherLocales={context.otherLocales}
+  />
+</Document>

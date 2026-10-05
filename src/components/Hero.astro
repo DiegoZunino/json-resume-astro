@@ -1,0 +1,110 @@
+---
+/**
+ * First screen: who (photo, name), what (role), the line that ties the work together,
+ * a short introduction, and the actions. Answers "who is this, what do they do, what
+ * can I do here" without scrolling.
+ */
+import type { Resume } from '../core/schema';
+import { joinParts } from '../core/text';
+import type { Labels } from '../i18n/labels';
+import Actions from './Actions.astro';
+import Photo from './Photo.astro';
+import Wire from './Wire.astro';
+
+interface Props {
+  resume: Resume;
+  labels: Labels;
+  pdfUrl: string;
+}
+
+const { resume, labels, pdfUrl } = Astro.props;
+const { basics } = resume;
+const options = resume.meta.themeOptions ?? {};
+const intro = options.intro ?? (basics.summary ? [basics.summary] : []);
+---
+
+<div class="hero">
+  <div class="identity">
+    <Photo src={basics.image} name={basics.name} size={168} eager />
+    <div>
+      <h1 class="name">{basics.name}</h1>
+      {basics.label && <p class="role">{basics.label}</p>}
+      {basics.location?.city && <p class="place muted">{basics.location.city}</p>}
+    </div>
+  </div>
+
+  {options.tagline && <Wire class="tagline" from={options.tagline.from} to={options.tagline.to} animate />}
+
+  {intro.length > 0 && (
+    <div class="intro measure">
+      {intro.map((paragraph) => (
+        <p>{paragraph}</p>
+      ))}
+    </div>
+  )}
+
+  <Actions
+    resume={resume}
+    labels={labels}
+    pdfUrl={pdfUrl}
+    label={joinParts([labels.sections.contact, basics.name], ' – ')}
+  />
+</div>
+
+<style>
+  .hero {
+    display: flex;
+    flex-direction: column;
+    padding-top: clamp(1.5rem, 5vw, 3.5rem);
+  }
+  /* Small screens: the actions come before the introduction, inside the first screen. */
+  @media (max-width: 48rem) {
+    .intro {
+      order: 1;
+    }
+  }
+  .identity {
+    --photo-size: clamp(5.5rem, 4rem + 7vw, 10.5rem);
+    display: flex;
+    align-items: center;
+    gap: clamp(1rem, 3vw, 2rem);
+  }
+  @media (max-width: 30rem) {
+    .identity {
+      flex-direction: column;
+      align-items: flex-start;
+      --photo-size: 6rem;
+    }
+  }
+  .name {
+    margin: 0;
+    font-size: var(--step-4);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+  }
+  .role {
+    margin: 0.5rem 0 0;
+    font-size: var(--step-1);
+    font-weight: 560;
+    color: var(--mare);
+    line-height: 1.3;
+  }
+  .place {
+    margin: 0.2rem 0 0;
+  }
+  .hero :global(.tagline) {
+    margin: clamp(2rem, 5vw, 3rem) 0 0;
+    max-width: 52rem;
+    font-size: clamp(1.25rem, 1rem + 1.2vw, 1.75rem);
+  }
+  .intro {
+    margin-top: 1.25rem;
+  }
+  .intro p:last-child {
+    margin-bottom: 0;
+  }
+  .hero :global(.actions) {
+    margin-top: 1.75rem;
+  }
+</style>

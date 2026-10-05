@@ -1,0 +1,75 @@
+---
+/**
+ * Profile photo, optimised at build time from `basics.image`. If there is no photo, or
+ * it cannot be fetched, a monogram takes its place so the layout never breaks.
+ * The photo sits next to the name, so its alternative text is empty (WCAG H67).
+ */
+import { getImage } from 'astro:assets';
+import { initials } from '../core/text';
+
+interface Props {
+  src?: string | undefined;
+  name: string;
+  /** Largest displayed size in CSS pixels; the file is generated at twice that size. */
+  size: number;
+  class?: string;
+  eager?: boolean;
+}
+
+const { src, name, size, class: className, eager = false } = Astro.props;
+
+let image: Awaited<ReturnType<typeof getImage>> | undefined;
+if (src) {
+  try {
+    image = await getImage({
+      src,
+      inferSize: true,
+      width: size * 2,
+      height: size * 2,
+      fit: 'cover',
+      format: 'webp',
+      quality: 82,
+    });
+  } catch (error) {
+    console.warn(`[photo] ${src} could not be processed, using a monogram: ${(error as Error).message}`);
+  }
+}
+---
+
+{image ? (
+  <img
+    class:list={['photo', className]}
+    src={image.src}
+    width={size}
+    height={size}
+    alt=""
+    decoding="async"
+    loading={eager ? 'eager' : 'lazy'}
+    fetchpriority={eager ? 'high' : undefined}
+  />
+) : (
+  <span class:list={['photo', 'monogram', className]} aria-hidden="true">
+    {initials(name)}
+  </span>
+)}
+
+<style>
+  /* The parent sets the displayed size with --photo-size (no inline styles: strict CSP). */
+  .photo {
+    width: var(--photo-size, 5rem);
+    height: var(--photo-size, 5rem);
+    border-radius: 50%;
+    object-fit: cover;
+    flex: none;
+    background: var(--superficie);
+    box-shadow: 0 0 0 1px var(--linea);
+  }
+  .monogram {
+    display: grid;
+    place-items: center;
+    color: var(--mare);
+    font-weight: 700;
+    font-size: calc(var(--photo-size, 5rem) * 0.36);
+    letter-spacing: -0.02em;
+  }
+</style>

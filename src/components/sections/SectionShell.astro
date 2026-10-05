@@ -1,0 +1,15 @@
+---
+/** A titled page section, a landmark labelled by its heading. */
+interface Props {
+  id: string;
+  title: string;
+  class?: string;
+}
+
+const { id, title, class: className } = Astro.props;
+---
+
+<section class:list={['section', className]} aria-labelledby={`${id}-title`} id={id}>
+  <h2 id={`${id}-title`}>{title}</h2>
+  <slot />
+</section>

@@ -1,0 +1,88 @@
+---
+/**
+ * The HTML document: metadata for search engines, social previews and agents, the
+ * theme bootstrap and the font. Every page goes through this layout.
+ */
+import { Font } from 'astro:assets';
+import { serializeJsonLd } from '../core/jsonld';
+import { themeScript } from '../integrations/theme-script';
+import '../styles/global.css';
+
+export interface Alternate {
+  hreflang: string;
+  href: string;
+}
+
+interface Props {
+  lang: string;
+  title: string;
+  description?: string | undefined;
+  canonical?: string | undefined;
+  alternates?: Alternate[];
+  /** Absolute URL of the 1200×630 social card. */
+  ogImage?: string | undefined;
+  ogLocale?: string | undefined;
+  jsonLd?: unknown;
+  /** Machine-readable alternative of the page, e.g. the public JSON Resume. */
+  dataAlternate?: string | undefined;
+  noindex?: boolean;
+  /** Pages used only to produce artifacts (PDF, social card): light theme, no theme script. */
+  artifact?: boolean;
+}
+
+const {
+  lang,
+  title,
+  description,
+  canonical,
+  alternates = [],
+  ogImage,
+  ogLocale,
+  jsonLd,
+  dataAlternate,
+  noindex = false,
+  artifact = false,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang={lang} data-theme={artifact ? 'light' : undefined}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    {noindex && <meta name="robots" content="noindex" />}
+    {canonical && <link rel="canonical" href={canonical} />}
+    {alternates.map((alternate) => (
+      <link rel="alternate" hreflang={alternate.hreflang} href={alternate.href} />
+    ))}
+    {dataAlternate && <link rel="alternate" type="application/json" href={dataAlternate} title="JSON Resume" />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#eef1f3" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#15202a" media="(prefers-color-scheme: dark)" />
+    {!noindex && (
+      <>
+        <meta property="og:type" content="profile" />
+        <meta property="og:title" content={title} />
+        {description && <meta property="og:description" content={description} />}
+        {canonical && <meta property="og:url" content={canonical} />}
+        {ogLocale && <meta property="og:locale" content={ogLocale} />}
+        {ogImage && (
+          <>
+            <meta property="og:image" content={ogImage} />
+            <meta property="og:image:width" content="1200" />
+            <meta property="og:image:height" content="630" />
+            <meta name="twitter:card" content="summary_large_image" />
+          </>
+        )}
+      </>
+    )}
+    <Font cssVariable="--font-sans" preload={[{ weight: 400 }, { weight: 700 }]} />
+    {!artifact && <script is:inline set:html={themeScript} />}
+    {jsonLd !== undefined && <script type="application/ld+json" set:html={serializeJsonLd(jsonLd)} />}
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

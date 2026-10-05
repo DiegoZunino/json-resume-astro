@@ -1,0 +1,41 @@
+---
+/** Renders the visible sections in theme order. */
+import { entriesFor, extensionEntries } from '../core/entries';
+import type { Section } from '../core/sections';
+import type { Resume } from '../core/schema';
+import { sectionTitle, type Labels } from '../i18n/labels';
+import Education from './sections/Education.astro';
+import ItemList from './sections/ItemList.astro';
+import SectionShell from './sections/SectionShell.astro';
+import Skills from './sections/Skills.astro';
+import Timeline from './Timeline.astro';
+
+interface Props {
+  sections: Section[];
+  resume: Resume;
+  locale: string;
+  labels: Labels;
+  reference: Date;
+}
+
+const { sections, resume, locale, labels, reference } = Astro.props;
+const overrides = resume.meta.themeOptions?.labels ?? {};
+const expanded = resume.meta.themeOptions?.expanded ?? 2;
+const title = (key: string) => sectionTitle(key, labels, overrides);
+---
+
+{sections.map((section) => (
+  <SectionShell id={section.key} title={title(section.key)}>
+    {section.kind === 'extension' ? (
+      <ItemList entries={extensionEntries(section.items, locale, labels.ongoing)} />
+    ) : section.kind === 'education' ? (
+      <Education resume={resume} locale={locale} labels={labels} />
+    ) : section.key === 'work' ? (
+      <Timeline work={resume.work} locale={locale} labels={labels} reference={reference} expanded={expanded} />
+    ) : section.key === 'skills' ? (
+      <Skills skills={resume.skills} />
+    ) : (
+      <ItemList entries={entriesFor(section.key, resume, locale, labels.ongoing)} />
+    )}
+  </SectionShell>
+))}

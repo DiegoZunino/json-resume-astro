@@ -1,0 +1,70 @@
+---
+/** Last-updated date, how the site is built (with a link to its source), accessibility. */
+import { formatLongDate } from '../core/dates';
+import type { Labels } from '../i18n/labels';
+import type { LocaleLink } from '../site/context';
+
+interface Props {
+  labels: Labels;
+  locale: string;
+  updated: Date | undefined;
+  repository: string | undefined;
+  accessibilityUrl: string;
+  dataUrl: string;
+  otherLocales: LocaleLink[];
+}
+
+const { labels, locale, updated, repository, accessibilityUrl, dataUrl, otherLocales } = Astro.props;
+---
+
+<footer class="footer page">
+  <p>
+    {updated && (
+      <>
+        {labels.footer.updated}{' '}
+        <time datetime={updated.toISOString().slice(0, 10)}>{formatLongDate(updated, locale)}</time>
+        <span aria-hidden="true"> · </span>
+      </>
+    )}
+    {labels.footer.builtWith}{' '}
+    <a href={dataUrl} type="application/json">
+      {labels.footer.data}
+    </a>
+    {repository && (
+      <>
+        <span aria-hidden="true"> · </span>
+        <a href={repository}>{labels.footer.source}</a>
+      </>
+    )}
+  </p>
+  <p>
+    <a href={accessibilityUrl}>{labels.footer.accessibility}</a>
+    {otherLocales.map((link) => (
+      <>
+        <span aria-hidden="true"> · </span>
+        <a href={link.href} hreflang={link.locale} lang={link.locale}>
+          {link.name}
+        </a>
+      </>
+    ))}
+  </p>
+</footer>
+
+<style>
+  .footer {
+    margin-top: clamp(4rem, 9vw, 6rem);
+    padding-top: 1.5rem;
+    padding-bottom: 2.5rem;
+    border-top: 1px solid var(--linea);
+    color: var(--nebbia);
+    font-size: var(--step--1);
+  }
+  .footer p {
+    margin: 0 0 0.5rem;
+  }
+  @media print {
+    .footer {
+      display: none;
+    }
+  }
+</style>

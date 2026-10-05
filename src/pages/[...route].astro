@@ -1,0 +1,74 @@
+---
+/**
+ * Every locale gets a home page (the default locale at the root) and an accessibility
+ * statement. Routing follows Astro's i18n configuration (prefixDefaultLocale: false).
+ */
+import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
+import { getAbsoluteLocaleUrl, getRelativeLocaleUrl } from 'astro:i18n';
+import Actions from '../components/Actions.astro';
+import Hero from '../components/Hero.astro';
+import Sections from '../components/Sections.astro';
+import SectionShell from '../components/sections/SectionShell.astro';
+import { labelsFor } from '../i18n/labels';
+import Web from '../layouts/Web.astro';
+import { alternatesFor, locales, pageContext, routeParam } from '../site/context';
+
+export const getStaticPaths = (() =>
+  locales.flatMap((locale) => {
+    const statement = getRelativeLocaleUrl(locale, labelsFor(locale).accessibility.slug);
+    return [
+      { params: { route: routeParam(getRelativeLocaleUrl(locale)) }, props: { locale, page: 'home' as const } },
+      { params: { route: routeParam(statement) }, props: { locale, page: 'accessibility' as const } },
+    ];
+  })) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { locale, page } = Astro.props as Props;
+const context = await pageContext(locale, Astro.site);
+const { resume, labels } = context;
+const statementUrl = (other: string) => getAbsoluteLocaleUrl(other, labelsFor(other).accessibility.slug);
+---
+
+{page === 'home' ? (
+  <Web context={context} structuredData>
+    <Hero resume={resume} labels={labels} pdfUrl={context.pdfUrl} />
+    <Sections
+      sections={context.sections}
+      resume={resume}
+      locale={locale}
+      labels={labels}
+      reference={context.reference}
+    />
+    <SectionShell id="contact" title={labels.sections.contact}>
+      <Actions resume={resume} labels={labels} pdfUrl={context.pdfUrl} label={labels.sections.contact} showEmail />
+    </SectionShell>
+  </Web>
+) : (
+  <Web
+    context={context}
+    title={`${labels.accessibility.title} · ${resume.basics.name}`}
+    canonical={statementUrl(locale)}
+    alternates={alternatesFor(statementUrl)}
+  >
+    <article class="statement measure">
+      <p class="back">
+        <a href={context.homeUrl}>{resume.basics.name}</a>
+      </p>
+      <h1>{labels.accessibility.title}</h1>
+      {labels.accessibility.paragraphs(resume.basics.email).map((paragraph) => (
+        <p>{paragraph}</p>
+      ))}
+    </article>
+  </Web>
+)}
+
+<style>
+  .statement {
+    padding-top: 2rem;
+  }
+  .statement h1 {
+    font-size: var(--step-3);
+    margin: 0.5rem 0 1.5rem;
+  }
+</style>

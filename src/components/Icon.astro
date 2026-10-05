@@ -1,0 +1,42 @@
+---
+/**
+ * Small line icons, always next to a visible label (icons alone are rarely understood),
+ * so they are hidden from assistive technology.
+ */
+const paths = {
+  download: 'M12 3v12M7 10l5 5 5-5M5 21h14',
+  mail: 'M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM3 7l9 6 9-6',
+  profile: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c0-4 3.6-6 8-6s8 2 8 6',
+  code: 'M8 6l-6 6 6 6M16 6l6 6-6 6',
+  link: 'M10 14a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1 1M14 10a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1-1',
+  chevron: 'M9 6l6 6-6 6',
+  theme: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 3v18',
+} as const;
+
+export type IconName = keyof typeof paths;
+
+interface Props {
+  name: IconName;
+  size?: number;
+  class?: string;
+}
+
+const { name, size = 20, class: className } = Astro.props;
+---
+
+<svg
+  class={className}
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.8"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+>
+  <path d={paths[name]}></path>
+  {name === 'theme' && <path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none" />}
+</svg>

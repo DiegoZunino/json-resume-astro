@@ -1,0 +1,70 @@
+---
+/**
+ * A list of titled entries (talks, projects, publications, awards, volunteering,
+ * extension lists): title (linked if there is a URL), a meta line, a summary.
+ */
+export interface ListEntry {
+  title: string;
+  url?: string | undefined;
+  meta?: string | undefined;
+  summary?: string | undefined;
+  points?: string[] | undefined;
+}
+
+interface Props {
+  entries: ListEntry[];
+}
+
+const { entries } = Astro.props;
+---
+
+<ul class="entries measure-wide">
+  {entries.map((entry) => (
+    <li>
+      <p class:list={['title', { plain: !entry.url && !entry.meta && !entry.summary && !entry.points?.length }]}>
+        {entry.url ? <a href={entry.url}>{entry.title}</a> : entry.title}
+      </p>
+      {entry.meta && <p class="meta muted small">{entry.meta}</p>}
+      {entry.summary && <p class="summary">{entry.summary}</p>}
+      {entry.points?.length ? (
+        <ul class="points">
+          {entry.points.map((point) => (
+            <li>{point}</li>
+          ))}
+        </ul>
+      ) : null}
+    </li>
+  ))}
+</ul>
+
+<style>
+  .entries {
+    list-style: none;
+    padding: 0;
+    max-width: 52rem;
+  }
+  .entries > li {
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--linea);
+  }
+  .entries > li:last-child {
+    border-bottom: 1px solid var(--linea);
+  }
+  .title {
+    margin: 0;
+    font-weight: 600;
+  }
+  .title.plain {
+    font-weight: 400;
+  }
+  .meta {
+    margin: 0.1rem 0 0;
+  }
+  .summary {
+    margin: 0.35rem 0 0;
+  }
+  .points {
+    margin-top: 0.35rem;
+    padding-left: 1.1rem;
+  }
+</style>
