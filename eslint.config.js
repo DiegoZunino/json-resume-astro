@@ -1,14 +1,15 @@
 // ESLint flat config: TypeScript (type-aware), Astro components and their accessibility rules.
 import js from '@eslint/js';
 import astro from 'eslint-plugin-astro';
+import { defineConfig } from 'eslint/config';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
-export default tseslint.config(
+export default defineConfig(
   { ignores: ['dist/', '.astro/', 'node_modules/', 'test-results/', 'playwright-report/', '**/*.local.*'] },
   js.configs.recommended,
-  ...tseslint.configs.strict,
-  ...tseslint.configs.stylistic,
+  tseslint.configs.strict,
+  tseslint.configs.stylistic,
   ...astro.configs.recommended,
   ...astro.configs['jsx-a11y-strict'],
   {

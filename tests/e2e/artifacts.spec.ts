@@ -19,7 +19,10 @@ test.describe('published files', () => {
       expect(pages).toBeGreaterThanOrEqual(1);
       expect(pages).toBeLessThanOrEqual(2);
       expect(pdf).not.toContain('/Type3');
-      expect(pdf).toContain('/MediaBox [0 0 594.95996 841.91998]');
+      // A4 is 595.28 × 841.89 points; Chromium rounds the page box to whole CSS pixels.
+      const box = pdf.match(/\/MediaBox \[0 0 ([\d.]+) ([\d.]+)\]/);
+      expect(Number(box?.[1])).toBeCloseTo(595, 0);
+      expect(Number(box?.[2])).toBeCloseTo(842, 0);
     }
   });
 
