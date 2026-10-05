@@ -160,6 +160,8 @@ export const ThemeOptions = z.looseObject({
   order: list.optional(),
   /** Sections not shown on the page or in the PDF (the data stays in the source). */
   hide: list.optional(),
+  /** Sections shown on the page but left out of the PDF, to keep it short (e.g. a list of talks). */
+  printHide: list.optional(),
   /** How many of the most recent roles start expanded (default 2). */
   expanded: z.number().int().min(0).optional(),
 });
@@ -167,7 +169,11 @@ export const ThemeOptions = z.looseObject({
 export const Meta = z.looseObject({
   canonical: webUrl.optional(),
   version: text.optional(),
-  lastModified: text.optional(),
+  /** ISO 8601 date or date-time: it becomes "updated on" and the reference date of the timeline. */
+  lastModified: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}([T ][\d:.]+(Z|[+-]\d{2}:?\d{2})?)?$/, 'expected an ISO 8601 date or date-time')
+    .optional(),
   themeOptions: ThemeOptions.optional(),
 });
 

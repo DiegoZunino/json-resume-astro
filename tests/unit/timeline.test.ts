@@ -24,6 +24,16 @@ describe('buildTimeline', () => {
     expect((entries[0]?.bar?.x ?? 0) + (entries[0]?.bar?.width ?? 0)).toBeCloseTo(100, 5);
   });
 
+  it('keeps every bar inside the axis even when the reference date is older than the data', () => {
+    const stale = new Date(Date.UTC(2020, 0, 1));
+    const { entries } = buildTimeline(work, stale);
+    for (const { bar } of entries.filter((entry) => entry.bar)) {
+      expect(bar!.x).toBeGreaterThanOrEqual(0);
+      expect(bar!.width).toBeGreaterThan(0);
+      expect(bar!.x + bar!.width).toBeLessThanOrEqual(100);
+    }
+  });
+
   it('works without any date', () => {
     expect(buildTimeline<{ name: string; startDate?: string }>([{ name: 'X' }], ref)).toEqual({
       entries: [{ item: { name: 'X' }, current: true }],

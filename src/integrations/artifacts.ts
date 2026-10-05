@@ -7,11 +7,12 @@ import { createServer, type Server } from 'node:http';
 import { readdir, readFile, rm } from 'node:fs/promises';
 import { extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { chromium } from '@playwright/test';
+import { chromium } from 'playwright';
 import type { AstroIntegration, AstroIntegrationLogger } from 'astro';
 import sirv from 'sirv';
 import type { ResumeConfig } from '../config/define';
 import { ARTIFACT_ROUTES, ogFile, pdfFile } from '../config/paths';
+import { buildEnv } from '../config/env';
 import { loadResume } from '../config/source';
 import { findLeaks } from '../core/privacy';
 
@@ -76,7 +77,7 @@ async function checkLeaks(
 ): Promise<void> {
   const withheld = new Set<string>();
   for (const locale of Object.keys(config.sources)) {
-    const { withheld: values } = await loadResume(config, locale, { root, env: process.env });
+    const { withheld: values } = await loadResume(config, locale, { root, env: buildEnv(root) });
     values.forEach((value) => withheld.add(value));
   }
   const leaks: string[] = [];

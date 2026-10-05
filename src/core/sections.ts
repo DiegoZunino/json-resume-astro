@@ -33,25 +33,39 @@ const safeUrl = (value: unknown): string | undefined => {
   }
 };
 
-/** Normalises an extension list; returns undefined if the value is not a usable list. */
+/** One entry of an extension list, or undefined if it has no text to show. */
+function extensionItem(entry: unknown): ExtensionItem | undefined {
+  if (typeof entry === 'string') return entry.trim() ? { title: entry } : undefined;
+  if (!isRecord(entry)) return undefined;
+  const title = str(entry.title) ?? str(entry.name);
+  if (!title) return undefined;
+  return {
+    title,
+    url: safeUrl(entry.url),
+    date: str(entry.date),
+    meta: str(entry.event) ?? str(entry.publisher) ?? str(entry.meta),
+    summary: str(entry.summary) ?? str(entry.description),
+  };
+}
+
+/**
+ * Normalises an extension list. Entries without text are skipped (and reported by
+ * `extensionProblems`), so one bad entry does not hide the whole section.
+ * Returns undefined if the value is not a list or nothing usable is left.
+ */
 export function extensionItems(value: unknown): ExtensionItem[] | undefined {
-  if (!Array.isArray(value) || value.length === 0) return undefined;
-  const items: ExtensionItem[] = [];
-  for (const entry of value) {
-    if (typeof entry === 'string') items.push({ title: entry });
-    else if (isRecord(entry)) {
-      const title = str(entry.title) ?? str(entry.name);
-      if (!title) return undefined;
-      items.push({
-        title,
-        url: safeUrl(entry.url),
-        date: str(entry.date),
-        meta: str(entry.event) ?? str(entry.publisher) ?? str(entry.meta),
-        summary: str(entry.summary) ?? str(entry.description),
-      });
-    } else return undefined;
-  }
-  return items;
+  if (!Array.isArray(value)) return undefined;
+  const items = value.map(extensionItem).filter((item): item is ExtensionItem => item !== undefined);
+  return items.length ? items : undefined;
+}
+
+/** Entries of `x-` lists that cannot be shown, as "x-key[index]", for build warnings. */
+export function extensionProblems(resume: Record<string, unknown>): string[] {
+  return Object.entries(resume)
+    .filter(([key, value]) => key.startsWith('x-') && Array.isArray(value))
+    .flatMap(([key, value]) =>
+      (value as unknown[]).flatMap((entry, index) => (extensionItem(entry) ? [] : [`${key}[${index}]`])),
+    );
 }
 
 /** Sections with content, in theme order, without the hidden ones. Private keys never reach here. */

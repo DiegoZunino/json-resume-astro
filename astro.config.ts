@@ -1,15 +1,16 @@
-import { defineConfig, envField, fontProviders } from 'astro/config';
+import { defineConfig, fontProviders } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
-import { loadEnv } from 'vite';
 import resumeConfig from './resume.config';
-import { sourceVariable } from './src/config/define';
+import { buildEnv } from './src/config/env';
 import { ARTIFACT_ROUTES } from './src/config/paths';
 import { resumeArtifacts } from './src/integrations/artifacts';
 import { themeScriptHash } from './src/integrations/theme-script';
 
-const env = loadEnv(process.env.NODE_ENV ?? 'production', process.cwd(), '');
+// SITE_URL and RESUME_SOURCE_<LOCALE> come from the environment or .env files (see README).
+const env = buildEnv(process.cwd());
 const locales = Object.keys(resumeConfig.sources);
-// Unicode ranges of the Fontsource "latin" and "latin-ext" subsets.
+// Unicode ranges of the Fontsource "latin" and "latin-ext" subsets, copied from
+// @fontsource/schibsted-grotesk/index.css: each file is downloaded only if the page uses its range.
 const LATIN: [string, ...string[]] = [
   'U+0000-00FF',
   'U+0131',
@@ -66,18 +67,6 @@ export default defineConfig({
     routing: { prefixDefaultLocale: false },
   },
 
-  env: {
-    schema: {
-      SITE_URL: envField.string({ context: 'server', access: 'public', optional: true, url: true }),
-      ...Object.fromEntries(
-        locales.map((locale) => [
-          sourceVariable(locale),
-          envField.string({ context: 'server', access: 'public', optional: true }),
-        ]),
-      ),
-    },
-  },
-
   fonts: [
     {
       provider: fontProviders.local(),
@@ -112,7 +101,14 @@ export default defineConfig({
   },
 
   integrations: [
-    sitemap({ filter: (page) => !ARTIFACT_ROUTES.some((route) => new URL(page).pathname.startsWith(`/${route}/`)) }),
+    sitemap({
+      filter: (page) => !ARTIFACT_ROUTES.some((route) => new URL(page).pathname.startsWith(`/${route}/`)),
+      // Each URL lists its language alternates (xhtml:link), like the pages' hreflang links.
+      i18n: {
+        defaultLocale: resumeConfig.defaultLocale,
+        locales: Object.fromEntries(Object.keys(resumeConfig.sources).map((locale) => [locale, locale])),
+      },
+    }),
     resumeArtifacts(resumeConfig),
   ],
 });

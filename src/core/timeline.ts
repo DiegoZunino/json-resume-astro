@@ -32,20 +32,23 @@ export function buildTimeline<T extends Dated>(items: readonly T[], reference: D
   const dated = items.filter((item) => item.startDate);
   if (!dated.length) return { entries: items.map((item) => ({ item, current: !item.endDate })), years: [] };
 
+  // "Now" is the reference date, but never earlier than the most recent start: a stale
+  // meta.lastModified must not push a bar past the end of the axis.
+  const latestStart = Math.max(...dated.map((item) => toMonths(item.startDate, reference)));
+  const now = Math.max(toMonths(undefined, reference), latestStart + 1);
   // An end month is inclusive: a role that ends in December covers December.
-  const endOf = (item: Dated) =>
-    item.endDate ? toMonths(item.endDate, reference) + 1 : toMonths(undefined, reference);
+  const endOf = (item: Dated) => (item.endDate ? toMonths(item.endDate, reference) + 1 : now);
   const start = Math.min(...dated.map((item) => toMonths(item.startDate, reference)));
-  const end = Math.max(toMonths(undefined, reference), ...dated.map(endOf));
+  const end = Math.max(now, ...dated.map(endOf));
   const span = Math.max(end - start, 1);
-  const at = (month: MonthIndex) => ((month - start) / span) * 100;
+  const at = (month: MonthIndex) => Math.min(Math.max(((month - start) / span) * 100, 0), 100);
 
   const entries = items.map((item) => {
     const current = !item.endDate;
     if (!item.startDate) return { item, current };
-    const x = at(toMonths(item.startDate, reference));
-    const width = Math.max(at(endOf(item)) - x, minWidth);
-    return { item, current, bar: { x: round(x), width: round(Math.min(width, 100 - x)) } };
+    const x = Math.min(at(toMonths(item.startDate, reference)), 100 - minWidth);
+    const width = Math.min(Math.max(at(endOf(item)) - x, minWidth), 100 - x);
+    return { item, current, bar: { x: round(x), width: round(width) } };
   });
 
   return { entries, years: yearTicks(start, end) };

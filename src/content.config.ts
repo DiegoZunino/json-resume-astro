@@ -5,7 +5,7 @@ import { resumeLoader } from './loaders/resume';
 
 export const collections = {
   resume: defineCollection({
-    loader: resumeLoader(resumeConfig, process.env),
+    loader: resumeLoader(resumeConfig),
     schema: Resume,
   }),
 };

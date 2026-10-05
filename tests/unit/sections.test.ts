@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extensionItems, visibleSections } from '../../src/core/sections';
+import { extensionItems, extensionProblems, visibleSections } from '../../src/core/sections';
 import { parseResume } from '../../src/core/schema';
 
 describe('extensionItems', () => {
@@ -10,11 +10,16 @@ describe('extensionItems', () => {
     ]);
   });
 
-  it('drops unsafe URLs and rejects lists that are not lists of entries', () => {
+  it('drops unsafe URLs and ignores values that are not lists of entries', () => {
     expect(extensionItems([{ title: 't', url: 'javascript:alert(1)' }])?.[0]?.url).toBeUndefined();
     expect(extensionItems('text')).toBeUndefined();
     expect(extensionItems([{ other: 1 }])).toBeUndefined();
     expect(extensionItems([])).toBeUndefined();
+  });
+
+  it('skips a bad entry instead of hiding the whole list, and reports it', () => {
+    expect(extensionItems(['ok', { other: 1 }, 42])).toEqual([{ title: 'ok' }]);
+    expect(extensionProblems({ 'x-talks': ['ok', { other: 1 }], 'x-flag': true, basics: [] })).toEqual(['x-talks[1]']);
   });
 });
 
