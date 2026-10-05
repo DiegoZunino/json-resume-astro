@@ -22,6 +22,10 @@ export interface Labels {
     | 'contact',
     string
   >;
+  /** Locale used to format dates, e.g. "en-GB" for day-month order. */
+  intl: string;
+  /** Appended to a dated entry that is still to come (a talk already scheduled). */
+  upcoming: string;
   /** Titles used only in the PDF, where the page has a different job. */
   print: { profile: string; work: string };
   ongoing: string;
@@ -35,6 +39,7 @@ export interface Labels {
   email: string;
   copy: string;
   copied: string;
+  copyFailed: string;
   expandAll: string;
   collapseAll: string;
   theme: { legend: string; system: string; light: string; dark: string };
@@ -72,6 +77,8 @@ const en: Labels = {
     references: 'References',
     contact: 'Contact',
   },
+  intl: 'en-GB',
+  upcoming: 'upcoming',
   print: { profile: 'Profile', work: 'Experience' },
   ongoing: 'present',
   validUntil: 'valid until',
@@ -81,18 +88,19 @@ const en: Labels = {
   downloadCv: 'Download the CV',
   downloadCvDetail: 'PDF, English',
   email: 'Email',
-  copy: 'Copy',
+  copy: 'Copy the address',
   copied: 'Address copied',
+  copyFailed: 'Could not copy: select the address instead',
   expandAll: 'Expand all roles',
   collapseAll: 'Collapse all roles',
   theme: { legend: 'Theme', system: 'Auto', light: 'Light', dark: 'Dark' },
   footer: {
     updated: 'Updated',
     project:
-      'This site is a small open-source project: Astro generates it from a JSON Resume, with automated tests and accessibility checks.',
+      'This site is an open-source project: Astro generates it from a JSON Resume, with automated tests, accessibility checks and continuous integration.',
     source: (host) => `The code is on ${host}`,
     builtWith: 'Built with Astro from a',
-    data: 'JSON Resume',
+    data: 'The data: resume.json',
     accessibility: 'Accessibility',
   },
   accessibility: {
@@ -114,7 +122,7 @@ const en: Labels = {
 
 const it: Labels = {
   sections: {
-    work: 'Percorso',
+    work: 'Esperienza',
     volunteer: 'Volontariato',
     education: 'Formazione',
     awards: 'Riconoscimenti',
@@ -127,6 +135,8 @@ const it: Labels = {
     references: 'Referenze',
     contact: 'Contatti',
   },
+  intl: 'it-IT',
+  upcoming: 'in programma',
   print: { profile: 'Profilo', work: 'Esperienza' },
   ongoing: 'oggi',
   validUntil: 'valida fino a',
@@ -136,18 +146,19 @@ const it: Labels = {
   downloadCv: 'Scarica il CV',
   downloadCvDetail: 'PDF, italiano',
   email: 'Email',
-  copy: 'Copia',
+  copy: 'Copia l’indirizzo',
   copied: 'Indirizzo copiato',
+  copyFailed: 'Copia non riuscita: seleziona l’indirizzo',
   expandAll: 'Apri tutti i ruoli',
   collapseAll: 'Chiudi tutti i ruoli',
   theme: { legend: 'Tema', system: 'Auto', light: 'Chiaro', dark: 'Scuro' },
   footer: {
     updated: 'Aggiornato il',
     project:
-      'Questo sito è un piccolo progetto open source: è generato con Astro da un JSON Resume, con test automatici e controlli di accessibilità.',
+      'Questo sito è un progetto open source: Astro lo genera da un JSON Resume, con test automatici, controlli di accessibilità e integrazione continua.',
     source: (host) => `Il codice è su ${host}`,
     builtWith: 'Realizzato con Astro da un',
-    data: 'JSON Resume',
+    data: 'I dati: resume.json',
     accessibility: 'Accessibilità',
   },
   accessibility: {

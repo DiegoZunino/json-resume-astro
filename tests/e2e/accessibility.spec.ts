@@ -5,7 +5,7 @@ import { contrast } from './helpers';
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'];
 
 async function expandAll(page: Page) {
-  const toggle = page.getByRole('button', { name: 'Apri tutti' });
+  const toggle = page.locator('[data-toggle-all]');
   if (await toggle.isVisible()) await toggle.click();
 }
 

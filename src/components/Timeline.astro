@@ -9,6 +9,7 @@
  * repainted with system colours in forced-colours mode.
  */
 import { formatRange } from '../core/dates';
+import { joinParts } from '../core/text';
 import type { WorkItem } from '../core/schema';
 import { buildTimeline } from '../core/timeline';
 import type { Labels } from '../i18n/labels';
@@ -16,7 +17,6 @@ import Icon from './Icon.astro';
 
 interface Props {
   work: WorkItem[];
-  locale: string;
   labels: Labels;
   reference: Date;
   /** Number of roles, from the top, left open after the script runs. */
@@ -24,9 +24,16 @@ interface Props {
   idPrefix?: string;
 }
 
-const { work, locale, labels, reference, expanded, idPrefix = 'role' } = Astro.props;
+const { work, labels, reference, expanded, idPrefix = 'role' } = Astro.props;
 const { entries, years } = buildTimeline(work, reference);
 const collapsible = (item: WorkItem) => Boolean(item.highlights?.length);
+const hasOrg = (item: WorkItem) => Boolean(item.position && item.name);
+const hasDates = (item: WorkItem) => Boolean(item.startDate || item.endDate);
+const range = (item: WorkItem) => formatRange(item.startDate, item.endDate, labels.intl, labels.ongoing);
+// The parts are separate blocks on screen, which screen readers would join with stray
+// spaces; the name is given whole instead: "Tech Lead, Azienda Uno, giu 2019 – feb 2022".
+const accessibleName = (item: WorkItem) =>
+  joinParts([item.position ?? item.name, hasOrg(item) && item.name, hasDates(item) && range(item)], ', ');
 const showToggleAll = entries.filter(({ item }) => collapsible(item)).length > expanded;
 ---
 
@@ -67,27 +74,23 @@ const showToggleAll = entries.filter(({ item }) => collapsible(item)).length > e
       return (
         <li class:list={['role', { current, static: !collapsible(item) }]}>
           <h3>
+            {!collapsible(item) && <span class="visually-hidden">{accessibleName(item)}</span>}
             <Head
               {...(collapsible(item)
-                ? { type: 'button', 'aria-expanded': 'true', 'aria-controls': `${idPrefix}-${index}` }
-                : {})}
+                ? {
+                    type: 'button',
+                    'aria-expanded': 'true',
+                    'aria-controls': `${idPrefix}-${index}`,
+                    'aria-label': accessibleName(item),
+                  }
+                : { 'aria-hidden': 'true' })}
               class="head"
             >
               <span class="what">
                 <span class="position">{item.position ?? item.name}</span>
-                {item.position && item.name && (
-                  <span class="org muted">
-                    <span class="visually-hidden">, </span>
-                    {item.name}
-                  </span>
-                )}
+                {hasOrg(item) && <span class="org muted">{item.name}</span>}
               </span>
-              {(item.startDate || item.endDate) && (
-                <span class="when muted">
-                  <span class="visually-hidden">, </span>
-                  {formatRange(item.startDate, item.endDate, locale, labels.ongoing)}
-                </span>
-              )}
+              {hasDates(item) && <span class="when muted">{range(item)}</span>}
               {collapsible(item) && <Icon name="chevron" size={18} class="chevron" />}
             </Head>
           </h3>
@@ -156,9 +159,10 @@ const showToggleAll = entries.filter(({ item }) => collapsible(item)).length > e
     margin: 0;
     font-size: inherit;
   }
+  /* Title, organisation and dates stacked on the left, the chevron on the right: the same at every width. */
   .head {
     display: grid;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: 1fr auto;
     align-items: baseline;
     gap: 0.25rem 1rem;
     width: 100%;
@@ -173,18 +177,13 @@ const showToggleAll = entries.filter(({ item }) => collapsible(item)).length > e
   button.head {
     cursor: pointer;
   }
-  .static .head {
-    grid-template-columns: 1fr auto;
-  }
   h3 > button:hover .position {
     text-decoration: underline;
     text-underline-offset: 0.2em;
   }
   .what {
     display: flex;
-    flex-wrap: wrap;
-    column-gap: 0.6rem;
-    align-items: baseline;
+    flex-direction: column;
   }
   .position {
     font-weight: 650;
@@ -195,10 +194,14 @@ const showToggleAll = entries.filter(({ item }) => collapsible(item)).length > e
     font-size: var(--step--1);
   }
   .when {
+    grid-column: 1;
+    grid-row: 2;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
   }
   :global(.chevron) {
+    grid-column: 2;
+    grid-row: 1 / span 2;
     align-self: center;
     color: var(--mare);
     transition: transform 0.2s;
@@ -258,38 +261,30 @@ const showToggleAll = entries.filter(({ item }) => collapsible(item)).length > e
     .years line {
       stroke: var(--linea);
     }
+    /* The text starts beside the title, right under the bar: no empty band under each role. */
     .role {
       display: grid;
       grid-template-columns: var(--label) 1fr;
+      grid-template-rows: auto 1fr;
       column-gap: 1.5rem;
-      align-items: center;
+      align-items: start;
     }
     h3 {
       grid-column: 1;
-    }
-    .head,
-    .static .head {
-      grid-template-columns: 1fr auto;
-    }
-    .what {
-      flex-direction: column;
-    }
-    .when {
-      grid-column: 1;
-      grid-row: 2;
-    }
-    :global(.chevron) {
-      grid-column: 2;
       grid-row: 1 / span 2;
     }
     .bar {
       display: block;
       grid-column: 2;
+      grid-row: 1;
       width: 100%;
       height: 0.75rem;
+      margin-top: 1.1rem;
     }
     .panel {
       grid-column: 2;
+      grid-row: 2;
+      padding-top: 0.6rem;
     }
   }
 

@@ -105,9 +105,17 @@ const choices = [
   .theme label:hover {
     color: var(--ardesia);
   }
+  /* The chosen option is marked, not filled: the download button stays the only solid block. */
   .theme label:has(:checked) {
-    background: var(--mare);
-    color: var(--mare-ink);
+    background: color-mix(in srgb, var(--mare) 14%, var(--superficie));
+    color: var(--mare);
+    box-shadow: inset 0 0 0 1.5px var(--mare);
+    font-weight: 650;
+  }
+  @media (pointer: coarse) {
+    .theme label {
+      min-height: 2.75rem;
+    }
   }
   .theme label:has(:focus-visible) {
     outline: 3px solid var(--focus);

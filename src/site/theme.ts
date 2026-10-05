@@ -41,4 +41,12 @@ export function initThemeSwitch(): void {
     }
     group.hidden = false;
   }
+  // A choice made in another tab applies here too.
+  window.addEventListener('storage', (event) => {
+    if (event.key !== THEME_STORAGE_KEY) return;
+    const choice = readTheme();
+    applyTheme(choice);
+    for (const input of document.querySelectorAll<HTMLInputElement>('[data-theme-switch] input[type="radio"]'))
+      input.checked = input.value === choice;
+  });
 }

@@ -22,7 +22,8 @@
         "username": "ada",
         "url": "https://github.com/ada"
       }
-    ]
+    ],
+    "image": "http://127.0.0.1:4599/photo.jpg"
   },
   "work": [
     {

@@ -20,6 +20,8 @@ interface Props {
 const { resume, labels, pdfUrl } = Astro.props;
 const { basics } = resume;
 const options = resume.meta.themeOptions ?? {};
+/** Mirrors --photo-size below, so the browser downloads the smallest file that is sharp. */
+const PHOTO_SIZES = '(max-width: 30rem) 7rem, clamp(5.5rem, 4rem + 7vw, 10.5rem)';
 const intro = options.intro ?? (basics.summary ? [basics.summary] : []);
 /** "Customer Engineer · Senior Software Developer": each part stays on one line. */
 const roleParts = basics.label?.split(/\s+[·|–—]\s+/).filter(Boolean) ?? [];
@@ -27,7 +29,7 @@ const roleParts = basics.label?.split(/\s+[·|–—]\s+/).filter(Boolean) ?? []
 
 <div class="hero">
   <div class="identity">
-    <Photo src={basics.image} name={basics.name} size={168} eager />
+    <Photo src={basics.image} name={basics.name} size={168} sizes={PHOTO_SIZES} eager />
     <div>
       <h1 class="name">{basics.name}</h1>
       {roleParts.length > 0 && (
@@ -73,7 +75,7 @@ const roleParts = basics.label?.split(/\s+[·|–—]\s+/).filter(Boolean) ?? []
     .identity {
       flex-direction: column;
       align-items: flex-start;
-      --photo-size: 6rem;
+      --photo-size: 7rem;
     }
   }
   .name {
@@ -106,8 +108,7 @@ const roleParts = basics.label?.split(/\s+[·|–—]\s+/).filter(Boolean) ?? []
   }
   .intro {
     margin-top: 2rem;
-    font-size: var(--step-1);
-    line-height: 1.55;
+    line-height: 1.6;
   }
   .intro p:last-child {
     margin-bottom: 0;

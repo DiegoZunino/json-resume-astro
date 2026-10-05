@@ -27,7 +27,7 @@ export const getStaticPaths = (() =>
 
 type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
-const { locale } = Astro.props as Props;
+const { locale } = Astro.props;
 const context = await pageContext(locale, Astro.site);
 const { resume, labels } = context;
 const { basics } = resume;
@@ -38,7 +38,7 @@ const printed = context.sections.filter((section) => !printHidden.has(section.ke
 /** On paper the work section is "Experience" unless the resume names it. */
 const title = (key: string) =>
   key === 'work' && !overrides.work ? labels.print.work : sectionTitle(key, labels, overrides);
-const range = (start?: string, end?: string) => formatRange(start, end, locale, labels.ongoing);
+const range = (start?: string, end?: string) => formatRange(start, end, labels.intl, labels.ongoing);
 const contacts = [
   basics.email && { label: basics.email, href: `mailto:${basics.email}` },
   basics.url && { label: displayUrl(basics.url), href: basics.url },
@@ -76,7 +76,7 @@ const contacts = [
     )}
 
     {printed.map((section) => (
-      <section class={`print-${section.key}`}>
+      <section>
         <h2>{title(section.key)}</h2>
         {section.key === 'work' ? (
           groupByOrganisation(resume.work).map((group) => (
@@ -107,11 +107,11 @@ const contacts = [
         ) : section.key === 'skills' ? (
           <Skills skills={resume.skills} />
         ) : section.kind === 'education' ? (
-          <Education resume={resume} locale={locale} labels={labels} />
+          <Education resume={resume} labels={labels} />
         ) : section.kind === 'extension' ? (
-          <ItemList entries={extensionEntries(section.items, locale, labels.ongoing)} />
+          <ItemList entries={extensionEntries(section.items, { ...labels, reference: context.reference })} />
         ) : (
-          <ItemList entries={entriesFor(section.key, resume, locale, labels.ongoing)} />
+          <ItemList entries={entriesFor(section.key, resume, labels)} />
         )}
       </section>
     ))}
@@ -165,6 +165,16 @@ const contacts = [
   .sheet :global(.tagline) {
     margin: 4mm 0 1mm;
     font-size: 1.1rem;
+  }
+  /* On paper the nodes must stay visible: larger dots on a thinner line. */
+  .sheet :global(.tagline .line) {
+    border-top-width: 1.6pt;
+  }
+  .sheet :global(.tagline .line::before),
+  .sheet :global(.tagline .line::after) {
+    top: -0.4em;
+    border-width: 0.32em;
+    margin-top: -0.8pt;
   }
   h2 {
     margin: 5mm 0 2mm;

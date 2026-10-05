@@ -40,9 +40,13 @@ const links = profiles.filter((profile) => profile.url);
     </span>
   </a>
   {email && (
-    <a class="button" href={`mailto:${email}`}>
+    <a class="button email-button" href={`mailto:${email}`} data-href={email}>
       <Icon name="mail" />
-      <span>{labels.email}</span>
+      <span>
+        {labels.email}
+        {/* Webmail users have no mail client: the address is right there to copy. */}
+        {!showEmail && <span class="detail address-detail">{email}</span>}
+      </span>
     </a>
   )}
   {links.map((profile) => (
@@ -55,7 +59,14 @@ const links = profiles.filter((profile) => profile.url);
 {showEmail && email && (
   <p class="email">
     <span class="address">{email}</span>
-    <button class="copy" type="button" data-copy={email} data-copied={labels.copied} hidden>
+    <button
+      class="copy"
+      type="button"
+      data-copy={email}
+      data-copied={labels.copied}
+      data-failed={labels.copyFailed}
+      hidden
+    >
       {labels.copy}
     </button>
     <span class="status" role="status"></span>
@@ -147,7 +158,10 @@ const links = profiles.filter((profile) => profile.url);
   @media (max-width: 30rem) {
     .actions {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(6.25rem, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(5.25rem, 1fr));
+    }
+    .address-detail {
+      display: none;
     }
     .actions > .primary {
       grid-column: 1 / -1;
@@ -157,17 +171,26 @@ const links = profiles.filter((profile) => profile.url);
       padding-inline: 0.6rem;
     }
   }
+  /* Very narrow screens: the secondary buttons keep their words and drop the icons. */
+  @media (max-width: 25rem) {
+    .actions > :not(.primary) :global(svg) {
+      display: none;
+    }
+  }
   @media (forced-colors: active) {
     .button {
       border-color: ButtonText;
     }
     .primary {
-      border-width: 3px;
+      forced-color-adjust: none;
+      background: ButtonText;
+      color: ButtonFace;
     }
   }
   /* On paper the buttons become plain contact lines; the download button has no meaning there. */
   @media print {
-    .primary,
+    .button.primary,
+    .detail,
     .copy,
     .actions :global(svg) {
       display: none;

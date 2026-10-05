@@ -24,7 +24,7 @@
   --step-4: clamp(2.125rem, 1.4rem + 3.4vw, 3.25rem);
   /* Two widths: the page frame, and the measure for text and lists. */
   --measure: 42rem;
-  --page: 68rem;
+  --page: 64rem;
   --radius: 0.5rem;
 }
 

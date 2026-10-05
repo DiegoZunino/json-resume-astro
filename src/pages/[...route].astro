@@ -25,7 +25,7 @@ export const getStaticPaths = (() =>
 
 type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
-const { locale, page } = Astro.props as Props;
+const { locale, page } = Astro.props;
 const context = await pageContext(locale, Astro.site);
 const { resume, labels } = context;
 const statementUrl = (other: string) => getAbsoluteLocaleUrl(other, labelsFor(other).accessibility.slug);
@@ -34,13 +34,7 @@ const statementUrl = (other: string) => getAbsoluteLocaleUrl(other, labelsFor(ot
 {page === 'home' ? (
   <Web context={context} structuredData>
     <Hero resume={resume} labels={labels} pdfUrl={context.pdfUrl} />
-    <Sections
-      sections={context.sections}
-      resume={resume}
-      locale={locale}
-      labels={labels}
-      reference={context.reference}
-    />
+    <Sections sections={context.sections} resume={resume} labels={labels} reference={context.reference} />
     <SectionShell id="contact" title={labels.sections.contact}>
       <Actions resume={resume} labels={labels} pdfUrl={context.pdfUrl} showEmail />
     </SectionShell>
@@ -62,7 +56,7 @@ const statementUrl = (other: string) => getAbsoluteLocaleUrl(other, labelsFor(ot
       ))}
       <p class="muted small">
         {labels.accessibility.reviewed}{' '}
-        <time datetime={STATEMENT_DATE}>{formatLongDate(new Date(STATEMENT_DATE), locale)}</time>
+        <time datetime={STATEMENT_DATE}>{formatLongDate(new Date(STATEMENT_DATE), labels.intl)}</time>
       </p>
     </article>
   </Web>

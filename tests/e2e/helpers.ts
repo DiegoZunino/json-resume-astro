@@ -1,5 +1,3 @@
-import type { Page } from '@playwright/test';
-
 /** WCAG 2.x relative luminance contrast between two CSS colours (rgb/rgba). */
 export function contrast(a: string, b: string): number {
   const lum = (color: string) => {
@@ -24,7 +22,3 @@ export const PRIVATE_VALUES = [
   'Obiettivo riservato',
   'Private objective',
 ];
-
-export async function bodyBackground(page: Page): Promise<string> {
-  return page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-}

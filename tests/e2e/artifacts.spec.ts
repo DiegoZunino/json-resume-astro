@@ -49,6 +49,8 @@ test.describe('published files', () => {
     await page.goto('/');
     const jsonLd = JSON.parse((await page.locator('script[type="application/ld+json"]').textContent()) ?? '{}');
     expect(jsonLd).toMatchObject({ '@type': 'ProfilePage', mainEntity: { '@type': 'Person', name: 'Ada Esempio' } });
+    // The photo is the site's own optimised copy, never the source URL (or a preview host).
+    expect(jsonLd.mainEntity.image).toMatch(/^https:\/\/example\.org\/_astro\/.+\.webp$/);
     await expect(page.locator('meta[http-equiv="content-security-policy"]')).toHaveAttribute('content', /script-src/);
   });
 });

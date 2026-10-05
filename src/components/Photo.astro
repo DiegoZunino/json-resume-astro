@@ -1,48 +1,33 @@
 ---
 /**
- * Profile photo, optimised at build time from `basics.image`. If there is no photo, or
- * it cannot be fetched, a monogram takes its place so the layout never breaks.
- * The photo sits next to the name, so its alternative text is empty (WCAG H67).
+ * Profile photo (see site/photo.ts). If there is no photo, or it cannot be fetched, a
+ * monogram takes its place so the layout never breaks. The photo sits next to the name,
+ * so its alternative text is empty (WCAG H67).
  */
-import { getImage } from 'astro:assets';
 import { initials } from '../core/text';
+import { optimisedPhoto } from '../site/photo';
 
 interface Props {
   src?: string | undefined;
   name: string;
-  /** Largest displayed size in CSS pixels; the file is generated at twice that size. */
+  /** Largest displayed size in CSS pixels; files are generated up to twice that size. */
   size: number;
+  /** Displayed size for the browser to pick a file (the `sizes` attribute). */
+  sizes?: string;
   class?: string;
   eager?: boolean;
 }
 
-const { src, name, size, class: className, eager = false } = Astro.props;
-
-let image: Awaited<ReturnType<typeof getImage>> | undefined;
-if (src) {
-  try {
-    image = await getImage({
-      src,
-      inferSize: true,
-      width: size * 2,
-      height: size * 2,
-      fit: 'cover',
-      format: 'webp',
-      quality: 82,
-    });
-  } catch (error) {
-    // The production build sets RESUME_STRICT_PHOTO: a missing photo there is an error, not a fallback.
-    if (process.env.RESUME_STRICT_PHOTO === '1')
-      throw new Error(`[photo] ${src} could not be processed`, { cause: error });
-    console.warn(`[photo] ${src} could not be processed, using a monogram: ${(error as Error).message}`);
-  }
-}
+const { src, name, size, sizes = `${size}px`, class: className, eager = false } = Astro.props;
+const image = await optimisedPhoto(src, size);
 ---
 
 {image ? (
   <img
     class:list={['photo', className]}
     src={image.src}
+    srcset={image.srcSet.attribute}
+    sizes={sizes}
     width={size}
     height={size}
     alt=""

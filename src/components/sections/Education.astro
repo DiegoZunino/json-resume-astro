@@ -2,17 +2,16 @@
 /** Education, certifications and languages: what a recruiter checks together. */
 import { formatDate, formatRange } from '../../core/dates';
 import type { Resume } from '../../core/schema';
-import { joinParts } from '../../core/text';
+import { joinParts, languageLine } from '../../core/text';
 import type { Labels } from '../../i18n/labels';
 
 interface Props {
   resume: Resume;
-  locale: string;
   labels: Labels;
 }
 
-const { resume, locale, labels } = Astro.props;
-const date = (value?: string) => formatDate(value, locale, labels.ongoing);
+const { resume, labels } = Astro.props;
+const date = (value?: string) => formatDate(value, labels.intl, labels.ongoing);
 const certificateDetails = (certificate: Resume['certificates'][number]) =>
   joinParts(
     [
@@ -31,7 +30,7 @@ const certificateDetails = (certificate: Resume['certificates'][number]) =>
       <dd>
         {entry.url ? <a href={entry.url}>{entry.institution}</a> : entry.institution}
         {(entry.startDate || entry.endDate) && (
-          <span class="muted"> · {formatRange(entry.startDate, entry.endDate, locale, labels.ongoing)}</span>
+          <span class="muted"> · {formatRange(entry.startDate, entry.endDate, labels.intl, labels.ongoing)}</span>
         )}
       </dd>
     </div>
@@ -54,11 +53,7 @@ const certificateDetails = (certificate: Resume['certificates'][number]) =>
   {resume.languages.length > 0 && (
     <div>
       <dt>{labels.sections.languages}</dt>
-      <dd>
-        {resume.languages
-          .map((entry) => joinParts([entry.language, entry.fluency && `(${entry.fluency})`], ' '))
-          .join(', ')}
-      </dd>
+      <dd>{resume.languages.map((entry) => languageLine(entry.language, entry.fluency)).join(', ')}</dd>
     </div>
   )}
 </dl>

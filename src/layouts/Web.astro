@@ -7,6 +7,7 @@ import { referenceDate } from '../core/dates';
 import { profilePage } from '../core/jsonld';
 import { joinParts } from '../core/text';
 import { alternatesFor, ogLocale, type PageContext } from '../site/context';
+import { optimisedPhoto } from '../site/photo';
 import Document, { type Alternate } from './Document.astro';
 
 interface Props {
@@ -24,6 +25,9 @@ const { context, title, canonical, alternates, structuredData = false } = Astro.
 const { resume, labels, locale } = context;
 const pageTitle = title ?? joinParts([resume.basics.name, resume.basics.label]);
 const updated = resume.meta.lastModified ? referenceDate(resume.meta.lastModified, new Date(0)) : undefined;
+// Same size as the hero photo, so this is the same file, not a second download.
+const photo = structuredData ? await optimisedPhoto(resume.basics.image, 168) : undefined;
+const photoUrl = photo && Astro.site ? new URL(photo.src, Astro.site).href : undefined;
 ---
 
 <Document
@@ -34,7 +38,7 @@ const updated = resume.meta.lastModified ? referenceDate(resume.meta.lastModifie
   alternates={alternates ?? alternatesFor((other) => getAbsoluteLocaleUrl(other))}
   ogImage={context.ogImageUrl}
   ogLocale={ogLocale(locale)}
-  jsonLd={structuredData ? profilePage(resume, context.absoluteHomeUrl, resume.basics.image) : undefined}
+  jsonLd={structuredData ? profilePage(resume, context.absoluteHomeUrl, photoUrl) : undefined}
   dataAlternate={context.dataUrl}
 >
   <TopBar labels={labels} otherLocales={context.otherLocales} />
@@ -43,7 +47,6 @@ const updated = resume.meta.lastModified ? referenceDate(resume.meta.lastModifie
   </main>
   <Footer
     labels={labels}
-    locale={locale}
     updated={updated}
     repository={context.repository}
     accessibilityUrl={context.accessibilityUrl}

@@ -10,7 +10,6 @@ import Icon from './Icon.astro';
 
 interface Props {
   labels: Labels;
-  locale: string;
   updated: Date | undefined;
   repository: string | undefined;
   accessibilityUrl: string;
@@ -18,7 +17,7 @@ interface Props {
   otherLocales: LocaleLink[];
 }
 
-const { labels, locale, updated, repository, accessibilityUrl, dataUrl, otherLocales } = Astro.props;
+const { labels, updated, repository, accessibilityUrl, dataUrl, otherLocales } = Astro.props;
 ---
 
 <footer class="footer page">
@@ -48,7 +47,7 @@ const { labels, locale, updated, repository, accessibilityUrl, dataUrl, otherLoc
       {updated && (
         <span>
           {labels.footer.updated}{' '}
-          <time datetime={updated.toISOString().slice(0, 10)}>{formatLongDate(updated, locale)}</time>
+          <time datetime={updated.toISOString().slice(0, 10)}>{formatLongDate(updated, labels.intl)}</time>
         </span>
       )}
       <a href={accessibilityUrl}>{labels.footer.accessibility}</a>

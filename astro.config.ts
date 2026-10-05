@@ -83,7 +83,11 @@ export default defineConfig({
 
   image: {
     // Profile photos are remote (basics.image is a URL): optimise them at build time.
-    remotePatterns: [{ protocol: 'https' }],
+    // The example photo is served locally by scripts/build-fixtures.mjs, only in that build.
+    remotePatterns: [
+      { protocol: 'https' },
+      ...(process.env.FIXTURE_PHOTO_SERVER === '1' ? [{ protocol: 'http', hostname: '127.0.0.1', port: '4599' }] : []),
+    ],
   },
 
   security: {
@@ -91,6 +95,7 @@ export default defineConfig({
       algorithm: 'SHA-256',
       directives: [
         "default-src 'self'",
+        "object-src 'none'",
         "img-src 'self' data:",
         "font-src 'self'",
         "base-uri 'self'",

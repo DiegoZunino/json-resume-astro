@@ -6,36 +6,36 @@
   - group "CV e contatti":
     - link "Scarica il CV PDF, italiano":
       - /url: /cv-it.pdf
-    - link "Email":
+    - link "Email ada@example.org":
       - /url: mailto:ada@example.org
     - link "LinkedIn":
       - /url: https://www.linkedin.com/in/ada-esempio
     - link "GitHub":
       - /url: https://github.com/ada
   - paragraph: "Persona di esempio per i test: guida un team di prodotto, scrive codice quando serve e parla a conferenze. Copre tutte le sezioni dello schema JSON Resume, comprese le estensioni."
-  - region "Percorso":
-    - heading "Percorso" [level=2]
+  - region "Esperienza":
+    - heading "Esperienza" [level=2]
     - button "Apri tutti i ruoli"
     - list:
       - listitem:
-        - heading /Engineering Manager , Azienda Uno , mar \d+ – oggi/ [level=3]:
-          - button /Engineering Manager , Azienda Uno , mar \d+ – oggi/ [expanded]
+        - heading /Engineering Manager, Azienda Uno, mar \d+ – oggi/ [level=3]:
+          - button /Engineering Manager, Azienda Uno, mar \d+ – oggi/ [expanded]
         - paragraph: Software house di prodotti per la logistica.
         - paragraph: Guida di un team di prodotto di otto persone.
         - list:
           - listitem: Roadmap trimestrale condivisa con prodotto e vendite.
           - listitem: Rilasci settimanali al posto di quelli trimestrali.
       - listitem:
-        - heading /Tech Lead , Azienda Uno , giu \d+ – feb \d+/ [level=3]:
-          - button /Tech Lead , Azienda Uno , giu \d+ – feb \d+/ [expanded]
+        - heading /Tech Lead, Azienda Uno, giu \d+ – feb \d+/ [level=3]:
+          - button /Tech Lead, Azienda Uno, giu \d+ – feb \d+/ [expanded]
         - paragraph: Riferimento tecnico del team, revisione del codice e delle architetture.
         - list:
           - listitem: Introduzione della revisione del codice obbligatoria.
       - listitem:
-        - heading /Software Engineer , Azienda Due , \d+ – mag \d+/ [level=3]:
-          - button /Software Engineer , Azienda Due , \d+ – mag \d+/
+        - heading /Software Engineer, Azienda Due, \d+ – mag \d+/ [level=3]:
+          - button /Software Engineer, Azienda Due, \d+ – mag \d+/
       - listitem:
-        - heading "Sviluppatrice , Progetti personali" [level=3]
+        - heading "Sviluppatrice, Progetti personali" [level=3]
         - paragraph: "Ruolo senza date: deve restare visibile anche senza barra."
   - region "Talk":
     - heading "Talk" [level=2]
@@ -122,5 +122,5 @@
       - /url: https://github.com/ada
     - paragraph:
       - text: ada@example.org
-      - button "Copia"
+      - button "Copia l’indirizzo"
       - status

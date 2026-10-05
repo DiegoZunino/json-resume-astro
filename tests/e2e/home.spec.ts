@@ -11,6 +11,14 @@ test.describe('first screen', () => {
     await expect(page.getByRole('link', { name: 'Email' }).first()).toBeInViewport();
   });
 
+  test('shows the photo, optimised and sized for the screen', async ({ page }) => {
+    await page.goto('/');
+    const photo = page.locator('img.photo');
+    await expect(photo).toHaveAttribute('src', /^\/_astro\/.+\.webp$/);
+    await expect(photo).toHaveAttribute('srcset', /\d+w,/);
+    expect(await photo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
+  });
+
   test('has a stable accessible structure', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('main')).toMatchAriaSnapshot({ name: 'main.aria.yml' });
@@ -20,7 +28,7 @@ test.describe('first screen', () => {
 test.describe('timeline', () => {
   test('opens the two most recent roles; a click toggles a role', async ({ page }) => {
     await page.goto('/');
-    const roles = page.getByRole('region', { name: 'Percorso' }).getByRole('button', { expanded: true });
+    const roles = page.getByRole('region', { name: 'Esperienza' }).getByRole('button', { expanded: true });
     await expect(roles).toHaveCount(2);
     const third = page.getByRole('button', { name: /Software Engineer/ });
     await expect(third).toHaveAttribute('aria-expanded', 'false');
@@ -31,7 +39,7 @@ test.describe('timeline', () => {
 
   test('"open all" expands and collapses every role', async ({ page }) => {
     await page.goto('/');
-    const section = page.getByRole('region', { name: 'Percorso' });
+    const section = page.getByRole('region', { name: 'Esperienza' });
     await section.getByRole('button', { name: 'Apri tutti' }).click();
     await expect(section.getByRole('button', { expanded: false })).toHaveCount(0);
     await section.getByRole('button', { name: 'Chiudi tutti' }).click();
@@ -69,9 +77,9 @@ test.describe('languages and pages', () => {
   test('links the source code, the data and the accessibility statement from the footer', async ({ page }) => {
     await page.goto('/');
     const footer = page.getByRole('contentinfo');
-    await expect(footer).toContainText('piccolo progetto open source');
+    await expect(footer).toContainText('progetto open source');
     await expect(footer.getByRole('link', { name: 'Il codice è su GitHub' })).toHaveAttribute('href', /github\.com/);
-    await expect(footer.getByRole('link', { name: 'JSON Resume' })).toHaveAttribute('href', '/resume.json');
+    await expect(footer.getByRole('link', { name: 'I dati: resume.json' })).toHaveAttribute('href', '/resume.json');
     await expect(footer.locator('time')).toHaveAttribute('datetime', '2026-10-05');
     await footer.getByRole('link', { name: 'Accessibilità' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Dichiarazione di accessibilità');
@@ -109,7 +117,7 @@ test.describe('contact', () => {
     await page.goto('/');
     const contact = page.getByRole('region', { name: 'Contatti' });
     await expect(contact.getByText('ada@example.org', { exact: true })).toBeVisible();
-    await contact.getByRole('button', { name: 'Copia' }).click();
+    await contact.getByRole('button', { name: 'Copia l’indirizzo' }).click();
     await expect(contact.getByRole('status')).toHaveText('Indirizzo copiato');
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('ada@example.org');
   });
