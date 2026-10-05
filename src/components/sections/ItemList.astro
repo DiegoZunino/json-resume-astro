@@ -18,7 +18,7 @@ interface Props {
 const { entries } = Astro.props;
 ---
 
-<ul class="entries measure-wide">
+<ul class="entries">
   {entries.map((entry) => (
     <li>
       <p class:list={['title', { plain: !entry.url && !entry.meta && !entry.summary && !entry.points?.length }]}>
@@ -41,7 +41,7 @@ const { entries } = Astro.props;
   .entries {
     list-style: none;
     padding: 0;
-    max-width: 52rem;
+    max-width: var(--measure);
   }
   .entries > li {
     padding: 0.75rem 0;
@@ -62,6 +62,14 @@ const { entries } = Astro.props;
   }
   .summary {
     margin: 0.35rem 0 0;
+  }
+  /* On paper (the PDF and Ctrl+P): no rules between entries, just a little air. */
+  @media print {
+    .entries > li,
+    .entries > li:last-child {
+      padding: 0 0 1.4mm;
+      border: 0;
+    }
   }
   .points {
     margin-top: 0.35rem;

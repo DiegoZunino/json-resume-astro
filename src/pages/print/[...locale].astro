@@ -32,7 +32,12 @@ const context = await pageContext(locale, Astro.site);
 const { resume, labels } = context;
 const { basics } = resume;
 const options = resume.meta.themeOptions ?? {};
-const title = (key: string) => sectionTitle(key, labels, options.labels ?? {});
+const overrides = options.labels ?? {};
+const printHidden = new Set(options.printHide ?? []);
+const printed = context.sections.filter((section) => !printHidden.has(section.key));
+/** On paper the work section is "Experience" unless the resume names it. */
+const title = (key: string) =>
+  key === 'work' && !overrides.work ? labels.print.work : sectionTitle(key, labels, overrides);
 const range = (start?: string, end?: string) => formatRange(start, end, locale, labels.ongoing);
 const contacts = [
   basics.email && { label: basics.email, href: `mailto:${basics.email}` },
@@ -65,18 +70,19 @@ const contacts = [
 
     {basics.summary && (
       <section>
-        <h2>{labels.profile}</h2>
+        <h2>{labels.print.profile}</h2>
         <p>{basics.summary}</p>
       </section>
     )}
 
-    {context.sections.map((section) => (
+    {printed.map((section) => (
       <section class={`print-${section.key}`}>
         <h2>{title(section.key)}</h2>
         {section.key === 'work' ? (
           groupByOrganisation(resume.work).map((group) => (
             <div class="org">
               {group.roles.length > 1 && <h3 class="org-name">{group.name}</h3>}
+              {group.roles[0]?.description && <p class="org-about">{group.roles[0].description}</p>}
               {group.roles.map((role) => (
                 <div class="job">
                   <div class="job-head">
@@ -84,9 +90,7 @@ const contacts = [
                       {role.position}
                       {group.roles.length === 1 && role.name && <span class="job-org"> · {role.name}</span>}
                     </h3>
-                    <span class="job-when">
-                      {joinParts([range(role.startDate, role.endDate), group.roles.length === 1 && role.location])}
-                    </span>
+                    <span class="job-when">{joinParts([range(role.startDate, role.endDate), role.location])}</span>
                   </div>
                   {role.summary && <p>{role.summary}</p>}
                   {role.highlights?.length ? (
@@ -182,6 +186,11 @@ const contacts = [
     margin: 2mm 0 1mm;
     font-weight: 650;
   }
+  .org-about {
+    margin: 0 0 1mm;
+    color: var(--nebbia);
+    font-size: 0.92rem;
+  }
   .org .job {
     break-inside: avoid;
     margin-bottom: 2mm;
@@ -218,8 +227,7 @@ const contacts = [
   .job li {
     margin-bottom: 0.4mm;
   }
-  section :global(.pairs > div),
-  section :global(.entries > li) {
+  section :global(.pairs > div) {
     padding: 1mm 0;
   }
   section :global(.pairs),
@@ -227,8 +235,7 @@ const contacts = [
     max-width: none;
   }
   /* The section title already draws a rule above the first entry. */
-  section :global(.pairs > div:first-child),
-  section :global(.entries > li:first-child) {
+  section :global(.pairs > div:first-child) {
     border-top: 0;
   }
 </style>

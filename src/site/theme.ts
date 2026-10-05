@@ -1,15 +1,15 @@
 /**
- * Theme switch: automatic (follows the system) → light → dark → automatic.
+ * Theme choice: Auto (follows the system), Light, Dark — three native radio buttons.
  * The choice is stored in localStorage and applied before paint by the inline script
- * in the document head; without JavaScript the button stays hidden and the page simply
+ * in the document head; without JavaScript the control stays hidden and the page simply
  * follows the system.
  */
 import { THEME_STORAGE_KEY } from './theme-key';
 
 type Choice = 'system' | 'light' | 'dark';
-const next: Record<Choice, Choice> = { system: 'light', light: 'dark', dark: 'system' };
+const isChoice = (value: string): value is Choice => value === 'system' || value === 'light' || value === 'dark';
 
-function read(): Choice {
+export function readTheme(): Choice {
   try {
     const value = localStorage.getItem(THEME_STORAGE_KEY);
     return value === 'light' || value === 'dark' ? value : 'system';
@@ -18,7 +18,7 @@ function read(): Choice {
   }
 }
 
-function apply(choice: Choice): void {
+export function applyTheme(choice: Choice): void {
   const root = document.documentElement;
   if (choice === 'system') delete root.dataset.theme;
   else root.dataset.theme = choice;
@@ -31,19 +31,14 @@ function apply(choice: Choice): void {
 }
 
 export function initThemeSwitch(): void {
-  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-theme-switch]')) {
-    const text = button.querySelector<HTMLElement>('[data-theme-text]');
-    const render = (choice: Choice) => {
-      const state = button.dataset[choice] ?? choice;
-      if (text) text.textContent = `${button.dataset.label ?? 'Theme'}: ${state}`;
-    };
-    let choice = read();
-    render(choice);
-    button.hidden = false;
-    button.addEventListener('click', () => {
-      choice = next[choice];
-      apply(choice);
-      render(choice);
-    });
+  const current = readTheme();
+  for (const group of document.querySelectorAll<HTMLFieldSetElement>('[data-theme-switch]')) {
+    for (const input of group.querySelectorAll<HTMLInputElement>('input[type="radio"]')) {
+      input.checked = input.value === current;
+      input.addEventListener('change', () => {
+        if (input.checked && isChoice(input.value)) applyTheme(input.value);
+      });
+    }
+    group.hidden = false;
   }
 }

@@ -51,6 +51,7 @@ Opzioni del tema, tutte facoltative, in `meta.themeOptions` del JSON Resume:
 | `description`           | meta description (altrimenti il sommario accorciato)                   |
 | `labels`                | titoli delle sezioni, anche delle estensioni (`{ "x-talks": "Talk" }`) |
 | `order`, `hide`         | ordine delle sezioni e sezioni da non mostrare                         |
+| `printHide`             | sezioni mostrate nella pagina ma non nel PDF (per tenerlo corto)       |
 | `expanded`              | quanti ruoli recenti restano aperti (predefinito 2)                    |
 
 Esempio completo: [`fixtures/resume.it.json`](fixtures/resume.it.json).
@@ -103,13 +104,30 @@ docs/adr/        decisioni di architettura
 
 Le scelte sono motivate nelle [ADR](docs/adr/): Astro statico, contratto dei dati, privacy, PDF, pubblicazione, accessibilità.
 
+## Variabili d'ambiente
+
+Si leggono dall'ambiente o da un file `.env` nella radice del progetto (mai versionato).
+
+| Variabile                | Uso                                                                                     |
+| ------------------------ | --------------------------------------------------------------------------------------- |
+| `SITE_URL`               | indirizzo pubblico del sito (URL canonici, sitemap, anteprime)                          |
+| `RESUME_SOURCE_<LINGUA>` | sorgente di una lingua, file o URL (es. `RESUME_SOURCE_EN`); vince sulla configurazione |
+| `RESUME_STRICT_PHOTO`    | `1`: una foto che non si scarica ferma la build invece di usare il monogramma           |
+| `CONTRACT_FILES`         | file in più da verificare contro lo schema ufficiale nei test di contratto              |
+
 ## Pubblicazione
 
-`.github/workflows/deploy.yml` costruisce dai dati veri e pubblica su Netlify, solo dopo i controlli. Il sito si ricostruisce quando il CV cambia: chi aggiorna il gist invia un `repository_dispatch` di tipo `resume-updated` con la revisione; in più un controllo orario confronta la revisione del gist con quella pubblicata ([ADR 5](docs/adr/0005-deploy-and-updates.md)).
+`.github/workflows/deploy.yml` pubblica su Netlify in tre job con privilegi separati: **build** (npm e Chromium, dai dati veri, senza alcun segreto), **publish** (solo `curl` e `jq` con il token, attende che Netlify dichiari il deploy pronto), **verify** (il sito pubblico serve la revisione appena costruita, la foto e il PDF). Parte dopo che `ci` è passato su `main`; il sito si ricostruisce anche quando il CV cambia: chi aggiorna il gist invia un `repository_dispatch` di tipo `resume-updated` con la revisione, e un controllo orario confronta la revisione del gist con quella pubblicata ([ADR 5](docs/adr/0005-deploy-and-updates.md)).
 
 Variabili: `SITE_URL`, `RESUME_GIST` (oppure `RESUME_SOURCE_<LINGUA>`). Segreti: `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`.
 
 **Privacy.** Se la sorgente è pubblica (un gist), i campi privati vanno tolti _prima_ di pubblicarla: la configurazione `private` protegge il sito, non la sorgente.
+
+<!-- BOZZA da validare con Diego prima della pubblicazione del repository -->
+
+## Come è stato costruito
+
+Il progetto è sviluppato con un assistente AI (Claude) come strumento di lavoro: requisiti, scelte di fondo e revisione finale sono miei, mentre l'assistente ha scritto gran parte del codice e dei test sotto quelle indicazioni. Ogni modifica passa dagli stessi controlli automatici di qualunque contributo (tipi, test, accessibilità, sicurezza), e le decisioni sono motivate nelle [ADR](docs/adr/). I commit scritti con l'assistente lo dichiarano con `Co-Authored-By`.
 
 ## Prossimi esperimenti
 

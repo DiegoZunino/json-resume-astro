@@ -31,6 +31,9 @@ if (src) {
       quality: 82,
     });
   } catch (error) {
+    // The production build sets RESUME_STRICT_PHOTO: a missing photo there is an error, not a fallback.
+    if (process.env.RESUME_STRICT_PHOTO === '1')
+      throw new Error(`[photo] ${src} could not be processed`, { cause: error });
     console.warn(`[photo] ${src} could not be processed, using a monogram: ${(error as Error).message}`);
   }
 }

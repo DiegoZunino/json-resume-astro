@@ -20,11 +20,13 @@ beforeAll(async () => {
 });
 
 describe('Timeline', () => {
-  it('renders every role expanded, as an accordion of headings and buttons', async () => {
+  it('renders every role expanded; only roles with details are accordion buttons', async () => {
     const html = await container.renderToString(Timeline, {
       props: { work: resume.work, locale: 'it', labels, reference: new Date(Date.UTC(2026, 9, 5)), expanded: 2 },
     });
-    expect(html.match(/<h3[^>]*><button[^>]*aria-expanded="true"/g)).toHaveLength(resume.work.length);
+    const detailed = resume.work.filter((role) => role.highlights?.length).length;
+    expect(html.match(/<h3[^>]*><button[^>]*aria-expanded="true"/g)).toHaveLength(detailed);
+    expect(html.match(/<h3[^>]*><span class="head/g)).toHaveLength(resume.work.length - detailed);
     expect(html).toContain('Ruolo senza date');
     expect(html.match(/class="span"/g)).toHaveLength(3);
     expect(html).not.toMatch(/style="/);

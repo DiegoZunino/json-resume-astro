@@ -1,8 +1,7 @@
 ---
-/** Skip link, theme switch and language links. */
+/** Skip link, theme choice and language links. */
 import type { LocaleLink } from '../site/context';
 import type { Labels } from '../i18n/labels';
-import Icon from './Icon.astro';
 
 interface Props {
   labels: Labels;
@@ -10,25 +9,27 @@ interface Props {
 }
 
 const { labels, otherLocales } = Astro.props;
+const choices = [
+  { value: 'system', label: labels.theme.system },
+  { value: 'light', label: labels.theme.light },
+  { value: 'dark', label: labels.theme.dark },
+] as const;
 ---
 
 <header class="topbar page">
   <a class="skip" href="#content">
     {labels.skipToContent}
   </a>
-  <button
-    class="theme"
-    type="button"
-    data-theme-switch
-    data-label={labels.theme.label}
-    data-system={labels.theme.system}
-    data-light={labels.theme.light}
-    data-dark={labels.theme.dark}
-    hidden
-  >
-    <Icon name="theme" size={18} />
-    <span data-theme-text>{labels.theme.label}</span>
-  </button>
+  <!-- Without JavaScript the choice could not be kept, so the page follows the system and the control stays hidden. -->
+  <fieldset class="theme" data-theme-switch hidden>
+    <legend class="visually-hidden">{labels.theme.legend}</legend>
+    {choices.map((choice) => (
+      <label>
+        <input type="radio" name="theme" value={choice.value} checked={choice.value === 'system'} />
+        <span>{choice.label}</span>
+      </label>
+    ))}
+  </fieldset>
   {otherLocales.length > 0 && (
     <nav aria-label={labels.languageNav}>
       <ul>
@@ -54,10 +55,10 @@ const { labels, otherLocales } = Astro.props;
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 1.25rem;
+    gap: 1rem;
     min-height: 3.5rem;
     padding-top: 0.75rem;
-    font-size: 0.95rem;
+    font-size: var(--step--1);
   }
   .skip {
     position: absolute;
@@ -72,21 +73,45 @@ const { labels, otherLocales } = Astro.props;
   .skip:focus {
     top: 0.75rem;
   }
+  /* Segmented control: three native radios, so arrow keys and screen readers work as usual. */
   .theme {
     display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    min-height: 2.75rem;
-    padding: 0 0.6rem;
-    border: 0;
+    margin: 0;
+    padding: 2px;
+    border: 1px solid var(--linea);
     border-radius: var(--radius);
-    background: transparent;
-    color: var(--ardesia);
-    font: inherit;
+    background: var(--superficie);
+  }
+  .theme label {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.25rem;
+    min-width: 2.75rem;
+    justify-content: center;
+    padding: 0 0.7rem;
+    border-radius: calc(var(--radius) - 2px);
+    color: var(--nebbia);
+    font-weight: 560;
     cursor: pointer;
   }
-  .theme:hover {
-    background: color-mix(in srgb, var(--mare) 9%, transparent);
+  .theme input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .theme label:hover {
+    color: var(--ardesia);
+  }
+  .theme label:has(:checked) {
+    background: var(--mare);
+    color: var(--mare-ink);
+  }
+  .theme label:has(:focus-visible) {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
   }
   nav ul {
     display: flex;
@@ -98,6 +123,14 @@ const { labels, otherLocales } = Astro.props;
     display: inline-flex;
     align-items: center;
     min-height: 2.75rem;
+    font-weight: 560;
+  }
+  @media (forced-colors: active) {
+    .theme label:has(:checked) {
+      forced-color-adjust: none;
+      background: Highlight;
+      color: HighlightText;
+    }
   }
   @media print {
     .topbar {

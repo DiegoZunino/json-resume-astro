@@ -22,7 +22,8 @@
   --step-2: 1.5rem;
   --step-3: 2.125rem;
   --step-4: clamp(2.125rem, 1.4rem + 3.4vw, 3.25rem);
-  --measure: 40rem;
+  /* Two widths: the page frame, and the measure for text and lists. */
+  --measure: 42rem;
   --page: 68rem;
   --radius: 0.5rem;
 }
@@ -168,5 +169,33 @@ ul {
     --gru: CanvasText;
     --barra: CanvasText;
     --linea: CanvasText;
+  }
+}
+
+/* Dark theme: the photo is toned down a little so it does not glare on the dark page. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .photo {
+    filter: brightness(0.88);
+  }
+}
+:root[data-theme='dark'] .photo {
+  filter: brightness(0.88);
+}
+
+/* Printing the web page (Ctrl+P): always the light palette on white paper. */
+@media print {
+  :root:root {
+    --ardesia: #22303c;
+    --mare: #1f4e79;
+    --mare-ink: #ffffff;
+    --pietra: #ffffff;
+    --superficie: #ffffff;
+    --nebbia: #56636e;
+    --linea: #cfd7de;
+    --barra: #8fa6bb;
+    color-scheme: light;
+  }
+  :root:root .photo {
+    filter: none;
   }
 }

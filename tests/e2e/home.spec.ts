@@ -40,7 +40,7 @@ test.describe('timeline', () => {
 
   test('keeps a role without dates', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('button', { name: /Sviluppatrice/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Sviluppatrice/ })).toBeVisible();
   });
 });
 
@@ -50,7 +50,7 @@ test.describe('without JavaScript', () => {
   test('shows every role and hides the controls that need a script', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByText('Servizi di integrazione con i sistemi dei clienti.')).toBeVisible();
-    await expect(page.getByRole('button', { name: /Tema/ })).toBeHidden();
+    await expect(page.getByRole('group', { name: 'Tema' })).toBeHidden();
     await expect(page.getByRole('button', { name: 'Apri tutti' })).toBeHidden();
   });
 });
@@ -69,7 +69,8 @@ test.describe('languages and pages', () => {
   test('links the source code, the data and the accessibility statement from the footer', async ({ page }) => {
     await page.goto('/');
     const footer = page.getByRole('contentinfo');
-    await expect(footer.getByRole('link', { name: 'codice sorgente' })).toHaveAttribute('href', /github\.com/);
+    await expect(footer).toContainText('piccolo progetto open source');
+    await expect(footer.getByRole('link', { name: 'Il codice è su GitHub' })).toHaveAttribute('href', /github\.com/);
     await expect(footer.getByRole('link', { name: 'JSON Resume' })).toHaveAttribute('href', '/resume.json');
     await expect(footer.locator('time')).toHaveAttribute('datetime', '2026-10-05');
     await footer.getByRole('link', { name: 'Accessibilità' }).click();
@@ -85,18 +86,31 @@ test.describe('languages and pages', () => {
 });
 
 test.describe('theme', () => {
-  test('cycles automatic → light → dark and remembers the choice', async ({ page }) => {
+  test('Auto, Chiaro, Scuro: a radio group that remembers the choice', async ({ page }) => {
     await page.goto('/');
-    const toggle = page.getByRole('button', { name: /Tema/ });
-    await expect(toggle).toHaveText(/automatico/);
-    await toggle.click();
+    const group = page.getByRole('group', { name: 'Tema' });
+    await expect(group.getByRole('radio', { name: 'Auto' })).toBeChecked();
+    await group.getByRole('radio', { name: 'Chiaro' }).check();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-    await toggle.click();
+    await page.keyboard.press('ArrowRight');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-    await expect(page.getByRole('button', { name: /Tema: scuro/ })).toBeVisible();
-    await page.getByRole('button', { name: /Tema/ }).click();
+    await expect(page.getByRole('radio', { name: 'Scuro' })).toBeChecked();
+    await page.getByRole('radio', { name: 'Auto' }).check();
     await expect(page.locator('html')).not.toHaveAttribute('data-theme', /.+/);
+  });
+});
+
+test.describe('contact', () => {
+  test.use({ permissions: ['clipboard-read', 'clipboard-write'] });
+
+  test('shows the address in full and copies it, announcing the result', async ({ page }) => {
+    await page.goto('/');
+    const contact = page.getByRole('region', { name: 'Contatti' });
+    await expect(contact.getByText('ada@example.org', { exact: true })).toBeVisible();
+    await contact.getByRole('button', { name: 'Copia' }).click();
+    await expect(contact.getByRole('status')).toHaveText('Indirizzo copiato');
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('ada@example.org');
   });
 });

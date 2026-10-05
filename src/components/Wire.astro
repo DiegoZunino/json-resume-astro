@@ -29,7 +29,8 @@ const { from, to, animate = false, class: className } = Astro.props;
 <style>
   .wire {
     display: grid;
-    grid-template-columns: minmax(2.5em, 1fr) auto;
+    grid-template-columns: minmax(2.5em, 6em) auto;
+    justify-content: start;
     align-items: center;
     column-gap: 0.55em;
     row-gap: 0.2em;
@@ -43,6 +44,16 @@ const { from, to, animate = false, class: className } = Astro.props;
   }
   .to {
     text-wrap: balance;
+  }
+  /* Narrow screens: one column; the line gets its own row, the destination the full width. */
+  @media (max-width: 30rem) {
+    .wire {
+      grid-template-columns: 1fr;
+      row-gap: 0.5em;
+    }
+    .line {
+      width: 6em;
+    }
   }
   .line {
     position: relative;

@@ -9,7 +9,8 @@ import Actions from '../components/Actions.astro';
 import Hero from '../components/Hero.astro';
 import Sections from '../components/Sections.astro';
 import SectionShell from '../components/sections/SectionShell.astro';
-import { labelsFor } from '../i18n/labels';
+import { formatLongDate } from '../core/dates';
+import { labelsFor, STATEMENT_DATE } from '../i18n/labels';
 import Web from '../layouts/Web.astro';
 import { alternatesFor, locales, pageContext, routeParam } from '../site/context';
 
@@ -41,7 +42,7 @@ const statementUrl = (other: string) => getAbsoluteLocaleUrl(other, labelsFor(ot
       reference={context.reference}
     />
     <SectionShell id="contact" title={labels.sections.contact}>
-      <Actions resume={resume} labels={labels} pdfUrl={context.pdfUrl} label={labels.sections.contact} showEmail />
+      <Actions resume={resume} labels={labels} pdfUrl={context.pdfUrl} showEmail />
     </SectionShell>
   </Web>
 ) : (
@@ -59,6 +60,10 @@ const statementUrl = (other: string) => getAbsoluteLocaleUrl(other, labelsFor(ot
       {labels.accessibility.paragraphs(resume.basics.email).map((paragraph) => (
         <p>{paragraph}</p>
       ))}
+      <p class="muted small">
+        {labels.accessibility.reviewed}{' '}
+        <time datetime={STATEMENT_DATE}>{formatLongDate(new Date(STATEMENT_DATE), locale)}</time>
+      </p>
     </article>
   </Web>
 )}

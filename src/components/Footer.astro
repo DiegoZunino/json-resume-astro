@@ -1,8 +1,12 @@
 ---
-/** Last-updated date, how the site is built (with a link to its source), accessibility. */
+/**
+ * What the site is (a small open-source project, with a link to its code and data),
+ * when it was updated, the accessibility statement and the other languages.
+ */
 import { formatLongDate } from '../core/dates';
-import type { Labels } from '../i18n/labels';
+import { hostName, type Labels } from '../i18n/labels';
 import type { LocaleLink } from '../site/context';
+import Icon from './Icon.astro';
 
 interface Props {
   labels: Labels;
@@ -18,49 +22,81 @@ const { labels, locale, updated, repository, accessibilityUrl, dataUrl, otherLoc
 ---
 
 <footer class="footer page">
-  <p>
-    {updated && (
-      <>
-        {labels.footer.updated}{' '}
-        <time datetime={updated.toISOString().slice(0, 10)}>{formatLongDate(updated, locale)}</time>
-        <span aria-hidden="true"> · </span>
-      </>
+  <div class="inner">
+    {repository ? (
+      <div class="project">
+        <p class="measure">{labels.footer.project}</p>
+        <p class="links">
+          <a class="source" href={repository}>
+            <Icon name="code" size={18} />
+            <span>{labels.footer.source(hostName(repository))}</span>
+          </a>
+          <a href={dataUrl} type="application/json">
+            {labels.footer.data}
+          </a>
+        </p>
+      </div>
+    ) : (
+      <p>
+        {labels.footer.builtWith}{' '}
+        <a href={dataUrl} type="application/json">
+          {labels.footer.data}
+        </a>
+      </p>
     )}
-    {labels.footer.builtWith}{' '}
-    <a href={dataUrl} type="application/json">
-      {labels.footer.data}
-    </a>
-    {repository && (
-      <>
-        <span aria-hidden="true"> · </span>
-        <a href={repository}>{labels.footer.source}</a>
-      </>
-    )}
-  </p>
-  <p>
-    <a href={accessibilityUrl}>{labels.footer.accessibility}</a>
-    {otherLocales.map((link) => (
-      <>
-        <span aria-hidden="true"> · </span>
+    <p class="meta">
+      {updated && (
+        <span>
+          {labels.footer.updated}{' '}
+          <time datetime={updated.toISOString().slice(0, 10)}>{formatLongDate(updated, locale)}</time>
+        </span>
+      )}
+      <a href={accessibilityUrl}>{labels.footer.accessibility}</a>
+      {otherLocales.map((link) => (
         <a href={link.href} hreflang={link.locale} lang={link.locale}>
           {link.name}
         </a>
-      </>
-    ))}
-  </p>
+      ))}
+    </p>
+  </div>
 </footer>
 
 <style>
   .footer {
     margin-top: clamp(4rem, 9vw, 6rem);
-    padding-top: 1.5rem;
     padding-bottom: 2.5rem;
-    border-top: 1px solid var(--linea);
     color: var(--nebbia);
     font-size: var(--step--1);
   }
+  /* The rule sits on the content box, aligned with the text above it. */
+  .inner {
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--linea);
+  }
   .footer p {
-    margin: 0 0 0.5rem;
+    margin: 0 0 0.75rem;
+  }
+  .project {
+    margin-bottom: 1.5rem;
+    color: var(--ardesia);
+    font-size: var(--step-0);
+  }
+  .links,
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 1.5rem;
+  }
+  .links a,
+  .meta a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+  .source {
+    gap: 0.45rem;
+    font-weight: 600;
   }
   @media print {
     .footer {
