@@ -4,11 +4,14 @@
 #  - after the ci workflow has passed on main (workflow_run: the checks run once per push);
 #  - when the resume changes: repository_dispatch "resume-updated" sent by whoever writes
 #    the gist, with the gist revision in client_payload.revision;
-#  - every hour, as a cheap check: if the gist revision differs from the published one
-#    (/resume-revision.txt), it rebuilds. This covers edits made by hand on the gist,
+#  - every hour, as a cheap check: if the published /build-info.json names another commit
+#    or another gist revision than the current ones, it rebuilds. This covers edits made by hand on the gist,
 #    which cannot trigger a workflow (gists have no webhooks). Scheduled workflows of a
 #    public repository are paused by GitHub after 60 days without activity;
-#  - by hand (workflow_dispatch).
+#  - by hand (workflow_dispatch, from main only).
+#
+# Whatever the trigger, only a commit of main whose ci run passed is built: after ci its
+# head_sha, otherwise the latest green commit (with a warning if main's HEAD is not green).
 #
 # Three jobs with separate privileges: "build" runs npm and Chromium but never sees the
 # Netlify token; "publish" sees the token but runs no third-party code (curl and jq only);
@@ -38,25 +41,45 @@ concurrency:
 
 jobs:
   revision:
-    name: Resume revision
-    # After ci, only when it passed on a push to main (not on a pull request from a fork).
+    name: Commit and resume revision
+    # After ci, only when it passed on a push to main; by hand, only from main.
     if: >-
-      github.event_name != 'workflow_run' ||
-      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+      (github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')) &&
+      (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
     outputs:
-      build: ${{ steps.revision.outputs.build }}
-      revision: ${{ steps.revision.outputs.revision }}
+      build: ${{ steps.resolve.outputs.build }}
+      revision: ${{ steps.resolve.outputs.revision }}
+      sha: ${{ steps.resolve.outputs.sha }}
     steps:
-      - id: revision
+      - id: resolve
         env:
           GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
           GIST: ${{ vars.RESUME_GIST }}
           EVENT: ${{ github.event_name }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           PAYLOAD_REVISION: ${{ github.event.client_payload.revision }}
           SITE_URL: ${{ vars.SITE_URL }}
         run: |
           set -euo pipefail
+          # The commit to build: never one whose checks did not pass.
+          if [ "$EVENT" = workflow_run ]; then
+            sha="$HEAD_SHA"
+          else
+            sha="$(gh run list -R "$REPO" --workflow ci.yml --branch main --event push --status success \
+              --limit 1 --json headSha --jq '.[0].headSha // ""')"
+            head="$(gh api "repos/$REPO/commits/main" --jq .sha)"
+            if [ -n "$sha" ] && [ "$sha" != "$head" ]; then
+              echo "::warning::main is at $head, whose checks have not passed (yet): building $sha"
+            fi
+          fi
+          [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::No commit of main with passing checks"; exit 1; }
+
           revision="${PAYLOAD_REVISION:-}"
           if [ -z "$revision" ] && [ -n "$GIST" ]; then
             revision="$(gh api "gists/${GIST#*/}" --jq '.history[0].version')"
@@ -64,14 +87,20 @@ jobs:
           if [ -n "$revision" ] && ! [[ "$revision" =~ ^[0-9a-f]{40}$ ]]; then
             echo "::error::Invalid gist revision: $revision"; exit 1
           fi
+
           build=true
           if [ "$EVENT" = schedule ]; then
-            live="$(curl -fsS --max-time 10 "$SITE_URL/resume-revision.txt" 2>/dev/null || true)"
-            if [ -z "$GIST" ] || [ "$live" = "$revision" ]; then build=false; fi
+            live="$(curl -fsS --max-time 10 "$SITE_URL/build-info.json" 2>/dev/null || echo '{}')"
+            if [ "$(jq -r '.commit // ""' <<<"$live")" = "$sha" ] && [ "$(jq -r '.resume // ""' <<<"$live")" = "$revision" ]; then
+              build=false
+            fi
           fi
-          echo "revision=$revision" >> "$GITHUB_OUTPUT"
-          echo "build=$build" >> "$GITHUB_OUTPUT"
-          echo "Gist revision: ${revision:-none}; build: $build"
+          {
+            echo "sha=$sha"
+            echo "revision=$revision"
+            echo "build=$build"
+          } >> "$GITHUB_OUTPUT"
+          echo "Commit $sha, gist revision ${revision:-none}: build=$build"
 
   build:
     name: Build from the real resume
@@ -82,8 +111,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          # After ci, build exactly the commit that passed.
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ needs.revision.outputs.sha }}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
@@ -111,10 +139,13 @@ jobs:
           RESUME_STRICT_PHOTO: '1'
         run: npm run build
       - run: npm run validate:html
-      - name: Record the published revision
+      - name: Record what was built
         env:
+          SHA: ${{ needs.revision.outputs.sha }}
           REVISION: ${{ needs.revision.outputs.revision }}
-        run: printf "%s" "${REVISION:-$GITHUB_SHA}" > dist/resume-revision.txt
+        run: |
+          jq -n --arg commit "$SHA" --arg resume "$REVISION" --arg run "$GITHUB_RUN_ID" \
+            '{commit: $commit, resume: $resume, run: $run}' > dist/build-info.json
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: site
@@ -151,9 +182,10 @@ jobs:
           [[ "$id" =~ ^[0-9a-f]{24}$ ]] || { echo "::error::Unexpected Netlify answer"; exit 1; }
           echo "deploy=$id" >> "$GITHUB_OUTPUT"
           # Wait until Netlify has processed the upload: "ready", or fail on "error".
+          # A failed status request (a transient 5xx) is retried, not fatal.
           for _ in $(seq 1 30); do
             state="$(curl -fsS --max-time 15 -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
-              "https://api.netlify.com/api/v1/deploys/$id" | jq -r .state)"
+              "https://api.netlify.com/api/v1/deploys/$id" | jq -r .state || echo unknown)"
             echo "Deploy $id: $state"
             case "$state" in
               ready) exit 0 ;;
@@ -177,15 +209,19 @@ jobs:
           SITE_URL: ${{ vars.SITE_URL }}
         run: |
           set -euo pipefail
-          expected="$(cat dist/resume-revision.txt)"
+          expected="$(jq -cS . dist/build-info.json)"
+          live=""
           for _ in $(seq 1 12); do
-            live="$(curl -fsS --max-time 10 -H 'Cache-Control: no-cache' "$SITE_URL/resume-revision.txt" || true)"
+            live="$(curl -fsS --max-time 10 -H 'Cache-Control: no-cache' "$SITE_URL/build-info.json" | jq -cS . || true)"
             [ "$live" = "$expected" ] && break
             sleep 10
           done
-          [ "$live" = "$expected" ] || { echo "::error::Live revision '$live', expected '$expected'"; exit 1; }
+          [ "$live" = "$expected" ] || { echo "::error::Live build '$live', expected '$expected'"; exit 1; }
           home="$(curl -fsS --max-time 15 "$SITE_URL/")"
           grep -q '<h1' <<<"$home"
-          grep -Eq '<img[^>]+class="photo' <<<"$home"
+          # The photo, when the resume has one, must be the real one, not the monogram.
+          if jq -e '.basics.image' dist/resume.json >/dev/null; then grep -Eq '<img[^>]+class="photo' <<<"$home"; fi
           curl -fsS --max-time 15 -o /dev/null "$SITE_URL/resume.json"
-          curl -fsSI --max-time 15 "$SITE_URL/$(cd dist && ls ./*.pdf | head -1 | sed 's|^\./||')" | grep -qi 'application/pdf'
+          for pdf in dist/*.pdf; do
+            curl -fsSI --max-time 15 "$SITE_URL/${pdf#dist/}" | grep -qi 'content-type: application/pdf'
+          done

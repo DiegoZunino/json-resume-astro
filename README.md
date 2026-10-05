@@ -7,8 +7,6 @@ _A generic, accessible front end for JSON Resume built with Astro: web page, PDF
 [![ci](https://github.com/DiegoZunino/json-resume-astro/actions/workflows/ci.yml/badge.svg)](https://github.com/DiegoZunino/json-resume-astro/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/DiegoZunino/json-resume-astro/badge)](https://securityscorecards.dev/viewer/?uri=github.com/DiegoZunino/json-resume-astro)
 
-In uso su [diegozunino.it](https://diegozunino.it).
-
 ## Perché
 
 È un piccolo progetto di ricerca su cosa può fare oggi un generatore di siti statici, con un vincolo pratico: il CV deve restare **un dato standard**, aggiornabile senza toccare il codice, e da quel dato devono uscire, sempre allineati, la pagina, il PDF e ciò che leggono motori di ricerca e assistenti AI.
@@ -16,10 +14,10 @@ In uso su [diegozunino.it](https://diegozunino.it).
 ## Cosa fa
 
 - **Qualunque JSON Resume v1.0.0**: tutte le sezioni dello schema, più le estensioni `x-` (elenchi di testi o di oggetti con `title`, `url`, `event`, `date`).
-- **Una lingua per file**, con routing i18n di Astro: la lingua predefinita alla radice, le altre in `/<lingua>/`.
+- **Una lingua per file**, con routing i18n di Astro: la lingua predefinita alla radice, le altre in `/<lingua>/`. I testi dell'interfaccia esistono in italiano e inglese; per un'altra lingua si aggiunge il suo catalogo in [`src/i18n/labels.ts`](src/i18n/labels.ts) (senza, la configurazione si ferma).
 - **Prima schermata** con nome, ruolo, una frase e le azioni (CV, email, profili); **percorso** come accordion accessibile con le barre nel tempo; tema chiaro, scuro o automatico.
 - **CV in PDF** (A4, testo selezionabile, font incorporati) e **immagine di condivisione** 1200×630 per lingua, generati dagli stessi componenti.
-- **Per motori e agenti**: JSON-LD `ProfilePage`, Open Graph, `hreflang`, sitemap, robots, e il JSON Resume pubblico (`/resume.json`) dichiarato con `<link rel="alternate">`.
+- **Per motori e agenti**: JSON-LD `ProfilePage`, Open Graph, `hreflang`, sitemap, robots, e il JSON Resume pubblico (`/resume.json`, proiettato sullo schema: solo campi dichiarati e sezioni visibili) dichiarato con `<link rel="alternate">`.
 - **Campi privati** tolti prima di tutto, con controllo sul risultato della build ([ADR 3](docs/adr/0003-privacy-fail-closed.md)).
 - **Content Security Policy** con hash, nessun cookie, nessun tracciamento.
 
@@ -31,7 +29,7 @@ Requisiti: Node 22.12 o successivo.
 npm ci
 npx playwright install chromium   # serve alla build per PDF e immagini
 npm run dev                       # http://localhost:4321, con i dati di esempio
-npm run build && npm run preview
+npm run build:fixtures && npm run preview   # build dei dati di esempio, con la loro foto
 ```
 
 Le sorgenti si configurano in `resume.config.ts`, una per lingua (file o URL), e si possono cambiare senza toccare il codice:
@@ -63,10 +61,10 @@ npm run verify   # lint, tipi, test unitari, di componente e di contratto, build
 ```
 
 - **Tipi**: TypeScript con `astro/tsconfigs/strictest`, `astro check`.
-- **Unitari** (Vitest) sul nucleo di funzioni pure: schema, privacy, date, timeline, sezioni, testo, JSON-LD, configurazione.
+- **Unitari** (Vitest) sul nucleo di funzioni pure: schema, privacy, JSON pubblico, date, timeline, sezioni, voci, testo, JSON-LD, configurazione; copertura minima del nucleo 90% delle righe.
 - **Componenti** con la Container API di Astro (sperimentale).
 - **Contratto** con lo schema ufficiale (`@jsonresume/schema` + Ajv).
-- **End-to-end** (Playwright, desktop e mobile, sui dati di esempio): comportamento, funzionamento senza JavaScript, tema, lingue, axe (WCAG 2.2 AA) in chiaro e in scuro, contrasto del focus, dimensione dei target, reflow a 320 px, ARIA snapshot, regressione visiva, file pubblicati.
+- **End-to-end** (Playwright, desktop e mobile, sui dati di esempio, con la foto servita in locale durante la build): comportamento, funzionamento senza JavaScript, tema, lingue, axe (WCAG 2.2 AA) in chiaro e in scuro, contrasto del focus, dimensione dei target, reflow a 320 px, ARIA snapshot, regressione visiva, file pubblicati.
 - **CI**: gli stessi controlli più Lighthouse con soglie (accessibilità e SEO a 100), CodeQL, revisione delle dipendenze, OpenSSF Scorecard; action bloccate a SHA, permessi minimi.
 
 ## Architettura
@@ -117,7 +115,7 @@ Si leggono dall'ambiente o da un file `.env` nella radice del progetto (mai vers
 
 ## Pubblicazione
 
-`.github/workflows/deploy.yml` pubblica su Netlify in tre job con privilegi separati: **build** (npm e Chromium, dai dati veri, senza alcun segreto), **publish** (solo `curl` e `jq` con il token, attende che Netlify dichiari il deploy pronto), **verify** (il sito pubblico serve la revisione appena costruita, la foto e il PDF). Parte dopo che `ci` è passato su `main`; il sito si ricostruisce anche quando il CV cambia: chi aggiorna il gist invia un `repository_dispatch` di tipo `resume-updated` con la revisione, e un controllo orario confronta la revisione del gist con quella pubblicata ([ADR 5](docs/adr/0005-deploy-and-updates.md)).
+`.github/workflows/deploy.yml` pubblica su Netlify in tre job con privilegi separati: **build** (npm e Chromium, dai dati veri, senza alcun segreto), **publish** (solo `curl` e `jq` con il token, attende che Netlify dichiari il deploy pronto), **verify** (il sito pubblico serve la build appena fatta, descritta in `/build-info.json`). Si costruisce sempre e solo un commit di `main` con i controlli passati. Il sito si ricostruisce dopo ogni push verde e quando il CV cambia: chi aggiorna il gist invia un `repository_dispatch` di tipo `resume-updated` con la revisione, e un controllo orario confronta commit e revisione con quelli pubblicati ([ADR 5](docs/adr/0005-deploy-and-updates.md)).
 
 Variabili: `SITE_URL`, `RESUME_GIST` (oppure `RESUME_SOURCE_<LINGUA>`). Segreti: `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`.
 
@@ -127,7 +125,9 @@ Variabili: `SITE_URL`, `RESUME_GIST` (oppure `RESUME_SOURCE_<LINGUA>`). Segreti:
 
 ## Come è stato costruito
 
-Il progetto è sviluppato con un assistente AI (Claude) come strumento di lavoro: requisiti, scelte di fondo e revisione finale sono miei, mentre l'assistente ha scritto gran parte del codice e dei test sotto quelle indicazioni. Ogni modifica passa dagli stessi controlli automatici di qualunque contributo (tipi, test, accessibilità, sicurezza), e le decisioni sono motivate nelle [ADR](docs/adr/). I commit scritti con l'assistente lo dichiarano con `Co-Authored-By`.
+Il progetto è anche un esperimento di sviluppo con un assistente AI (Claude) usato come agente. Io ho dato requisiti e vincoli e ho preso le decisioni; l'assistente ha scritto codice, test e documentazione, ed è l'autore dei commit, raccolti in commit tematici.
+
+La qualità non si affida alla fiducia. Ogni modifica passa dai controlli automatici descritti sopra. Il risultato è stato rivisto a giri, ciascuno con voto e correzioni, da tre revisori separati che non avevano scritto il codice: un CTO per il codice, un esperto di UI e accessibilità, un recruiter per il contenuto. Le scelte di fondo sono nelle [ADR](docs/adr/).
 
 ## Prossimi esperimenti
 

@@ -1,5 +1,5 @@
-# Every quality gate, reusable: called by ci.yml on pushes and pull requests and by
-# deploy.yml before publishing. Builds the fixture resume, so results are deterministic.
+# Every quality gate, called by ci.yml on pushes and pull requests (deploy.yml publishes
+# only commits that passed it). Builds the example resume, so results are deterministic.
 name: checks
 on:
   workflow_call:
@@ -22,7 +22,7 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run check
-      - run: npx vitest run --coverage.enabled=false
+      - run: npx vitest run --coverage
 
   site:
     name: Build, HTML validation, end-to-end and Lighthouse
@@ -37,7 +37,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npm run build
+      - run: npm run build:fixtures
       - run: npm run validate:html
       - run: npm run test:e2e
       - uses: treosh/lighthouse-ci-action@2e159d989f91bb9e399801b3e1ad90bcd4749f75 # v9

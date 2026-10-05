@@ -8,7 +8,7 @@ Una pagina personale con il CV: contenuto che cambia poche volte al mese, nessun
 
 ## Decisione
 
-Astro 7 con `output: 'static'`. Si usano le API del framework invece di soluzioni scritte a mano: content collection con loader, `astro:env`, routing i18n, Fonts API, `astro:assets`, `security.csp`, `@astrojs/sitemap`, integrazione per i passi dopo la build.
+Astro 7 con `output: 'static'`. Si usano le API del framework invece di soluzioni scritte a mano: content collection con loader, `loadEnv` di Vite per le variabili, routing i18n, Fonts API, `astro:assets`, `security.csp`, `@astrojs/sitemap`, integrazione per i passi dopo la build.
 
 ## Alternative considerate
 
