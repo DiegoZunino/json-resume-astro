@@ -154,8 +154,8 @@ const links = profiles.filter((profile) => profile.url);
   .copy:hover {
     border-color: var(--mare);
   }
-  /* Small screens: the download button on its own row, the secondary buttons share the next. */
-  @media (max-width: 30rem) {
+  /* Up to tablet width: the download button on its own row, the secondary buttons share the next. */
+  @media (max-width: 44rem) {
     .actions {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(5.25rem, 1fr));
@@ -191,6 +191,7 @@ const links = profiles.filter((profile) => profile.url);
   @media print {
     .button.primary,
     .detail,
+    .email,
     .copy,
     .actions :global(svg) {
       display: none;

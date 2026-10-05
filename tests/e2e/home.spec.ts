@@ -72,6 +72,9 @@ test.describe('languages and pages', () => {
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(page.getByRole('link', { name: /Download the CV/ }).first()).toHaveAttribute('href', '/cv-en.pdf');
     await expect(page.getByRole('navigation', { name: 'Language' })).toBeVisible();
+    // A talk given in Italian keeps its language on the English page (WCAG 3.1.2), and says so.
+    await expect(page.locator('p[lang="it"]', { hasText: 'Un talk di esempio' })).toBeVisible();
+    await expect(page.getByText(/in Italian/).first()).toBeVisible();
   });
 
   test('links the source code, the data and the accessibility statement from the footer', async ({ page }) => {

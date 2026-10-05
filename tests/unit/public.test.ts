@@ -8,7 +8,7 @@ describe('publicResume', () => {
     work: [{ name: 'Uno', position: 'EM', 'x-sources': 'internal' }],
     certificates: [{ name: 'AZ-204', 'x-validUntil': '2027-05' }],
     volunteer: [{ organization: 'Hidden' }],
-    'x-talks': [{ title: 't', url: 'https://example.org', 'x-notes': 'internal' }, 'plain'],
+    'x-talks': [{ title: 't', url: 'https://example.org', 'x-notes': 'internal', rank: 3 }, 'plain', 42],
     'x-hidden': ['secret list'],
     'x-flag': true,
     notes: 'internal',

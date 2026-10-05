@@ -9,19 +9,26 @@ export interface ListEntry {
   meta?: string | undefined;
   summary?: string | undefined;
   points?: string[] | undefined;
+  lang?: string | undefined;
 }
 
 interface Props {
   entries: ListEntry[];
+  /** One line above the list, e.g. "In Italian." when every entry is in another language. */
+  note?: string | undefined;
 }
 
-const { entries } = Astro.props;
+const { entries, note } = Astro.props;
 ---
 
+{note && <p class="note muted small">{note}</p>}
 <ul class="entries">
   {entries.map((entry) => (
     <li>
-      <p class:list={['title', { plain: !entry.url && !entry.meta && !entry.summary && !entry.points?.length }]}>
+      <p
+        class:list={['title', { plain: !entry.url && !entry.meta && !entry.summary && !entry.points?.length }]}
+        lang={entry.lang}
+      >
         {entry.url ? <a href={entry.url}>{entry.title}</a> : entry.title}
       </p>
       {entry.meta && <p class="meta muted small">{entry.meta}</p>}
@@ -38,6 +45,9 @@ const { entries } = Astro.props;
 </ul>
 
 <style>
+  .note {
+    margin: -0.5rem 0 0.75rem;
+  }
   .entries {
     list-style: none;
     padding: 0;
@@ -69,6 +79,7 @@ const { entries } = Astro.props;
     .entries > li:last-child {
       padding: 0 0 1.4mm;
       border: 0;
+      break-inside: avoid;
     }
   }
   .points {

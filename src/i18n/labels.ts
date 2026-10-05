@@ -26,6 +26,8 @@ export interface Labels {
   intl: string;
   /** Appended to a dated entry that is still to come (a talk already scheduled). */
   upcoming: string;
+  /** Marks an entry in another language: "in Italian". */
+  inLanguage: (name: string) => string;
   /** Titles used only in the PDF, where the page has a different job. */
   print: { profile: string; work: string };
   ongoing: string;
@@ -79,6 +81,7 @@ const en: Labels = {
   },
   intl: 'en-GB',
   upcoming: 'upcoming',
+  inLanguage: (name) => `in ${name}`,
   print: { profile: 'Profile', work: 'Experience' },
   ongoing: 'present',
   validUntil: 'valid until',
@@ -137,6 +140,7 @@ const it: Labels = {
   },
   intl: 'it-IT',
   upcoming: 'in programma',
+  inLanguage: (name) => `in ${name}`,
   print: { profile: 'Profilo', work: 'Esperienza' },
   ongoing: 'oggi',
   validUntil: 'valida fino a',

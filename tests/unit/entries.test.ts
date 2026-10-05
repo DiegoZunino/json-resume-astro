@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { entriesFor, extensionEntries } from '../../src/core/entries';
+import { entriesFor, extensionEntries, listLanguage } from '../../src/core/entries';
 import { parseResume } from '../../src/core/schema';
 import { languageLine } from '../../src/core/text';
 
@@ -31,7 +31,13 @@ describe('entriesFor', () => {
 });
 
 describe('extensionEntries', () => {
-  const options = { ...text, upcoming: 'upcoming', reference: new Date(Date.UTC(2026, 9, 5)) };
+  const options = {
+    ...text,
+    upcoming: 'upcoming',
+    reference: new Date(Date.UTC(2026, 9, 5)),
+    locale: 'en-GB',
+    inLanguage: (name: string) => `in ${name}`,
+  };
 
   it('marks a future date as upcoming, computed from the reference date', () => {
     const [next, past] = extensionEntries(
@@ -55,6 +61,47 @@ describe('extensionEntries', () => {
     );
     expect(same!.meta).toBe('AI Week 2026');
     expect(free!.meta).toBe('spring');
+  });
+});
+
+describe('extensionEntries and languages', () => {
+  it('marks an entry in another language, for the reader and for screen readers', () => {
+    const options = {
+      ...text,
+      upcoming: 'upcoming',
+      reference: new Date(Date.UTC(2026, 9, 5)),
+      locale: 'en-GB',
+      inLanguage: (name: string) => `in ${name}`,
+    };
+    const [italian, english] = extensionEntries(
+      [
+        { title: 'Un talk', meta: 'Conf', lang: 'it' },
+        { title: 'A talk', meta: 'Conf', lang: 'en' },
+      ],
+      options,
+    );
+    expect(italian).toMatchObject({ lang: 'it', meta: 'Conf · in Italian' });
+    expect(english).toMatchObject({ lang: undefined, meta: 'Conf' });
+  });
+
+  it('says a language shared by the whole list once, above it', () => {
+    const items = [
+      { title: 'Uno', meta: 'Conf', lang: 'it' },
+      { title: 'Due', meta: 'Conf', lang: 'it' },
+    ];
+    const options = {
+      ...text,
+      upcoming: 'upcoming',
+      reference: new Date(Date.UTC(2026, 9, 5)),
+      locale: 'en-GB',
+      inLanguage: (name: string) => `in ${name}`,
+    };
+    expect(extensionEntries(items, options).map((entry) => [entry.meta, entry.lang])).toEqual([
+      ['Conf', 'it'],
+      ['Conf', 'it'],
+    ]);
+    expect(listLanguage(items, 'en-GB', options.inLanguage)).toEqual({ note: 'In Italian.', lang: 'it' });
+    expect(listLanguage(items, 'it-IT', options.inLanguage)).toBeUndefined();
   });
 });
 

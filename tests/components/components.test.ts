@@ -26,7 +26,12 @@ describe('Timeline', () => {
     });
     const detailed = resume.work.filter((role) => role.highlights?.length).length;
     expect(html.match(/<h3[^>]*><button[^>]*aria-expanded="true"/g)).toHaveLength(detailed);
-    expect(html.match(/<h3[^>]*><span class="head/g)).toHaveLength(resume.work.length - detailed);
+    // Roles without details are headings with one hidden, readable name and an aria-hidden visual line.
+    expect(
+      html.match(/<h3[^>]*><span class="visually-hidden"[^>]*>[^<]+<\/span><span[^>]*aria-hidden="true"/g),
+    ).toHaveLength(resume.work.length - detailed);
+    expect(html).toContain('Sviluppatrice, Progetti personali</span>');
+    expect(html).toMatch(/aria-label="Engineering Manager, Azienda Uno, mar 2022 – oggi"/);
     expect(html).toContain('Ruolo senza date');
     expect(html.match(/class="span"/g)).toHaveLength(3);
     expect(html).not.toMatch(/style="/);

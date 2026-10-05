@@ -26,7 +26,7 @@ const { labels, updated, repository, accessibilityUrl, dataUrl, otherLocales } =
       <div class="project">
         <p class="measure">{labels.footer.project}</p>
         <p class="links">
-          <a class="source" href={repository}>
+          <a class="source" href={repository} data-repository>
             <Icon name="code" size={18} />
             <span>{labels.footer.source(hostName(repository))}</span>
           </a>

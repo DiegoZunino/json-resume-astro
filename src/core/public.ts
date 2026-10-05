@@ -8,7 +8,19 @@ import type { z } from 'astro/zod';
 import { Resume } from './schema';
 import { elementOf, shapeOf } from './shape';
 
-const EXTENSION_FIELDS = ['title', 'name', 'url', 'date', 'event', 'publisher', 'meta', 'summary', 'description'];
+const EXTENSION_FIELDS = [
+  'title',
+  'name',
+  'url',
+  'date',
+  'event',
+  'publisher',
+  'meta',
+  'summary',
+  'description',
+  'language',
+  'lang',
+];
 
 function project(value: unknown, schema: z.ZodType | undefined): unknown {
   if (Array.isArray(value)) return value.map((item) => project(item, elementOf(schema)));
@@ -19,12 +31,17 @@ function project(value: unknown, schema: z.ZodType | undefined): unknown {
   return out;
 }
 
+/** Only what the page can show: strings, or objects with the known text fields. */
 function extensionList(items: unknown[]): unknown[] {
-  return items.map((item) =>
-    item && typeof item === 'object' && !Array.isArray(item)
-      ? Object.fromEntries(Object.entries(item).filter(([key]) => EXTENSION_FIELDS.includes(key)))
-      : item,
-  );
+  return items.flatMap<unknown>((item) => {
+    if (typeof item === 'string') return [item];
+    if (!item || typeof item !== 'object' || Array.isArray(item)) return [];
+    return [
+      Object.fromEntries(
+        Object.entries(item).filter(([key, value]) => EXTENSION_FIELDS.includes(key) && typeof value === 'string'),
+      ),
+    ];
+  });
 }
 
 export function publicResume(resume: Resume): Record<string, unknown> {

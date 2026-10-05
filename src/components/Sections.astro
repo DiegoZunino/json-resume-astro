@@ -1,6 +1,6 @@
 ---
 /** Renders the visible sections in theme order. */
-import { entriesFor, extensionEntries } from '../core/entries';
+import { entriesFor, extensionEntries, listLanguage } from '../core/entries';
 import type { Section } from '../core/sections';
 import type { Resume } from '../core/schema';
 import { sectionTitle, type Labels } from '../i18n/labels';
@@ -26,7 +26,10 @@ const title = (key: string) => sectionTitle(key, labels, overrides);
 {sections.map((section) => (
   <SectionShell id={section.key} title={title(section.key)}>
     {section.kind === 'extension' ? (
-      <ItemList entries={extensionEntries(section.items, { ...labels, reference })} />
+      <ItemList
+        entries={extensionEntries(section.items, { ...labels, reference, locale: labels.intl })}
+        note={listLanguage(section.items, labels.intl, labels.inLanguage)?.note}
+      />
     ) : section.kind === 'education' ? (
       <Education resume={resume} labels={labels} />
     ) : section.key === 'work' ? (

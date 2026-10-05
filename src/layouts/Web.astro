@@ -25,7 +25,7 @@ const { context, title, canonical, alternates, structuredData = false } = Astro.
 const { resume, labels, locale } = context;
 const pageTitle = title ?? joinParts([resume.basics.name, resume.basics.label]);
 const updated = resume.meta.lastModified ? referenceDate(resume.meta.lastModified, new Date(0)) : undefined;
-// Same size as the hero photo, so this is the same file, not a second download.
+// Same options as the hero photo, so the structured data points to the same published file.
 const photo = structuredData ? await optimisedPhoto(resume.basics.image, 168) : undefined;
 const photoUrl = photo && Astro.site ? new URL(photo.src, Astro.site).href : undefined;
 ---

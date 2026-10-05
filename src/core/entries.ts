@@ -13,6 +13,8 @@ export interface Entry {
   meta?: string | undefined;
   summary?: string | undefined;
   points?: string[] | undefined;
+  /** BCP 47 language of the title, when it differs from the page (WCAG 3.1.2). */
+  lang?: string | undefined;
 }
 
 export type ListKey = 'projects' | 'volunteer' | 'awards' | 'publications' | 'interests' | 'references';
@@ -76,12 +78,23 @@ const PARTIAL_DATE = /^\d{4}(-\d{2})?(-\d{2})?$/;
  */
 export function extensionEntries(
   items: readonly ExtensionItem[],
-  { intl, ongoing, upcoming, reference }: EntryText & { upcoming: string; reference: Date },
+  {
+    intl,
+    ongoing,
+    upcoming,
+    reference,
+    locale,
+    inLanguage,
+  }: EntryText & { upcoming: string; reference: Date; locale: string; inLanguage: (name: string) => string },
 ): Entry[] {
+  const languageOf = (lang: string) => new Intl.DisplayNames([locale], { type: 'language' }).of(lang) ?? lang;
+  // When the whole list shares one other language, the list says it once (listLanguage).
+  const shared = sharedForeignLanguage(items, locale);
   return items.map((item) => {
     const isDate = item.date !== undefined && PARTIAL_DATE.test(item.date);
     const future = isDate && toMonths(item.date, reference) > toMonths(undefined, reference);
     const redundantYear = isDate && item.date!.length === 4 && Boolean(item.meta?.includes(item.date!));
+    const foreign = isForeign(item.lang, locale) ? item.lang : undefined;
     return {
       title: item.title,
       url: item.url,
@@ -89,8 +102,31 @@ export function extensionEntries(
         item.meta,
         redundantYear ? undefined : isDate ? formatDate(item.date, intl, ongoing) : item.date,
         future ? upcoming : undefined,
+        foreign && !shared && inLanguage(languageOf(foreign)),
       ]),
       summary: item.summary,
+      lang: foreign,
     };
   });
+}
+
+const isForeign = (lang: string | undefined, locale: string): lang is string =>
+  Boolean(lang) && lang!.split('-')[0] !== locale.split('-')[0];
+
+function sharedForeignLanguage(items: readonly ExtensionItem[], locale: string): string | undefined {
+  const first = items[0]?.lang;
+  return items.length > 1 && isForeign(first, locale) && items.every((item) => item.lang === first) ? first : undefined;
+}
+
+/** "In Italian." under the title of a list whose entries are all in another language. */
+export function listLanguage(
+  items: readonly ExtensionItem[],
+  locale: string,
+  inLanguage: (name: string) => string,
+): { note: string; lang: string } | undefined {
+  const lang = sharedForeignLanguage(items, locale);
+  if (!lang) return undefined;
+  const name = new Intl.DisplayNames([locale], { type: 'language' }).of(lang) ?? lang;
+  const text = inLanguage(name);
+  return { note: `${text.charAt(0).toLocaleUpperCase(locale)}${text.slice(1)}.`, lang };
 }

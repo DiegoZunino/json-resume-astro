@@ -11,6 +11,8 @@ export interface ExtensionItem {
   date?: string | undefined;
   meta?: string | undefined;
   summary?: string | undefined;
+  /** Language of the entry when it differs from the page, e.g. a talk given in Italian. */
+  lang?: string | undefined;
 }
 
 export type Section =
@@ -45,6 +47,7 @@ function extensionItem(entry: unknown): ExtensionItem | undefined {
     date: str(entry.date),
     meta: str(entry.event) ?? str(entry.publisher) ?? str(entry.meta),
     summary: str(entry.summary) ?? str(entry.description),
+    lang: str(entry.language) ?? str(entry.lang),
   };
 }
 

@@ -143,10 +143,11 @@
   ],
   "x-talks": [
     {
-      "title": "A sample talk",
+      "title": "Un talk di esempio",
       "event": "Sample Conference",
       "date": "2025-11",
-      "url": "https://example.org/talk"
+      "url": "https://example.org/talk",
+      "language": "it"
     },
     "A talk without link, Meetup, 2024"
   ],
@@ -165,5 +166,6 @@
       "order": ["work", "x-talks", "projects", "skills"],
       "expanded": 2
     }
-  }
+  },
+  "x-privacy": "Sample consent for the tests, private"
 }

@@ -35,6 +35,41 @@ describe('structured data', () => {
     expect(data.mainEntity.worksFor).toEqual({ '@type': 'Organization', name: 'Now Inc' });
   });
 
+  it('includes place, education, languages, credentials, image and date when present', () => {
+    const resume = parseResume({
+      basics: {
+        name: 'Ada',
+        summary: 'Builds teams.',
+        url: 'https://ada.example',
+        location: { city: 'Torino', countryCode: 'IT' },
+      },
+      education: [{ institution: 'Politecnico' }, { area: 'no institution' }],
+      languages: [{ language: 'Italiano' }, { fluency: 'B2' }],
+      certificates: [{ name: 'AZ-204', issuer: 'Microsoft' }, { name: 'Other' }],
+      meta: { lastModified: '2026-10-05' },
+    });
+    const data = profilePage(resume, 'https://ada.example/', 'https://ada.example/photo.webp') as Record<
+      string,
+      unknown
+    > & {
+      mainEntity: Record<string, unknown>;
+    };
+    expect(data.dateModified).toBe('2026-10-05');
+    expect(data.mainEntity).toMatchObject({
+      description: 'Builds teams.',
+      image: 'https://ada.example/photo.webp',
+      url: 'https://ada.example',
+      address: { '@type': 'PostalAddress', addressLocality: 'Torino', addressCountry: 'IT' },
+      alumniOf: [{ '@type': 'EducationalOrganization', name: 'Politecnico' }],
+      knowsLanguage: ['Italiano'],
+      hasCredential: [
+        { name: 'AZ-204', recognizedBy: { '@type': 'Organization', name: 'Microsoft' } },
+        { name: 'Other' },
+      ],
+    });
+    expect(data.mainEntity).not.toHaveProperty('worksFor');
+  });
+
   it('cannot be closed early by a value containing </script>', () => {
     const json = serializeJsonLd({ name: '</script><script>alert(1)</script>' });
     expect(json).not.toContain('</script>');

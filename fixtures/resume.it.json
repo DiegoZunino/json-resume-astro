@@ -168,5 +168,6 @@
       "order": ["work", "x-talks", "projects", "skills"],
       "expanded": 2
     }
-  }
+  },
+  "x-privacy": "Consenso di esempio per i test, riservato"
 }

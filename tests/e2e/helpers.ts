@@ -21,4 +21,6 @@ export const PRIVATE_VALUES = [
   'Nota riservata per i test',
   'Obiettivo riservato',
   'Private objective',
+  'Consenso di esempio per i test, riservato',
+  'Sample consent for the tests, private',
 ];
