@@ -30,3 +30,12 @@ export function shorten(text: string, max = 160): string {
 export function joinParts(parts: readonly (string | undefined | null | false)[], separator = ' · '): string {
   return parts.filter((part): part is string => Boolean(part)).join(separator);
 }
+
+/** "English (B2)"; a level that has its own brackets is flattened: "B2 (CEFR)" → "English (B2, CEFR)". */
+export function languageLine(language: string | undefined, fluency: string | undefined): string {
+  const level = fluency
+    ?.replace(/\s*\(([^)]*)\)\s*/g, ', $1')
+    .replace(/^,\s*/, '')
+    .trim();
+  return joinParts([language, level && `(${level})`], ' ');
+}

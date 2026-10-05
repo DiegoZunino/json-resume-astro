@@ -35,8 +35,13 @@ describe('withhold', () => {
     expect(data.basics.phone).toBe('+39 011 555 0199');
   });
 
-  it('ignores paths that are absent from this resume', () => {
-    expect(withhold({ basics: { name: 'Ada' } }, ['basics.phone']).values).toEqual([]);
+  it('ignores paths that are absent from this resume, and says which ones matched', () => {
+    const result = withhold({ basics: { name: 'Ada', phone: '+39 011' }, 'x-note': 'n' }, [
+      'basics.phone',
+      'x-objctive',
+    ]);
+    expect(result.values).toEqual(['+39 011']);
+    expect(result.matched).toEqual(['basics.phone']);
   });
 });
 

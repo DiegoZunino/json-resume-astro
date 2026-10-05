@@ -97,3 +97,12 @@ export function visibleSections(resume: Resume): Section[] {
   }
   return sections;
 }
+
+/** Section keys named in `order`, `hide` or `printHide` that match no section: likely typos. */
+export function themeProblems(resume: Resume): string[] {
+  const options = resume.meta.themeOptions ?? {};
+  const known = new Set<string>([...SECTION_KEYS, ...Object.keys(resume).filter((key) => key.startsWith('x-'))]);
+  return (['order', 'hide', 'printHide'] as const).flatMap((option) =>
+    (options[option] ?? []).filter((key) => !known.has(key)).map((key) => `themeOptions.${option}: "${key}"`),
+  );
+}

@@ -162,9 +162,18 @@ export const ThemeOptions = z.looseObject({
   hide: list.optional(),
   /** Sections shown on the page but left out of the PDF, to keep it short (e.g. a list of talks). */
   printHide: list.optional(),
-  /** How many of the most recent roles start expanded (default 2). */
+  /** How many of the most recent roles with details (highlights) start expanded (default 2). */
   expanded: z.number().int().min(0).optional(),
 });
+
+/** "2026-02-31" matches the pattern but is not a date: JavaScript would roll it to 3 March. */
+function isRealDate(value: string): boolean {
+  const day = value.slice(0, 10);
+  const parsed = new Date(`${day}T00:00:00Z`);
+  return (
+    !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === day && !Number.isNaN(Date.parse(value))
+  );
+}
 
 export const Meta = z.looseObject({
   canonical: webUrl.optional(),
@@ -173,6 +182,7 @@ export const Meta = z.looseObject({
   lastModified: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}([T ][\d:.]+(Z|[+-]\d{2}:?\d{2})?)?$/, 'expected an ISO 8601 date or date-time')
+    .refine(isRealDate, 'expected a real calendar date')
     .optional(),
   themeOptions: ThemeOptions.optional(),
 });

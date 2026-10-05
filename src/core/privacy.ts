@@ -5,6 +5,7 @@
  */
 import type { z } from 'astro/zod';
 import { Resume } from './schema';
+import { childOf } from './shape';
 
 /** `basics.phone`, `x-objective`, `work.*.x-internal`: dot-separated, `*` for every array item. */
 const PATH = /^(?:[A-Za-z][\w-]*|\*)(?:\.(?:[A-Za-z][\w-]*|\*))*$/;
@@ -20,59 +21,46 @@ export function assertKnownPaths(paths: readonly string[]): void {
     let shape: z.ZodType | undefined = Resume;
     for (const key of path.split('.')) {
       if (key.startsWith('x-')) break; // extensions are free-form below this point
-      shape = child(shape, key);
+      shape = childOf(shape, key);
       if (!shape) throw new Error(`Private path "${path}" does not match the JSON Resume schema (at "${key}").`);
     }
   }
-}
-
-function child(schema: z.ZodType | undefined, key: string): z.ZodType | undefined {
-  const inner = unwrap(schema);
-  if (!inner) return undefined;
-  if (key === '*') return 'element' in inner ? (inner.element as z.ZodType) : undefined;
-  if ('shape' in inner) return (inner.shape as Record<string, z.ZodType>)[key];
-  return undefined;
-}
-
-function unwrap(schema: z.ZodType | undefined): z.ZodType | undefined {
-  let current = schema;
-  // Optional and default wrappers expose the wrapped schema as `unwrap()` / `removeDefault()`.
-  for (let i = 0; i < 5 && current; i++) {
-    const def = (current as unknown as { def?: { innerType?: z.ZodType } }).def;
-    if (def?.innerType) current = def.innerType;
-    else break;
-  }
-  return current;
 }
 
 export interface Withheld<T> {
   data: T;
   /** Every string removed from the data, for the leak check on the build output. */
   values: string[];
+  /** Paths that removed something: a path that never matches may be a typo. */
+  matched: string[];
 }
 
 /** Returns a copy of `data` without the private paths, and the values that were removed. */
 export function withhold<T>(data: T, paths: readonly string[]): Withheld<T> {
   const copy = structuredClone(data);
   const values: string[] = [];
-  for (const path of paths) remove(copy, path.split('.'), values);
-  return { data: copy, values };
+  const matched = paths.filter((path) => remove(copy, path.split('.'), values));
+  return { data: copy, values, matched };
 }
 
-function remove(node: unknown, keys: string[], values: string[]): void {
-  if (node === null || typeof node !== 'object') return;
+/** Removes the path from the node; true if something was removed. */
+function remove(node: unknown, keys: string[], values: string[]): boolean {
+  if (node === null || typeof node !== 'object') return false;
   const [key, ...rest] = keys;
-  if (key === undefined) return;
+  if (key === undefined) return false;
+  let removed = false;
   const targets = key === '*' ? (Array.isArray(node) ? node.map((_, i) => i) : []) : [key];
   for (const target of targets) {
     const record = node as Record<string | number, unknown>;
     if (!(target in record)) continue;
-    if (rest.length) remove(record[target], rest, values);
+    if (rest.length) removed = remove(record[target], rest, values) || removed;
     else {
       collectStrings(record[target], values);
       Reflect.deleteProperty(record, target);
+      removed = true;
     }
   }
+  return removed;
 }
 
 function collectStrings(value: unknown, into: string[]): void {

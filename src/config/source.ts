@@ -15,6 +15,8 @@ export interface LoadedResume {
   resume: Resume;
   /** Values removed by the private paths, searched for in the build output. */
   withheld: string[];
+  /** Private paths that matched something in this source. */
+  matched: string[];
 }
 
 export interface SourceOptions {
@@ -55,6 +57,12 @@ export async function readRaw(source: string, options: SourceOptions): Promise<u
 export async function loadResume(config: ResumeConfig, locale: string, options: SourceOptions): Promise<LoadedResume> {
   const source = sourceFor(config, locale, options.env);
   const raw = await readRaw(source, options);
-  const { data, values } = withhold(raw, config.private);
-  return { locale, source, resume: parseResume(data, `JSON Resume for "${locale}" (${source})`), withheld: values };
+  const { data, values, matched } = withhold(raw, config.private);
+  return {
+    locale,
+    source,
+    resume: parseResume(data, `JSON Resume for "${locale}" (${source})`),
+    withheld: values,
+    matched,
+  };
 }

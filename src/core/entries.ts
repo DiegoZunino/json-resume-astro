@@ -2,7 +2,7 @@
  * Maps the list-like sections of a resume to one shape (title, link, meta line,
  * summary, points), so a single component renders projects, talks, awards and so on.
  */
-import { formatDate, formatRange } from './dates';
+import { formatDate, formatRange, toMonths } from './dates';
 import type { Resume } from './schema';
 import type { ExtensionItem } from './sections';
 import { joinParts } from './text';
@@ -17,9 +17,16 @@ export interface Entry {
 
 export type ListKey = 'projects' | 'volunteer' | 'awards' | 'publications' | 'interests' | 'references';
 
-export function entriesFor(key: ListKey, resume: Resume, locale: string, ongoing: string): Entry[] {
-  const date = (value?: string) => (value ? formatDate(value, locale, ongoing) : undefined);
-  const range = (start?: string, end?: string) => (start || end ? formatRange(start, end, locale, ongoing) : undefined);
+export interface EntryText {
+  /** Locale for dates, e.g. "it-IT", "en-GB". */
+  intl: string;
+  /** Word for a missing end date ("present"). */
+  ongoing: string;
+}
+
+export function entriesFor(key: ListKey, resume: Resume, { intl, ongoing }: EntryText): Entry[] {
+  const date = (value?: string) => (value ? formatDate(value, intl, ongoing) : undefined);
+  const range = (start?: string, end?: string) => (start || end ? formatRange(start, end, intl, ongoing) : undefined);
   switch (key) {
     case 'projects':
       return resume.projects.map((project) => ({
@@ -60,14 +67,30 @@ export function entriesFor(key: ListKey, resume: Resume, locale: string, ongoing
   }
 }
 
-export function extensionEntries(items: readonly ExtensionItem[], locale: string, ongoing: string): Entry[] {
-  return items.map((item) => ({
-    title: item.title,
-    url: item.url,
-    meta: joinParts([
-      item.meta,
-      item.date && /^\d{4}(-\d{2})?(-\d{2})?$/.test(item.date) ? formatDate(item.date, locale, ongoing) : item.date,
-    ]),
-    summary: item.summary,
-  }));
+const PARTIAL_DATE = /^\d{4}(-\d{2})?(-\d{2})?$/;
+
+/**
+ * Entries of an `x-` list. A date in the future of the reference date is marked as
+ * upcoming (computed at build time, so a talk given last month is no longer "upcoming");
+ * a bare year already present in the meta line ("AI Week 2026") is not repeated.
+ */
+export function extensionEntries(
+  items: readonly ExtensionItem[],
+  { intl, ongoing, upcoming, reference }: EntryText & { upcoming: string; reference: Date },
+): Entry[] {
+  return items.map((item) => {
+    const isDate = item.date !== undefined && PARTIAL_DATE.test(item.date);
+    const future = isDate && toMonths(item.date, reference) > toMonths(undefined, reference);
+    const redundantYear = isDate && item.date!.length === 4 && Boolean(item.meta?.includes(item.date!));
+    return {
+      title: item.title,
+      url: item.url,
+      meta: joinParts([
+        item.meta,
+        redundantYear ? undefined : isDate ? formatDate(item.date, intl, ongoing) : item.date,
+        future ? upcoming : undefined,
+      ]),
+      summary: item.summary,
+    };
+  });
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extensionItems, extensionProblems, visibleSections } from '../../src/core/sections';
+import { extensionItems, extensionProblems, themeProblems, visibleSections } from '../../src/core/sections';
 import { parseResume } from '../../src/core/schema';
 
 describe('extensionItems', () => {
@@ -37,5 +37,16 @@ describe('visibleSections', () => {
 
   it('follows the theme order, then the default order, without hidden or empty sections', () => {
     expect(visibleSections(resume).map((section) => section.key)).toEqual(['work', 'x-talks', 'skills', 'education']);
+  });
+});
+
+describe('themeProblems', () => {
+  it('reports section keys that match nothing, such as a typo in printHide', () => {
+    const resume = parseResume({
+      basics: { name: 'Ada' },
+      'x-talks': ['t'],
+      meta: { themeOptions: { order: ['work', 'x-talks'], hide: ['volunteer'], printHide: ['x-talk'] } },
+    });
+    expect(themeProblems(resume)).toEqual(['themeOptions.printHide: "x-talk"']);
   });
 });

@@ -30,4 +30,12 @@ describe('parseResume', () => {
       parseResume({ basics: { name: 'Ada', profiles: [{ network: 'x', url: 'data:text/html,hi' }] } }),
     ).toThrow(/basics\.profiles\.0\.url/);
   });
+
+  it('accepts lastModified only as a real date or date-time', () => {
+    const meta = (lastModified: string) => () => parseResume({ basics: { name: 'Ada' }, meta: { lastModified } });
+    expect(meta('2026-10-05')).not.toThrow();
+    expect(meta('2026-10-05T10:00:00Z')).not.toThrow();
+    expect(meta('2026-13-01')).toThrow(/meta\.lastModified/);
+    expect(meta('2026-02-31')).toThrow(/meta\.lastModified/);
+  });
 });
