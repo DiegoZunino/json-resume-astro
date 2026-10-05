@@ -24,7 +24,7 @@ const at = email ? email.lastIndexOf('@') : -1;
   <h2 id="contact-title">{labels.sections.contact}</h2>
   {email && (
     <p class="email">
-      <a class="address" href={`mailto:${email}`}>
+      <a class="address" href={`mailto:${email}`} aria-label={email}>
         {email && at > 0 ? <span>{[`${email.slice(0, at)}@`, <wbr />, email.slice(at + 1)]}</span> : email}
       </a>
       <button

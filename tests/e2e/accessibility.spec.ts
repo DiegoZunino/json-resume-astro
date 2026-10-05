@@ -15,6 +15,8 @@ for (const colorScheme of ['light', 'dark'] as const) {
 
     for (const path of ['/', '/en/', '/accessibilita/']) {
       test(`axe finds no violations on ${path}, with every role open`, async ({ page }) => {
+        // No panel caught half-way through its fade while axe measures contrast.
+        await page.emulateMedia({ reducedMotion: 'reduce' });
         await page.goto(path);
         await expandAll(page);
         const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();

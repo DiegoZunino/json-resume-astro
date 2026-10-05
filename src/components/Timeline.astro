@@ -329,6 +329,8 @@ const accessibleName = (item: WorkItem) =>
     border-radius: 50%;
     background: var(--barra);
     vertical-align: 0.12em;
+    /* Browsers print without backgrounds unless told: the dot is content, not decoration. */
+    print-color-adjust: exact;
   }
   .role:has(button[aria-expanded='false']) .panel {
     display: none;

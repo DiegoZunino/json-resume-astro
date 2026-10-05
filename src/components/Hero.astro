@@ -104,6 +104,21 @@ const PHOTO_SIZES = '(max-width: 30rem) 7rem, 9.25rem';
   .part {
     white-space: nowrap;
   }
+  /* On a phone each part of the role takes its own line, so no separator hangs at a line
+     end; the separator stays for screen readers. */
+  @media (max-width: 30rem) {
+    .part {
+      display: block;
+    }
+    .sep {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
   /* On the narrowest screens (or with wider letter spacing) a part may wrap after all. */
   @media (max-width: 22rem) {
     .part {
