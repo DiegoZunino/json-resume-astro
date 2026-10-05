@@ -121,9 +121,9 @@ const contacts = [
   }
   :global(html) {
     font-size: 9.4pt;
-    background: #fff;
+    --pietra: #fff;
   }
-  :global(body) {
+  :global(html body) {
     background: #fff;
     font-size: 1rem;
     line-height: 1.42;
@@ -225,5 +225,10 @@ const contacts = [
   section :global(.pairs),
   section :global(.entries) {
     max-width: none;
+  }
+  /* The section title already draws a rule above the first entry. */
+  section :global(.pairs > div:first-child),
+  section :global(.entries > li:first-child) {
+    border-top: 0;
   }
 </style>
