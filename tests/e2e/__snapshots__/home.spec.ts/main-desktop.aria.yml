@@ -29,7 +29,6 @@
       - listitem:
         - heading /Tech Lead, Azienda Uno, giu \d+ – feb \d+/ [level=3]:
           - button /Tech Lead, Azienda Uno, giu \d+ – feb \d+/ [expanded]: /Tech Lead Azienda Uno · giu \d+ – feb \d+/
-        - paragraph
         - paragraph: Riferimento tecnico del team, revisione del codice e delle architetture.
         - list:
           - listitem: Introduzione della revisione del codice obbligatoria.
@@ -43,21 +42,21 @@
     - heading "Talk" [level=2]
     - list:
       - listitem:
-        - paragraph: /Conferenza di esempio · nov \d+/
         - paragraph:
           - link "Un talk di esempio":
             - /url: https://example.org/talk
+        - paragraph: /Conferenza di esempio · nov \d+/
       - listitem:
         - paragraph: /Un talk senza link, Meetup, \d+/
   - region "Progetti":
     - heading "Progetti" [level=2]
     - list:
       - listitem:
-        - paragraph: /\d+ – oggi/
         - paragraph:
           - link "Progetto di esempio":
             - /url: https://example.org/progetto
         - paragraph: Uno strumento open source.
+        - paragraph: /\d+ – oggi/
   - region "Competenze":
     - heading "Competenze" [level=2]
     - term: Guida
@@ -68,9 +67,9 @@
     - heading "Volontariato" [level=2]
     - list:
       - listitem:
-        - paragraph: /gen \d+ – oggi/
         - paragraph: Community di esempio · Organizzatrice
         - paragraph: Meetup mensili e una conferenza all'anno.
+        - paragraph: /gen \d+ – oggi/
   - region "Formazione":
     - heading "Formazione" [level=2]
     - term: Laurea, Informatica
@@ -88,36 +87,34 @@
     - heading "Riconoscimenti" [level=2]
     - list:
       - listitem:
-        - paragraph: /Ente · mag \d+/
         - paragraph: Premio di esempio
         - paragraph: Per un progetto open source.
+        - paragraph: /Ente · mag \d+/
   - region "Pubblicazioni":
     - heading "Pubblicazioni" [level=2]
     - list:
       - listitem:
-        - paragraph: /Rivista · giu \d+/
         - paragraph:
           - link "Articolo di esempio":
             - /url: https://example.org/articolo
         - paragraph: Sintesi dell'articolo.
+        - paragraph: /Rivista · giu \d+/
   - region "Interessi":
     - heading "Interessi" [level=2]
     - list:
       - listitem:
-        - paragraph
         - paragraph: Montagna
         - paragraph: trekking, arrampicata
   - region "Referenze":
     - heading "Referenze" [level=2]
     - list:
       - listitem:
-        - paragraph
         - paragraph: Collega
         - paragraph: Lavorare con Ada è stato un piacere.
   - region "Contatti":
     - heading "Contatti" [level=2]
     - paragraph:
-      - link "ada@example.org":
+      - link "ada@ example.org":
         - /url: mailto:ada@example.org
       - button "Copia l’indirizzo"
       - status

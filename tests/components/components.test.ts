@@ -57,7 +57,8 @@ describe('Actions', () => {
     expect(html).toMatch(/href="\/cv-it\.pdf"[^>]*download/);
     expect(html).toContain('href="mailto:ada@example.org"');
     expect(html).toContain('rel="me"');
-    expect(html).not.toContain('ada@example.org</p>');
+    // The first screen offers "Email", not the address: that is shown in full in Contacts.
+    expect(html).not.toMatch(/>\s*ada@example\.org\s*</);
   });
 });
 
@@ -66,5 +67,14 @@ describe('Wire', () => {
     const html = await container.renderToString(Wire, { props: { from: 'Da qui', to: 'a lì' } });
     expect(html).toMatch(/<span class="from"[^>]*>Da qui<\/span>/);
     expect(html).toMatch(/class="line"[^>]*aria-hidden="true"/);
+  });
+
+  it('knows how wide one line must be for the phrases to share it', async () => {
+    const short = await container.renderToString(Wire, { props: { from: 'Da qui', to: 'a lì' } });
+    const long = await container.renderToString(Wire, {
+      props: { from: 'Dalle esigenze di partner e clienti', to: 'a integrazioni AI sui dati aziendali' },
+    });
+    expect(short).toMatch(/class="inner fit-24"/);
+    expect(long).toMatch(/class="inner fit-40"/);
   });
 });

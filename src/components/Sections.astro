@@ -10,6 +10,8 @@ import ItemList from './sections/ItemList.astro';
 import SectionShell from './sections/SectionShell.astro';
 import Skills from './sections/Skills.astro';
 import Timeline from './Timeline.astro';
+import TimelineToggle from './TimelineToggle.astro';
+import { offersExpandAll } from '../core/timeline';
 
 interface Props {
   sections: Section[];
@@ -26,6 +28,9 @@ const title = (key: string) => sectionTitle(key, labels, overrides);
 
 {sections.map((section) => (
   <SectionShell id={section.key} title={title(section.key)}>
+    {section.key === 'work' && offersExpandAll(resume.work, expanded) && (
+      <TimelineToggle slot="tools" labels={labels} />
+    )}
     {section.kind === 'extension' ? (
       <ItemList
         entries={extensionEntries(section.items, { ...labels, today: buildDate(), locale: labels.intl })}

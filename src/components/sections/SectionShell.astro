@@ -1,5 +1,9 @@
 ---
-/** A titled page section, a landmark labelled by its heading. */
+/**
+ * A titled page section, a landmark labelled by its heading. An optional `tools` slot
+ * sits on the heading's line (e.g. "Expand all roles") and moves under it when the line
+ * is too short, at any width and text size.
+ */
 interface Props {
   id: string;
   title: string;
@@ -7,9 +11,31 @@ interface Props {
 }
 
 const { id, title, class: className } = Astro.props;
+const hasTools = Astro.slots.has('tools');
 ---
 
 <section class:list={['section', className]} aria-labelledby={`${id}-title`} id={id}>
-  <h2 id={`${id}-title`}>{title}</h2>
+  {hasTools ? (
+    <div class="section-head">
+      <h2 id={`${id}-title`}>{title}</h2>
+      <slot name="tools" />
+    </div>
+  ) : (
+    <h2 id={`${id}-title`}>{title}</h2>
+  )}
   <slot />
 </section>
+
+<style>
+  .section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.25rem 1.5rem;
+    margin-bottom: 1.125rem;
+  }
+  .section-head h2 {
+    margin: 0;
+  }
+</style>

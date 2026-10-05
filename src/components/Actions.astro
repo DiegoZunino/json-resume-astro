@@ -21,7 +21,9 @@ const links = profiles.filter((profile) => profile.url);
 
 <div class="actions" role="group" aria-label={label}>
   <a class="button primary" href={pdfUrl} download>
-    {labels.downloadCv} <span class="detail">{labels.downloadCvDetail}</span>
+    <span>
+      {labels.downloadCv} <span class="detail">{labels.downloadCvDetail}</span>
+    </span>
   </a>
   {email && (
     <a class="button" href={`mailto:${email}`} data-href={email}>
@@ -70,11 +72,13 @@ const links = profiles.filter((profile) => profile.url);
     background: var(--mare);
     color: var(--mare-ink);
     font-size: 1rem;
-    font-weight: 650;
+    font-weight: 700;
   }
+  /* Inside one inline run with the label, so both sit on the same baseline. */
   .detail {
+    margin-left: 0.25rem;
     font-size: 0.8125rem;
-    font-weight: 450;
+    font-weight: 500;
     opacity: 0.85;
   }
   /* Up to tablet width: the download button on its own row, the secondary buttons share

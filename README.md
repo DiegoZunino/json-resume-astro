@@ -93,7 +93,7 @@ src/
   loaders/       content loader di Astro
   integrations/  PDF, immagini di condivisione, controllo privacy; script del tema con hash CSP
   i18n/          testi dell'interfaccia
-  components/    Hero, azioni, filo, timeline, sezioni, barra superiore, piè di pagina
+  components/    Hero, azioni, filo, timeline, sezioni, contatti, barra superiore, piè di pagina
   layouts/       documento (metadati) e pagina web
   pages/         pagine, JSON pubblico, favicon, robots, 404
   site/          contesto di pagina e script lato client
@@ -115,7 +115,7 @@ Si leggono dall'ambiente o da un file `.env` nella radice del progetto (mai vers
 
 ## Pubblicazione
 
-`.github/workflows/deploy.yml` pubblica su Netlify in tre job con privilegi separati: **build** (npm e Chromium, dai dati veri, senza alcun segreto), **publish** (solo `curl` e `jq` con il token, attende che Netlify dichiari il deploy pronto), **verify** (il sito pubblico serve la build appena fatta, descritta in `/build-info.json`). Si costruisce sempre e solo un commit di `main` con i controlli passati. Il sito si ricostruisce dopo ogni push verde, una volta alla settimana e quando il CV cambia: chi aggiorna il gist invia un `repository_dispatch` di tipo `resume-updated` con la revisione, e un controllo orario confronta commit e revisione con quelli pubblicati ([ADR 5](docs/adr/0005-deploy-and-updates.md)).
+`.github/workflows/deploy.yml` pubblica su Netlify in tre job con privilegi separati: **build** (npm e Chromium, dai dati veri, senza alcun segreto), **publish** (solo `curl` e `jq` con il token, attende che Netlify dichiari il deploy pronto), **verify** (il sito pubblico serve la build appena fatta, descritta in `/build-info.json`). Si costruisce sempre e solo un commit di `main` con i controlli passati. Il sito si ricostruisce dopo ogni push verde, una volta alla settimana e quando il CV cambia: chi aggiorna il gist invia un `repository_dispatch` di tipo `resume-updated` con la revisione, e un controllo orario confronta commit e revisione con quelli pubblicati ([ADR 5](docs/adr/0005-deploy-and-updates.md)). Prima di pubblicare, la build verifica che il repository linkato nel piè di pagina risponda: finché il repository è privato il controllo fallisce e il deploy si ferma. Per pubblicare con il repository privato, togliere `repository` da `resume.config.ts`.
 
 Variabili: `SITE_URL`, `RESUME_GIST` (oppure `RESUME_SOURCE_<LINGUA>`). Segreti: `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`.
 

@@ -97,12 +97,18 @@ const PHOTO_SIZES = '(max-width: 30rem) 7rem, 9.25rem';
   .role {
     margin: 0.625rem 0 0;
     font-size: var(--step-1);
-    font-weight: 550;
+    font-weight: 600;
     color: var(--mare);
     line-height: 1.35;
   }
   .part {
     white-space: nowrap;
+  }
+  /* On the narrowest screens (or with wider letter spacing) a part may wrap after all. */
+  @media (max-width: 22rem) {
+    .part {
+      white-space: normal;
+    }
   }
   .place {
     margin: 0.125rem 0 0;

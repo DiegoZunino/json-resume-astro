@@ -15,6 +15,9 @@ interface Props {
 const { resume, labels, pdfUrl } = Astro.props;
 const { email, profiles } = resume.basics;
 const links = profiles.filter((profile) => profile.url);
+// On a narrow phone the address may break after the @, never in the middle of a word:
+// the two halves are flex items of the link, which wraps between them.
+const at = email ? email.lastIndexOf('@') : -1;
 ---
 
 <section class="contact section" id="contact" aria-labelledby="contact-title">
@@ -22,7 +25,14 @@ const links = profiles.filter((profile) => profile.url);
   {email && (
     <p class="email">
       <a class="address" href={`mailto:${email}`}>
-        {email}
+        {email && at > 0 ? (
+          <>
+            <span>{email.slice(0, at)}@</span>
+            <span>{email.slice(at + 1)}</span>
+          </>
+        ) : (
+          email
+        )}
       </a>
       <button
         class="copy"
@@ -56,7 +66,7 @@ const links = profiles.filter((profile) => profile.url);
 
 <style>
   .contact {
-    padding: 2.25rem 2rem;
+    padding: 2.25rem 2rem 1.75rem;
     border-radius: 1.375rem;
     background: var(--fascia);
     color: var(--fascia-ink);
@@ -70,7 +80,9 @@ const links = profiles.filter((profile) => profile.url);
   }
   .address {
     display: inline-flex;
+    flex-wrap: wrap;
     align-items: center;
+    align-content: center;
     min-height: 3.125rem;
     padding: 0 1.375rem;
     border-radius: var(--radius);
@@ -79,7 +91,6 @@ const links = profiles.filter((profile) => profile.url);
     font-weight: 700;
     font-size: 1.0625rem;
     text-decoration: none;
-    overflow-wrap: anywhere;
     transition: transform 0.15s ease;
   }
   .address:hover {
@@ -122,7 +133,8 @@ const links = profiles.filter((profile) => profile.url);
     }
   }
   @media (forced-colors: active) {
-    .contact {
+    .contact,
+    .address {
       border: 2px solid CanvasText;
     }
   }
@@ -139,6 +151,11 @@ const links = profiles.filter((profile) => profile.url);
       min-height: 0;
       background: none;
       color: var(--ardesia);
+    }
+    /* On paper a link is only as good as its address. */
+    .links a[href^='http']::after {
+      content: ' (' attr(href) ')';
+      font-weight: 400;
     }
   }
 </style>

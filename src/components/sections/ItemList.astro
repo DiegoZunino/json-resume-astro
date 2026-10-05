@@ -1,9 +1,11 @@
 ---
 /**
  * A list of entries (talks, projects, publications, awards, volunteering, extension
- * lists) on the page's shared grid. A plain line of text gets an ochre mark in the label
- * column; a titled entry gets its meta line (event, date) there and its title, linked
- * if there is a URL, with summary and points in the body.
+ * lists) on the page's shared grid. A plain line of text hangs from an ochre dash, with
+ * no rules between lines; a titled entry shows its meta line (event, date) in the label
+ * column and its title, linked if there is a URL, with summary and points in the body.
+ * The title comes first in the document, so screen readers and the text a recruiting
+ * system extracts from the PDF read "what" before "when"; the meta is moved left by CSS.
  */
 export interface ListEntry {
   title: string;
@@ -38,7 +40,6 @@ const isPlain = (entry: ListEntry) => !entry.url && !entry.meta && !entry.summar
       </li>
     ) : (
       <li class="row">
-        <p class="row-label meta">{entry.meta}</p>
         <div class="row-body">
           <p class="title" lang={entry.lang}>
             {entry.url ? <a href={entry.url}>{entry.title}</a> : entry.title}
@@ -52,6 +53,7 @@ const isPlain = (entry: ListEntry) => !entry.url && !entry.meta && !entry.summar
             </ul>
           ) : null}
         </div>
+        {entry.meta ? <p class="row-label meta">{entry.meta}</p> : <span class="row-label" />}
       </li>
     ),
   )}
@@ -63,12 +65,23 @@ const isPlain = (entry: ListEntry) => !entry.url && !entry.meta && !entry.summar
     font-size: var(--step--1);
     color: var(--nebbia);
   }
-  .row-body {
-    line-height: 1.6;
+  .meta {
+    order: -1;
+  }
+  /* Plain lines: one list, no rules inside it; the dash hangs just before the text. */
+  .plain + .plain {
+    border-top: 0;
+  }
+  .plain {
+    padding-block: 0.375rem;
+  }
+  .plain:first-child {
+    padding-top: 0.875rem;
   }
   .mark {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     height: 1.6em;
   }
   .mark span {
@@ -94,19 +107,35 @@ const isPlain = (entry: ListEntry) => !entry.url && !entry.meta && !entry.summar
     margin-top: 0.375rem;
     padding-left: 1.125rem;
   }
+  /* When the body would fall under the label, the dash stays on the text's line. */
+  @media (max-width: 46rem) {
+    .plain {
+      flex-wrap: nowrap;
+      gap: 0.75rem;
+    }
+    .plain .mark {
+      flex: 0 0 1.125rem;
+    }
+  }
   /* On paper (the PDF and Ctrl+P): no rules between entries, just a little air; a plain
-     line takes the full width instead of leaving the label column empty. */
+     line keeps its short dash and takes the full width, no empty label column. */
   @media print {
     .entries > .row {
       padding: 0 0 1.4mm;
       border: 0;
       break-inside: avoid;
     }
-    .plain .mark {
-      display: none;
+    .plain {
+      flex-wrap: nowrap;
+      gap: 2mm;
     }
-    .plain .row-body {
-      flex-basis: 100%;
+    .plain .mark {
+      flex: 0 0 3mm;
+      height: 1.42em;
+    }
+    .mark span {
+      width: 3mm;
+      height: 1.2pt;
     }
   }
   @media (forced-colors: active) {

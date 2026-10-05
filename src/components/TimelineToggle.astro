@@ -1,0 +1,47 @@
+---
+/**
+ * "Expand all / collapse all roles", on the line of the section heading. Hidden until the
+ * timeline script runs: without JavaScript every role is already open.
+ */
+import type { Labels } from '../i18n/labels';
+
+interface Props {
+  labels: Labels;
+}
+
+const { labels } = Astro.props;
+---
+
+<button
+  type="button"
+  class="toggle-all"
+  data-toggle-all
+  data-expand={labels.expandAll}
+  data-collapse={labels.collapseAll}
+  hidden
+>
+  {labels.expandAll}
+</button>
+
+<style>
+  .toggle-all {
+    min-height: 2.75rem;
+    padding: 0 0.25rem;
+    border: 0;
+    background: transparent;
+    color: var(--mare);
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .toggle-all:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  @media print {
+    .toggle-all {
+      display: none !important;
+    }
+  }
+</style>

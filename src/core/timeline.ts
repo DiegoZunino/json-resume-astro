@@ -85,3 +85,17 @@ export function groupByOrganisation<T extends { name?: string | undefined }>(
 }
 
 const round = (value: number) => Math.round(value * 100) / 100;
+
+/** What a role can show when it opens: without any of it, the role is a plain heading. */
+export interface Readable {
+  summary?: string | undefined;
+  description?: string | undefined;
+  highlights?: readonly string[] | undefined;
+}
+
+export const hasDetails = (item: Readable): boolean =>
+  Boolean(item.summary || item.description || item.highlights?.length);
+
+/** "Expand all" is offered only when some role starts closed. */
+export const offersExpandAll = (items: readonly Readable[], expanded: number): boolean =>
+  items.filter(hasDetails).length > expanded;

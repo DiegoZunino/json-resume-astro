@@ -5,6 +5,11 @@
  *
  *   Where it starts  ●──────────●  where it lands
  *
+ * When both phrases fit on one line with the wire between them, they share it; otherwise
+ * they stack (first phrase, a short wire, destination), never a wire pointing at an empty
+ * line end. The width needed is estimated from the text at build time and checked with a
+ * container query, so it holds at any font size and without JavaScript.
+ *
  * On the web it tells the passage in sequence: the first phrase, the line drawing
  * itself towards the right, then the destination. Drawn with borders, not backgrounds,
  * so it stays visible in forced-colours mode. The two phrases carry the meaning; the
@@ -19,61 +24,168 @@ interface Props {
 }
 
 const { from, to, animate = false, class: className } = Astro.props;
+// Width of one line in em: about 0.45em per character of this face at weight 600, plus the
+// shortest wire and the gaps; rounded up to a step of 4em, the steps the styles know.
+const needed = (from.length + to.length) * 0.45 + 7.5;
+const fit = Math.min(Math.max(Math.ceil(needed / 4) * 4, 24), 64);
 ---
 
 <p class:list={['wire', className, { animate }]}>
-  <span class="from">{from}</span>
-  <span class="line" aria-hidden="true">
-    <span class="stroke"></span>
+  <span class:list={['inner', `fit-${fit}`]}>
+    <span class="from">{from}</span>
+    <span class="line" aria-hidden="true">
+      <span class="stroke"></span>
+    </span>
+    <span class="to">{to}</span>
   </span>
-  <span class="to">{to}</span>
 </p>
 
 <style>
   .wire {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.4em 0.75em;
+    container: wire / inline-size;
     margin: 0;
     font-weight: 600;
     letter-spacing: -0.01em;
     line-height: 1.25;
   }
+  /* Stacked by default: the first phrase, a short wire, the destination. On one line
+     (below) the phrases sit either side of the wire; each may still wrap inside its own
+     half if the estimate was short, and the wire stays between them. */
+  .inner {
+    --w: 4px; /* thickness of the wire */
+    --r: 0.25em; /* radius of its end nodes */
+    display: flex;
+    flex-direction: var(--dir, column);
+    align-items: var(--align, flex-start);
+    gap: 0.4em 0.75em;
+  }
+  @container wire (min-width: 24em) {
+    .fit-24 {
+      --dir: row;
+      --align: center;
+      --line: 1 1 3em;
+      --line-width: auto;
+    }
+  }
+  @container wire (min-width: 28em) {
+    .fit-28 {
+      --dir: row;
+      --align: center;
+      --line: 1 1 3em;
+      --line-width: auto;
+    }
+  }
+  @container wire (min-width: 32em) {
+    .fit-32 {
+      --dir: row;
+      --align: center;
+      --line: 1 1 3em;
+      --line-width: auto;
+    }
+  }
+  @container wire (min-width: 36em) {
+    .fit-36 {
+      --dir: row;
+      --align: center;
+      --line: 1 1 3em;
+      --line-width: auto;
+    }
+  }
+  @container wire (min-width: 40em) {
+    .fit-40 {
+      --dir: row;
+      --align: center;
+      --line: 1 1 3em;
+      --line-width: auto;
+    }
+  }
+  @container wire (min-width: 44em) {
+    .fit-44 {
+      --dir: row;
+      --align: center;
+      --line: 1 1 3em;
+      --line-width: auto;
+    }
+  }
+  @container wire (min-width: 48em) {
+    .fit-48 {
+      --dir: row;
+      --align: center;
+      --line: 1 1 3em;
+      --line-width: auto;
+    }
+  }
+  @container wire (min-width: 52em) {
+    .fit-52 {
+      --dir: row;
+      --align: center;
+      --line: 1 1 3em;
+      --line-width: auto;
+    }
+  }
+  @container wire (min-width: 56em) {
+    .fit-56 {
+      --dir: row;
+      --align: center;
+      --line: 1 1 3em;
+      --line-width: auto;
+    }
+  }
+  @container wire (min-width: 60em) {
+    .fit-60 {
+      --dir: row;
+      --align: center;
+      --line: 1 1 3em;
+      --line-width: auto;
+    }
+  }
+  @container wire (min-width: 64em) {
+    .fit-64 {
+      --dir: row;
+      --align: center;
+      --line: 1 1 3em;
+      --line-width: auto;
+    }
+  }
+  .from,
+  .to {
+    min-width: 0;
+  }
   .to {
     color: var(--mare);
   }
   .line {
-    flex: 1 1 3em;
-    min-width: 3em;
-    max-width: 9em;
+    flex: var(--line, none);
     display: flex;
     align-items: center;
+    width: var(--line-width, 7em);
+    min-width: 3em;
+    max-width: min(9em, 100%);
     height: 0.7em;
   }
   .stroke {
     position: relative;
     flex: 1;
     height: 0;
-    border-top: 4px solid var(--gru);
-    margin-inline: 0.25em;
+    border-top: var(--w) solid var(--gru);
+    margin-inline: var(--r);
   }
+  /* Nodes centred on the wire: the stroke's box starts below its border. */
   .stroke::before,
   .stroke::after {
     content: '';
     position: absolute;
-    top: -0.3em;
+    top: calc(var(--w) / -2 - var(--r));
     width: 0;
     height: 0;
-    border: 0.25em solid var(--gru);
+    border: var(--r) solid var(--gru);
     border-radius: 50%;
-    margin-top: -2px;
   }
   .stroke::before {
-    left: -0.3em;
+    left: calc(var(--r) * -1);
   }
   .stroke::after {
-    right: -0.3em;
+    right: calc(var(--r) * -1);
   }
   .animate .from {
     animation: enter 0.5s ease-out 0.05s both;

@@ -137,6 +137,8 @@ const contacts = [
   }
   .sheet {
     --photo-size: 17mm;
+    --label: 38mm; /* label column of skills, studies and dated entries */
+    --body-min: 60mm;
     color: var(--ardesia);
   }
   .head {
@@ -153,7 +155,7 @@ const contacts = [
   .role {
     margin: 0.15rem 0 0.2rem;
     font-size: 1.2rem;
-    font-weight: 560;
+    font-weight: 600;
     color: var(--mare);
   }
   .contacts {
@@ -170,14 +172,13 @@ const contacts = [
     font-size: 1.1rem;
   }
   /* On paper the nodes must stay visible: larger dots on a thinner line. */
-  .sheet :global(.tagline .stroke) {
-    border-top-width: 1.6pt;
+  .sheet :global(.tagline .inner) {
+    --w: 1.6pt;
+    --r: 0.32em;
   }
-  .sheet :global(.tagline .stroke::before),
-  .sheet :global(.tagline .stroke::after) {
-    top: -0.4em;
-    border-width: 0.32em;
-    margin-top: -0.8pt;
+  /* The same ochre ring as on the web page. */
+  .head :global(.photo) {
+    box-shadow: 0 0 0 1.4pt var(--gru);
   }
   h2 {
     margin: 5mm 0 2mm;
@@ -185,7 +186,7 @@ const contacts = [
     border-bottom: 0.6pt solid var(--linea);
     color: var(--mare);
     font-size: 1rem;
-    font-weight: 650;
+    font-weight: 700;
     letter-spacing: 0;
     break-after: avoid;
   }
@@ -206,7 +207,7 @@ const contacts = [
   }
   .org-name {
     margin: 2mm 0 1mm;
-    font-weight: 650;
+    font-weight: 700;
   }
   .org-about {
     margin: 0 0 1mm;
@@ -229,7 +230,7 @@ const contacts = [
   }
   .job-title {
     margin: 0;
-    font-weight: 620;
+    font-weight: 700;
   }
   .job-org {
     font-weight: 500;
@@ -242,19 +243,29 @@ const contacts = [
   .job p {
     margin: 0.5mm 0;
   }
+  /* Highlights carry the same small dot as on the web page. */
   .job ul {
     margin: 0.5mm 0 0;
-    padding-left: 4mm;
+    padding: 0;
+    list-style: none;
   }
   .job li {
+    position: relative;
     margin-bottom: 0.4mm;
+    padding-left: 3.2mm;
+  }
+  .job li::before {
+    content: '';
+    position: absolute;
+    left: 0.6mm;
+    top: 0.62em;
+    width: 1.3mm;
+    height: 1.3mm;
+    border-radius: 50%;
+    background: var(--barra);
   }
   section :global(.pairs > div) {
     padding: 1mm 0;
-  }
-  section :global(.pairs),
-  section :global(.entries) {
-    max-width: none;
   }
   /* The section title already draws a rule above the first entry. */
   section :global(.pairs > div:first-child) {
