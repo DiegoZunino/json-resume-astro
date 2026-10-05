@@ -197,6 +197,13 @@ ul {
   min-width: 0;
   margin: 0;
 }
+/* Up to tablet width a label takes its own line, like the timeline's: one threshold for
+   every list on the page. */
+@media screen and (max-width: 51.99rem) {
+  .row-label {
+    flex-basis: 100%;
+  }
+}
 .row-body {
   flex: 1 1 var(--body-min);
   min-width: 0;

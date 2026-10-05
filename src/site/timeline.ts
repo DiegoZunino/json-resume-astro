@@ -64,8 +64,11 @@ export function initTimelines(): void {
  * it is still below the fold. Without the observer they simply run on load.
  */
 function revealWhenVisible(timeline: HTMLElement): void {
-  if (!('IntersectionObserver' in window)) return;
-  if (timeline.getBoundingClientRect().top < window.innerHeight) return;
+  const roles = timeline.querySelector<HTMLElement>('.roles');
+  if (!roles || !('IntersectionObserver' in window)) return;
+  // "Seen" means the roles are well inside the screen, not a few pixels peeking at its foot.
+  const margin = 0.15;
+  if (roles.getBoundingClientRect().top < window.innerHeight * (1 - margin)) return;
   timeline.dataset.reveal = 'wait';
   const observer = new IntersectionObserver(
     (entries) => {
@@ -73,7 +76,7 @@ function revealWhenVisible(timeline: HTMLElement): void {
       delete timeline.dataset.reveal;
       observer.disconnect();
     },
-    { threshold: 0.15 },
+    { rootMargin: `0px 0px -${margin * 100}% 0px` },
   );
-  observer.observe(timeline);
+  observer.observe(roles);
 }

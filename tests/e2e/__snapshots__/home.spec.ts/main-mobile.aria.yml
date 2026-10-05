@@ -114,7 +114,7 @@
   - region "Contatti":
     - heading "Contatti" [level=2]
     - paragraph:
-      - link "ada@ example.org":
+      - link "ada@example.org":
         - /url: mailto:ada@example.org
       - button "Copia l’indirizzo"
       - status

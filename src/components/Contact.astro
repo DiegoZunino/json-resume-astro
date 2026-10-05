@@ -15,8 +15,8 @@ interface Props {
 const { resume, labels, pdfUrl } = Astro.props;
 const { email, profiles } = resume.basics;
 const links = profiles.filter((profile) => profile.url);
-// On a narrow phone the address may break after the @, never in the middle of a word:
-// the two halves are flex items of the link, which wraps between them.
+// On a narrow phone the address may break after the @ (<wbr>), never in the middle of a
+// word; selected and copied, or read by a screen reader, it stays one address.
 const at = email ? email.lastIndexOf('@') : -1;
 ---
 
@@ -25,14 +25,7 @@ const at = email ? email.lastIndexOf('@') : -1;
   {email && (
     <p class="email">
       <a class="address" href={`mailto:${email}`}>
-        {email && at > 0 ? (
-          <>
-            <span>{email.slice(0, at)}@</span>
-            <span>{email.slice(at + 1)}</span>
-          </>
-        ) : (
-          email
-        )}
+        {email && at > 0 ? <span>{[`${email.slice(0, at)}@`, <wbr />, email.slice(at + 1)]}</span> : email}
       </a>
       <button
         class="copy"
@@ -80,9 +73,8 @@ const at = email ? email.lastIndexOf('@') : -1;
   }
   .address {
     display: inline-flex;
-    flex-wrap: wrap;
     align-items: center;
-    align-content: center;
+    max-width: 100%;
     min-height: 3.125rem;
     padding: 0 1.375rem;
     border-radius: var(--radius);
@@ -137,6 +129,10 @@ const at = email ? email.lastIndexOf('@') : -1;
     .address {
       border: 2px solid CanvasText;
     }
+    .address {
+      background: Canvas;
+      color: LinkText;
+    }
   }
   @media print {
     .contact {
@@ -154,7 +150,7 @@ const at = email ? email.lastIndexOf('@') : -1;
     }
     /* On paper a link is only as good as its address. */
     .links a[href^='http']::after {
-      content: ' (' attr(href) ')';
+      content: '\00a0(' attr(href) ')';
       font-weight: 400;
     }
   }

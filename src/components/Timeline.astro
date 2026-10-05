@@ -255,10 +255,13 @@ const accessibleName = (item: WorkItem) =>
   .role:nth-child(n + 6) .span {
     animation-delay: 0.4s;
   }
-  .current .span,
+  /* Ochre means "now": the role under the pointer or focus is marked in sea green. */
+  .current .span {
+    fill: var(--gru);
+  }
   .role:hover .span,
   .role:has(.head:focus-visible) .span {
-    fill: var(--gru);
+    fill: var(--mare);
   }
   @keyframes grow {
     from {
@@ -287,7 +290,7 @@ const accessibleName = (item: WorkItem) =>
   }
   .where {
     flex: 1 1 100%;
-    margin: 0;
+    margin: 0 0 0.375rem;
     font-size: 0.8125rem;
     color: var(--nebbia);
   }
@@ -313,19 +316,19 @@ const accessibleName = (item: WorkItem) =>
     list-style: none;
   }
   .body li {
-    position: relative;
     margin-bottom: 0.25rem;
     padding-left: 1rem;
   }
+  /* In the text flow (hanging indent), not positioned: printed, the text keeps its order. */
   .body li::before {
     content: '';
-    position: absolute;
-    left: 0.125rem;
-    top: 0.65em;
+    display: inline-block;
     width: 0.375rem;
     height: 0.375rem;
+    margin: 0 0.5rem 0 -0.875rem;
     border-radius: 50%;
     background: var(--barra);
+    vertical-align: 0.12em;
   }
   .role:has(button[aria-expanded='false']) .panel {
     display: none;
@@ -337,6 +340,9 @@ const accessibleName = (item: WorkItem) =>
     .where {
       flex: 0 1 var(--label);
     }
+    .where {
+      margin-bottom: 0;
+    }
     .axis {
       display: flex;
       gap: 0 1.5rem;
@@ -346,7 +352,8 @@ const accessibleName = (item: WorkItem) =>
     .axis-hint {
       flex: 0 1 var(--label);
       font-size: 0.8125rem;
-      align-self: center;
+      line-height: 1rem;
+      align-self: flex-start;
     }
     .years {
       flex: 1 1 var(--body-min);
@@ -357,7 +364,7 @@ const accessibleName = (item: WorkItem) =>
       font-size: 0.75rem;
     }
     .axis-span {
-      fill: var(--gru);
+      fill: var(--mare);
       opacity: 0;
     }
     .axis-span[data-on] {
@@ -394,7 +401,7 @@ const accessibleName = (item: WorkItem) =>
     }
     /* Ctrl+P must show every role in full, not a panel caught at the start of its fade. */
     .panel {
-      display: flex !important;
+      display: block !important;
       animation: none !important;
       opacity: 1;
       transform: none;
@@ -406,7 +413,8 @@ const accessibleName = (item: WorkItem) =>
   @media (forced-colors: active) {
     .span,
     .current .span,
-    .role:hover .span {
+    .role:hover .span,
+    .role:has(.head:focus-visible) .span {
       fill: CanvasText;
     }
     .track {

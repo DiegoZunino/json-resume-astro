@@ -137,7 +137,7 @@ const contacts = [
   }
   .sheet {
     --photo-size: 17mm;
-    --label: 38mm; /* label column of skills, studies and dated entries */
+    --label: 44mm; /* label column of skills, studies and dated entries */
     --body-min: 60mm;
     color: var(--ardesia);
   }
@@ -178,7 +178,8 @@ const contacts = [
   }
   /* The same ochre ring as on the web page. */
   .head :global(.photo) {
-    box-shadow: 0 0 0 1.4pt var(--gru);
+    box-shadow: none;
+    border: 1.4pt solid var(--gru);
   }
   h2 {
     margin: 5mm 0 2mm;
@@ -243,26 +244,28 @@ const contacts = [
   .job p {
     margin: 0.5mm 0;
   }
-  /* Highlights carry the same small dot as on the web page. */
+  /* Highlights carry the same small dot as on the web page. The dot stays in the text
+     flow (inline-block with a hanging indent, never absolutely positioned): Chrome writes
+     positioned boxes later in the PDF, and the text a recruiting system extracts would
+     then put these points under the last role on the page. */
   .job ul {
     margin: 0.5mm 0 0;
     padding: 0;
     list-style: none;
   }
   .job li {
-    position: relative;
     margin-bottom: 0.4mm;
     padding-left: 3.2mm;
   }
   .job li::before {
     content: '';
-    position: absolute;
-    left: 0.6mm;
-    top: 0.62em;
+    display: inline-block;
     width: 1.3mm;
     height: 1.3mm;
+    margin: 0 1.9mm 0 -3.2mm;
     border-radius: 50%;
     background: var(--barra);
+    vertical-align: 0.12em;
   }
   section :global(.pairs > div) {
     padding: 1mm 0;

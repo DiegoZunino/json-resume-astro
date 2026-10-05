@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTimeline, groupByOrganisation, yearTicks } from '../../src/core/timeline';
+import { buildTimeline, groupByOrganisation, hasDetails, offersExpandAll, yearTicks } from '../../src/core/timeline';
 
 const ref = new Date(Date.UTC(2026, 0, 1));
 
@@ -60,5 +60,25 @@ describe('groupByOrganisation', () => {
       ['A', 1],
       [undefined, 1],
     ]);
+  });
+});
+
+describe('hasDetails and offersExpandAll', () => {
+  const plain = {};
+  const told = { summary: 'Guida di un team.' };
+  const listed = { highlights: ['Rilasci settimanali.'] };
+
+  it('a role opens only if it has something to read', () => {
+    expect(hasDetails(plain)).toBe(false);
+    expect(hasDetails({ highlights: [] })).toBe(false);
+    expect(hasDetails(told)).toBe(true);
+    expect(hasDetails({ description: 'Azienda.' })).toBe(true);
+    expect(hasDetails(listed)).toBe(true);
+  });
+
+  it('offers "expand all" only when some role with details starts closed', () => {
+    expect(offersExpandAll([told, listed, plain], 2)).toBe(false);
+    expect(offersExpandAll([told, listed, plain], 1)).toBe(true);
+    expect(offersExpandAll([plain, plain], 0)).toBe(false);
   });
 });

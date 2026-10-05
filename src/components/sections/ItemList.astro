@@ -65,7 +65,7 @@ const isPlain = (entry: ListEntry) => !entry.url && !entry.meta && !entry.summar
     font-size: var(--step--1);
     color: var(--nebbia);
   }
-  .meta {
+  .row-label {
     order: -1;
   }
   /* Plain lines: one list, no rules inside it; the dash hangs just before the text. */
@@ -108,7 +108,7 @@ const isPlain = (entry: ListEntry) => !entry.url && !entry.meta && !entry.summar
     padding-left: 1.125rem;
   }
   /* When the body would fall under the label, the dash stays on the text's line. */
-  @media (max-width: 46rem) {
+  @media screen and (max-width: 51.99rem) {
     .plain {
       flex-wrap: nowrap;
       gap: 0.75rem;
@@ -136,6 +136,19 @@ const isPlain = (entry: ListEntry) => !entry.url && !entry.meta && !entry.summar
     .mark span {
       width: 3mm;
       height: 1.2pt;
+    }
+    /* On paper a dated entry is one column, the title then its meta line: that is also
+       the order of the text a recruiting system extracts from the PDF. */
+    .row-label.meta {
+      order: 0;
+      flex-basis: 100%;
+      padding-top: 0;
+    }
+    .row:has(.meta) > .row-body {
+      flex-basis: 100%;
+    }
+    .row-label:not(.meta):empty {
+      display: none;
     }
   }
   @media (forced-colors: active) {

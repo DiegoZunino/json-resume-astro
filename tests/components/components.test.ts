@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { beforeAll, describe, expect, it } from 'vitest';
 import Actions from '../../src/components/Actions.astro';
+import Contact from '../../src/components/Contact.astro';
 import Timeline from '../../src/components/Timeline.astro';
 import Wire from '../../src/components/Wire.astro';
 import { parseResume, type Resume } from '../../src/core/schema';
@@ -59,6 +60,13 @@ describe('Actions', () => {
     expect(html).toContain('rel="me"');
     // The first screen offers "Email", not the address: that is shown in full in Contacts.
     expect(html).not.toMatch(/>\s*ada@example\.org\s*</);
+  });
+});
+
+describe('Contact', () => {
+  it('shows the address whole, breakable only after the @', async () => {
+    const html = await container.renderToString(Contact, { props: { resume, labels, pdfUrl: '/cv-it.pdf' } });
+    expect(html).toMatch(/<span[^>]*>ada@<wbr[^>]*>example\.org<\/span>/);
   });
 });
 

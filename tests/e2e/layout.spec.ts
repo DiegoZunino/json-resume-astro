@@ -79,7 +79,7 @@ test('Ctrl+P prints every role in full, even the closed ones', async ({ page }) 
     }),
   );
   expect(panels.length).toBeGreaterThan(0);
-  for (const panel of panels) expect(panel).toEqual(['flex', '1', true]);
+  for (const panel of panels) expect(panel).toEqual(['block', '1', true]);
 });
 
 test.describe('the wire', () => {

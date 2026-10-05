@@ -24,9 +24,10 @@ interface Props {
 }
 
 const { from, to, animate = false, class: className } = Astro.props;
-// Width of one line in em: about 0.45em per character of this face at weight 600, plus the
-// shortest wire and the gaps; rounded up to a step of 4em, the steps the styles know.
-const needed = (from.length + to.length) * 0.45 + 7.5;
+// Width of one line in em: at most 0.5em per character of this face at weight 600 (Italian
+// and English measure 0.46-0.49), plus the shortest wire (3em) and the two gaps (1.5em);
+// rounded up to a step of 4em, the steps the styles know.
+const needed = (from.length + to.length) * 0.5 + 4.5;
 const fit = Math.min(Math.max(Math.ceil(needed / 4) * 4, 24), 64);
 ---
 
@@ -215,7 +216,8 @@ const fit = Math.min(Math.max(Math.ceil(needed / 4) * 4, 24), 64);
       transform: none;
     }
   }
-  @media (prefers-reduced-motion: reduce) {
+  /* Printed in the first two seconds, the wire must already be whole. */
+  @media (prefers-reduced-motion: reduce), print {
     .animate .from,
     .animate .stroke,
     .animate .to {
