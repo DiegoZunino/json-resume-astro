@@ -35,6 +35,18 @@ const safeUrl = (value: unknown): string | undefined => {
   }
 };
 
+/** A valid BCP 47 tag ("it", "en-GB"), canonicalised; anything else is dropped (and reported). */
+function languageTag(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  try {
+    const tag = Intl.getCanonicalLocales(value)[0];
+    // A language code of two or three letters: "Italian" is well formed but names no language.
+    return tag && /^[a-z]{2,3}(-|$)/.test(tag) ? tag : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** One entry of an extension list, or undefined if it has no text to show. */
 function extensionItem(entry: unknown): ExtensionItem | undefined {
   if (typeof entry === 'string') return entry.trim() ? { title: entry } : undefined;
@@ -47,7 +59,7 @@ function extensionItem(entry: unknown): ExtensionItem | undefined {
     date: str(entry.date),
     meta: str(entry.event) ?? str(entry.publisher) ?? str(entry.meta),
     summary: str(entry.summary) ?? str(entry.description),
-    lang: str(entry.language) ?? str(entry.lang),
+    lang: languageTag(str(entry.language) ?? str(entry.lang)),
   };
 }
 
@@ -67,7 +79,11 @@ export function extensionProblems(resume: Record<string, unknown>): string[] {
   return Object.entries(resume)
     .filter(([key, value]) => key.startsWith('x-') && Array.isArray(value))
     .flatMap(([key, value]) =>
-      (value as unknown[]).flatMap((entry, index) => (extensionItem(entry) ? [] : [`${key}[${index}]`])),
+      (value as unknown[]).flatMap((entry, index) => {
+        if (!extensionItem(entry)) return [`${key}[${index}] has no text and is not shown`];
+        const lang = isRecord(entry) ? (str(entry.language) ?? str(entry.lang)) : undefined;
+        return lang && !languageTag(lang) ? [`${key}[${index}]: "${lang}" is not a language tag (e.g. "it")`] : [];
+      }),
     );
 }
 

@@ -13,7 +13,7 @@ _A generic, accessible front end for JSON Resume built with Astro: web page, PDF
 
 ## Cosa fa
 
-- **Qualunque JSON Resume v1.0.0**: tutte le sezioni dello schema, più le estensioni `x-` (elenchi di testi o di oggetti con `title`, `url`, `event`, `date`).
+- **Qualunque JSON Resume v1.0.0**: tutte le sezioni dello schema, più le estensioni `x-` (elenchi di testi o di oggetti con `title`, `url`, `event`, `date`, `summary` e `language`, il codice della lingua della voce, ad esempio `it`: la pagina lo dichiara con `lang` e lo segnala a chi legge).
 - **Una lingua per file**, con routing i18n di Astro: la lingua predefinita alla radice, le altre in `/<lingua>/`. I testi dell'interfaccia esistono in italiano e inglese; per un'altra lingua si aggiunge il suo catalogo in [`src/i18n/labels.ts`](src/i18n/labels.ts) (senza, la configurazione si ferma).
 - **Prima schermata** con nome, ruolo, una frase e le azioni (CV, email, profili); **percorso** come accordion accessibile con le barre nel tempo; tema chiaro, scuro o automatico.
 - **CV in PDF** (A4, testo selezionabile, font incorporati) e **immagine di condivisione** 1200×630 per lingua, generati dagli stessi componenti.
@@ -115,7 +115,7 @@ Si leggono dall'ambiente o da un file `.env` nella radice del progetto (mai vers
 
 ## Pubblicazione
 
-`.github/workflows/deploy.yml` pubblica su Netlify in tre job con privilegi separati: **build** (npm e Chromium, dai dati veri, senza alcun segreto), **publish** (solo `curl` e `jq` con il token, attende che Netlify dichiari il deploy pronto), **verify** (il sito pubblico serve la build appena fatta, descritta in `/build-info.json`). Si costruisce sempre e solo un commit di `main` con i controlli passati. Il sito si ricostruisce dopo ogni push verde e quando il CV cambia: chi aggiorna il gist invia un `repository_dispatch` di tipo `resume-updated` con la revisione, e un controllo orario confronta commit e revisione con quelli pubblicati ([ADR 5](docs/adr/0005-deploy-and-updates.md)).
+`.github/workflows/deploy.yml` pubblica su Netlify in tre job con privilegi separati: **build** (npm e Chromium, dai dati veri, senza alcun segreto), **publish** (solo `curl` e `jq` con il token, attende che Netlify dichiari il deploy pronto), **verify** (il sito pubblico serve la build appena fatta, descritta in `/build-info.json`). Si costruisce sempre e solo un commit di `main` con i controlli passati. Il sito si ricostruisce dopo ogni push verde, una volta alla settimana e quando il CV cambia: chi aggiorna il gist invia un `repository_dispatch` di tipo `resume-updated` con la revisione, e un controllo orario confronta commit e revisione con quelli pubblicati ([ADR 5](docs/adr/0005-deploy-and-updates.md)).
 
 Variabili: `SITE_URL`, `RESUME_GIST` (oppure `RESUME_SOURCE_<LINGUA>`). Segreti: `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`.
 
@@ -135,8 +135,9 @@ La qualità non si affida alla fiducia. Ogni modifica passa dai controlli automa
 | 2    | 8      | 7                  | 6,5       |
 | 3    | 8,5    | 8                  | 7,5       |
 | 4    | 9      | 8,5                | 8         |
+| 5    | 9,5    | 8,5 → 9            | 8,5       |
 
-Restano umani la prova con i lettori di schermo e le decisioni sui contenuti. Le scelte di fondo sono nelle [ADR](docs/adr/).
+Restano da fare a mano, e non sono ancora fatte: la prova con i lettori di schermo (NVDA, VoiceOver). Le decisioni sui contenuti restano mie. Le scelte di fondo sono nelle [ADR](docs/adr/).
 
 ## Prossimi esperimenti
 

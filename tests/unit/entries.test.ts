@@ -34,7 +34,7 @@ describe('extensionEntries', () => {
   const options = {
     ...text,
     upcoming: 'upcoming',
-    reference: new Date(Date.UTC(2026, 9, 5)),
+    today: new Date(Date.UTC(2026, 9, 5)),
     locale: 'en-GB',
     inLanguage: (name: string) => `in ${name}`,
   };
@@ -69,7 +69,7 @@ describe('extensionEntries and languages', () => {
     const options = {
       ...text,
       upcoming: 'upcoming',
-      reference: new Date(Date.UTC(2026, 9, 5)),
+      today: new Date(Date.UTC(2026, 9, 5)),
       locale: 'en-GB',
       inLanguage: (name: string) => `in ${name}`,
     };
@@ -92,7 +92,7 @@ describe('extensionEntries and languages', () => {
     const options = {
       ...text,
       upcoming: 'upcoming',
-      reference: new Date(Date.UTC(2026, 9, 5)),
+      today: new Date(Date.UTC(2026, 9, 5)),
       locale: 'en-GB',
       inLanguage: (name: string) => `in ${name}`,
     };

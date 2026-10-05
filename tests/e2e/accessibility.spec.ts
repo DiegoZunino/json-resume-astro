@@ -77,3 +77,28 @@ test('reflows at 320 CSS pixels without horizontal scrolling (WCAG 1.4.10)', asy
   await page.goto('/');
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
 });
+
+test('the action buttons fill their row and never overflow, from 320 to 1024 px', async ({ page }) => {
+  for (const path of ['/', '/en/']) {
+    await page.goto(path);
+    for (let width = 320; width <= 1024; width += 16) {
+      await page.setViewportSize({ width, height: 800 });
+      const narrow = width <= 736; // the 46rem breakpoint of Actions.astro
+      const problems = await page.$$eval(
+        '.hero .actions > a',
+        (links, narrowScreen) => {
+          const row = links[0]!.parentElement!.getBoundingClientRect();
+          const secondary = links.slice(1).map((link) => link.getBoundingClientRect());
+          const overflow = links.filter((link) => link.scrollWidth > link.clientWidth + 1).length;
+          // On narrow screens the secondary buttons share one row edge to edge.
+          const lastRight = Math.max(...secondary.map((box) => box.right));
+          const gap = narrowScreen ? row.right - lastRight : 0;
+          return { overflow, gap };
+        },
+        narrow,
+      );
+      expect(problems, `${path} at ${width}px`).toEqual({ overflow: 0, gap: expect.any(Number) });
+      expect(problems.gap, `${path} at ${width}px`).toBeLessThan(2);
+    }
+  }
+});

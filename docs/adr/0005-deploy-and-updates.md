@@ -14,6 +14,10 @@ Il CV vive in un gist pubblico e cambia senza toccare il codice. I gist non hann
 - Aggiornamento del dato: chi scrive il gist invia un `repository_dispatch` con la revisione; in più, un controllo orario confronta commit verde e revisione del gist con quelli pubblicati (`/build-info.json`) e ricostruisce se uno dei due è cambiato: così anche un deploy di codice rimasto in coda non si perde. L'URL raw è fissato alla revisione per evitare la cache.
 - Le action sono bloccate a SHA (aggiornate da Dependabot); permessi minimi per job.
 
+- Una riesecuzione di un vecchio run di `ci` non pubblica: dopo `ci` si costruisce solo se il commit è ancora la HEAD di `main`.
+- Una volta alla settimana si ricostruisce comunque: le date calcolate alla build ("in programma") restano vere.
+- Prima di pubblicare, la build controlla che il repository linkato nel footer risponda: se è privato o il nome è sbagliato, la pubblicazione si ferma invece di mettere online un 404.
+
 ## Conseguenze
 
 Il token di Netlify è personale e vale per tutto l'account: conviene un team Netlify dedicato al sito, e l'environment `production` di GitHub limitato al branch `main`.

@@ -32,7 +32,7 @@ on:
     - cron: '23 * * * *'
     # Weekly rebuild even without changes: dates computed at build time (an "upcoming"
     # talk that has now been given) stay true.
-    - cron: '41 5 * * 1'
+    - cron: '41 5 * * 1' # the same string is tested below, in the revision job
   workflow_dispatch:
 
 permissions:
@@ -99,6 +99,7 @@ jobs:
           fi
 
           build=true
+          # The weekly cron (declared above) always rebuilds; the hourly one only on changes.
           if [ "$EVENT" = schedule ] && [ "$CRON" != '41 5 * * 1' ]; then
             live="$(curl -fsS --max-time 10 "$SITE_URL/build-info.json" 2>/dev/null || echo '{}')"
             if [ "$(jq -r '.commit // ""' <<<"$live")" = "$sha" ] && [ "$(jq -r '.resume // ""' <<<"$live")" = "$revision" ]; then

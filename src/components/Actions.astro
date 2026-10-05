@@ -154,21 +154,20 @@ const links = profiles.filter((profile) => profile.url);
   .copy:hover {
     border-color: var(--mare);
   }
-  /* Up to tablet width: the download button on its own row, the secondary buttons share the next. */
-  @media (max-width: 44rem) {
-    .actions {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(5.25rem, 1fr));
+  /* Up to tablet width: the download button on its own row, the secondary buttons share
+     the next one in equal parts, however many there are. */
+  @media (max-width: 46rem) {
+    .actions > .primary {
+      flex: 1 0 100%;
+    }
+    .actions > :not(.primary) {
+      flex: 1 1 0;
+      min-width: 0;
+      justify-content: center;
+      padding-inline: 0.6rem;
     }
     .address-detail {
       display: none;
-    }
-    .actions > .primary {
-      grid-column: 1 / -1;
-    }
-    .actions > * {
-      justify-content: center;
-      padding-inline: 0.6rem;
     }
   }
   /* Very narrow screens: the secondary buttons keep their words and drop the icons. */

@@ -2,7 +2,7 @@
  * Maps the list-like sections of a resume to one shape (title, link, meta line,
  * summary, points), so a single component renders projects, talks, awards and so on.
  */
-import { formatDate, formatRange, toMonths } from './dates';
+import { formatDate, formatRange, isAfter } from './dates';
 import type { Resume } from './schema';
 import type { ExtensionItem } from './sections';
 import { joinParts } from './text';
@@ -72,8 +72,8 @@ export function entriesFor(key: ListKey, resume: Resume, { intl, ongoing }: Entr
 const PARTIAL_DATE = /^\d{4}(-\d{2})?(-\d{2})?$/;
 
 /**
- * Entries of an `x-` list. A date in the future of the reference date is marked as
- * upcoming (computed at build time, so a talk given last month is no longer "upcoming");
+ * Entries of an `x-` list. A date after the build date is marked as upcoming (the site
+ * is rebuilt at least weekly, so a talk already given loses the mark);
  * a bare year already present in the meta line ("AI Week 2026") is not repeated.
  */
 export function extensionEntries(
@@ -82,17 +82,17 @@ export function extensionEntries(
     intl,
     ongoing,
     upcoming,
-    reference,
+    today,
     locale,
     inLanguage,
-  }: EntryText & { upcoming: string; reference: Date; locale: string; inLanguage: (name: string) => string },
+  }: EntryText & { upcoming: string; today: Date; locale: string; inLanguage: (name: string) => string },
 ): Entry[] {
   const languageOf = (lang: string) => new Intl.DisplayNames([locale], { type: 'language' }).of(lang) ?? lang;
   // When the whole list shares one other language, the list says it once (listLanguage).
   const shared = sharedForeignLanguage(items, locale);
   return items.map((item) => {
     const isDate = item.date !== undefined && PARTIAL_DATE.test(item.date);
-    const future = isDate && toMonths(item.date, reference) > toMonths(undefined, reference);
+    const future = isDate && isAfter(item.date!, today);
     const redundantYear = isDate && item.date!.length === 4 && Boolean(item.meta?.includes(item.date!));
     const foreign = isForeign(item.lang, locale) ? item.lang : undefined;
     return {

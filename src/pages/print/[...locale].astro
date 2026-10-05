@@ -11,7 +11,7 @@ import Wire from '../../components/Wire.astro';
 import ItemList from '../../components/sections/ItemList.astro';
 import Skills from '../../components/sections/Skills.astro';
 import Education from '../../components/sections/Education.astro';
-import { formatRange } from '../../core/dates';
+import { buildDate, formatRange } from '../../core/dates';
 import { entriesFor, extensionEntries, listLanguage } from '../../core/entries';
 import { displayUrl, joinParts } from '../../core/text';
 import { groupByOrganisation } from '../../core/timeline';
@@ -110,7 +110,7 @@ const contacts = [
           <Education resume={resume} labels={labels} />
         ) : section.kind === 'extension' ? (
           <ItemList
-            entries={extensionEntries(section.items, { ...labels, reference: context.reference, locale: labels.intl })}
+            entries={extensionEntries(section.items, { ...labels, today: buildDate(), locale: labels.intl })}
             note={listLanguage(section.items, labels.intl, labels.inLanguage)?.note}
           />
         ) : (
@@ -192,10 +192,10 @@ const contacts = [
   section > p {
     margin: 0;
   }
-  /* A section title never ends a page alone: short sections (lists, tables) stay whole,
-     and any other title travels with what follows it. */
-  section:has(:global(.entries)),
-  section:has(:global(.pairs)) {
+  /* A section title never ends a page alone: short sections (up to 12 entries, 8 rows)
+     stay whole, and any other title travels with what follows it. */
+  section:has(:global(.entries > li:nth-child(-n + 12):last-child)),
+  section:has(:global(.pairs > div:nth-child(-n + 8):last-child)) {
     break-inside: avoid;
   }
   section :global(h2 + *) {

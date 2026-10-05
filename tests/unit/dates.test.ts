@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatDate, formatRange, referenceDate, toMonths } from '../../src/core/dates';
+import { buildDate, formatDate, formatRange, isAfter, referenceDate, toMonths } from '../../src/core/dates';
 
 const ref = new Date(Date.UTC(2026, 9, 5));
 
@@ -23,5 +23,19 @@ describe('dates', () => {
     expect(referenceDate('2026-10-03', fallback).toISOString()).toBe('2026-10-03T00:00:00.000Z');
     expect(referenceDate('soon', fallback)).toBe(fallback);
     expect(referenceDate(undefined, fallback)).toBe(fallback);
+  });
+});
+
+describe('isAfter and buildDate', () => {
+  const today = new Date(Date.UTC(2026, 11, 5)); // 5 Dec 2026
+  it('compares a partial date at its own precision', () => {
+    expect(isAfter('2026-12-18', today)).toBe(true);
+    expect(isAfter('2026-12-01', today)).toBe(false);
+    expect(isAfter('2026-12', today)).toBe(false);
+    expect(isAfter('2027', today)).toBe(true);
+    expect(isAfter('2026', today)).toBe(false);
+  });
+  it('uses SOURCE_DATE_EPOCH for reproducible builds', () => {
+    expect(buildDate({ SOURCE_DATE_EPOCH: '1767225600' }).toISOString()).toBe('2026-01-01T00:00:00.000Z');
   });
 });

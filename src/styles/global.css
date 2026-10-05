@@ -198,4 +198,12 @@ ul {
   :root:root .photo {
     filter: none;
   }
+  /* Printing the web page: no title alone at the bottom of a page, no entry cut in two. */
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+  li {
+    break-inside: avoid;
+  }
 }

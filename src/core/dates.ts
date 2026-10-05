@@ -45,3 +45,21 @@ export function formatRange(
   if (!start) return end ? formatDate(end, locale, ongoing) : '';
   return `${formatDate(start, locale, ongoing)} – ${formatDate(end, locale, ongoing)}`;
 }
+
+/** True if a partial date is after `today`, at its own precision (a day, a month, a year). */
+export function isAfter(date: string, today: Date): boolean {
+  const [year = 0, month, day] = date.split('-').map(Number);
+  const y = today.getUTCFullYear();
+  const m = today.getUTCMonth() + 1;
+  const d = today.getUTCDate();
+  if (year !== y) return year > y;
+  if (month === undefined) return false;
+  if (month !== m) return month > m;
+  return day !== undefined && day > d;
+}
+
+/** The build date: SOURCE_DATE_EPOCH (seconds) for reproducible builds, otherwise now. */
+export function buildDate(env: Record<string, string | undefined> = process.env): Date {
+  const epoch = Number(env.SOURCE_DATE_EPOCH);
+  return Number.isFinite(epoch) && epoch > 0 ? new Date(epoch * 1000) : new Date();
+}

@@ -19,7 +19,23 @@ describe('extensionItems', () => {
 
   it('skips a bad entry instead of hiding the whole list, and reports it', () => {
     expect(extensionItems(['ok', { other: 1 }, 42])).toEqual([{ title: 'ok' }]);
-    expect(extensionProblems({ 'x-talks': ['ok', { other: 1 }], 'x-flag': true, basics: [] })).toEqual(['x-talks[1]']);
+    expect(extensionProblems({ 'x-talks': ['ok', { other: 1 }], 'x-flag': true, basics: [] })).toEqual([
+      'x-talks[1] has no text and is not shown',
+    ]);
+  });
+
+  it('keeps a valid language tag, canonicalised, and reports one that is not', () => {
+    const items = [
+      { title: 'a', language: 'IT' },
+      { title: 'b', language: 'en-gb' },
+      { title: 'c', language: 'Italian, of course' },
+      { title: 'd', language: 'Italian' },
+    ];
+    expect(extensionItems(items)?.map((item) => item.lang)).toEqual(['it', 'en-GB', undefined, undefined]);
+    expect(extensionProblems({ 'x-talks': items })).toEqual([
+      'x-talks[2]: "Italian, of course" is not a language tag (e.g. "it")',
+      'x-talks[3]: "Italian" is not a language tag (e.g. "it")',
+    ]);
   });
 });
 

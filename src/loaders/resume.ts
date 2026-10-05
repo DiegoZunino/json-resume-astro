@@ -21,8 +21,7 @@ export function resumeLoader(config: ResumeConfig): Loader {
       for (const locale of Object.keys(config.sources)) {
         const { resume, source, withheld, matched } = await loadResume(config, locale, { root, env });
         matched.forEach((path) => unmatched.delete(path));
-        for (const problem of extensionProblems(resume))
-          logger.warn(`${locale}: ${problem} has no text and is not shown`);
+        for (const problem of extensionProblems(resume)) logger.warn(`${locale}: ${problem}`);
         for (const problem of themeProblems(resume)) logger.warn(`${locale}: ${problem} matches no section`);
         const data = await parseData({ id: locale, data: resume as Record<string, unknown> });
         store.set({ id: locale, data, digest: generateDigest(data) });
