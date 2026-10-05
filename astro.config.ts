@@ -55,7 +55,8 @@ const [firstVariant, ...otherVariants] = fontVariants;
 export default defineConfig({
   site: env.SITE_URL || resumeConfig.site,
   trailingSlash: 'ignore',
-  build: { format: 'directory' },
+  // Small pages: inline the CSS instead of a render-blocking request (the CSP hashes it).
+  build: { format: 'directory', inlineStylesheets: 'always' },
   // No Markdown code blocks here: Shiki's inline styles would conflict with the CSP.
   markdown: { syntaxHighlight: false },
 
