@@ -1,0 +1,129 @@
+# Publishes the site to Netlify, built from the real resume (RESUME_SOURCE_* variables).
+#
+# Runs:
+#  - after every push to main, once the checks have passed;
+#  - when the resume changes: repository_dispatch "resume-updated" sent by whoever writes
+#    the gist, with the gist revision in client_payload.revision;
+#  - every hour, as a cheap check: if the gist revision differs from the published one
+#    (/resume-revision.txt), it rebuilds. This covers edits made by hand on the gist,
+#    which cannot trigger a workflow (gists have no webhooks). Scheduled workflows of a
+#    public repository are paused by GitHub after 60 days without activity;
+#  - by hand (workflow_dispatch).
+#
+# Secrets: NETLIFY_AUTH_TOKEN, NETLIFY_SITE_ID.
+# Variables: SITE_URL; RESUME_GIST ("<user>/<id>" of a gist with resume.json and
+# resume.en.json) or RESUME_SOURCE_IT / RESUME_SOURCE_EN (any URL, e.g. an API).
+name: deploy
+on:
+  push:
+    branches: [main]
+  repository_dispatch:
+    types: [resume-updated]
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  revision:
+    name: Resume revision
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.revision.outputs.build }}
+      revision: ${{ steps.revision.outputs.revision }}
+    steps:
+      - id: revision
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GIST: ${{ vars.RESUME_GIST }}
+          EVENT: ${{ github.event_name }}
+          PAYLOAD_REVISION: ${{ github.event.client_payload.revision }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          set -euo pipefail
+          revision="${PAYLOAD_REVISION:-}"
+          if [ -z "$revision" ] && [ -n "$GIST" ]; then
+            revision="$(gh api "gists/${GIST#*/}" --jq '.history[0].version')"
+          fi
+          if [ -n "$revision" ] && ! [[ "$revision" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::Invalid gist revision: $revision"; exit 1
+          fi
+          build=true
+          if [ "$EVENT" = schedule ]; then
+            live="$(curl -fsS --max-time 10 "$SITE_URL/resume-revision.txt" 2>/dev/null || true)"
+            if [ -z "$GIST" ] || [ "$live" = "$revision" ]; then build=false; fi
+          fi
+          echo "revision=$revision" >> "$GITHUB_OUTPUT"
+          echo "build=$build" >> "$GITHUB_OUTPUT"
+          echo "Gist revision: ${revision:-none}; build: $build"
+
+  checks:
+    needs: revision
+    if: needs.revision.outputs.build == 'true'
+    uses: ./.github/workflows/checks.yml
+
+  deploy:
+    needs: [revision, checks]
+    if: needs.revision.outputs.build == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.SITE_URL }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Resume sources
+        env:
+          GIST: ${{ vars.RESUME_GIST }}
+          REVISION: ${{ needs.revision.outputs.revision }}
+          SOURCE_IT: ${{ vars.RESUME_SOURCE_IT }}
+          SOURCE_EN: ${{ vars.RESUME_SOURCE_EN }}
+        run: |
+          set -euo pipefail
+          # The raw URL pinned to a revision bypasses the few minutes of cache of the unpinned one.
+          if [ -n "$GIST" ]; then
+            base="https://gist.githubusercontent.com/$GIST/raw${REVISION:+/$REVISION}"
+            SOURCE_IT="$base/resume.json"; SOURCE_EN="$base/resume.en.json"
+          fi
+          echo "RESUME_SOURCE_IT=$SOURCE_IT" >> "$GITHUB_ENV"
+          echo "RESUME_SOURCE_EN=$SOURCE_EN" >> "$GITHUB_ENV"
+      - name: Build from the real resume
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: npm run build
+      - name: Record the published revision
+        env:
+          REVISION: ${{ needs.revision.outputs.revision }}
+        run: '[ -z "$REVISION" ] || printf "%s" "$REVISION" > dist/resume-revision.txt'
+      - name: Deploy to Netlify (zip upload through the API, no third-party code with the token)
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          set -euo pipefail
+          (cd dist && zip -qr ../site.zip .)
+          curl -fsS --max-time 300 \
+            -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" -H "Content-Type: application/zip" \
+            --data-binary @site.zip "https://api.netlify.com/api/v1/sites/$NETLIFY_SITE_ID/deploys" \
+            | jq '{id, state, deploy_url}'
+      - name: Smoke test of the live site
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          set -euo pipefail
+          sleep 20
+          curl -fsS --max-time 15 "$SITE_URL/" | grep -q '<h1'
+          curl -fsS --max-time 15 -o /dev/null "$SITE_URL/resume.json"
