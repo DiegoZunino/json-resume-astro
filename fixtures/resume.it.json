@@ -1,0 +1,170 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jsonresume/resume-schema/v1.0.0/schema.json",
+  "basics": {
+    "name": "Ada Esempio",
+    "label": "Engineering Manager",
+    "email": "ada@example.org",
+    "phone": "+39 011 555 0199",
+    "url": "https://example.org",
+    "summary": "Persona di esempio per i test: guida un team di prodotto, scrive codice quando serve e parla a conferenze. Copre tutte le sezioni dello schema JSON Resume, comprese le estensioni.",
+    "location": {
+      "city": "Torino",
+      "countryCode": "IT"
+    },
+    "profiles": [
+      {
+        "network": "LinkedIn",
+        "username": "ada-esempio",
+        "url": "https://www.linkedin.com/in/ada-esempio"
+      },
+      {
+        "network": "GitHub",
+        "username": "ada",
+        "url": "https://github.com/ada"
+      }
+    ]
+  },
+  "work": [
+    {
+      "name": "Azienda Uno",
+      "location": "Torino",
+      "description": "Software house di prodotti per la logistica.",
+      "position": "Engineering Manager",
+      "startDate": "2022-03",
+      "summary": "Guida di un team di prodotto di otto persone.",
+      "highlights": [
+        "Roadmap trimestrale condivisa con prodotto e vendite.",
+        "Rilasci settimanali al posto di quelli trimestrali."
+      ],
+      "x-internal": "Nota riservata per i test"
+    },
+    {
+      "name": "Azienda Uno",
+      "position": "Tech Lead",
+      "startDate": "2019-06",
+      "endDate": "2022-02",
+      "summary": "Riferimento tecnico del team, revisione del codice e delle architetture."
+    },
+    {
+      "name": "Azienda Due",
+      "position": "Software Engineer",
+      "startDate": "2014",
+      "endDate": "2019-05",
+      "highlights": ["Servizi di integrazione con i sistemi dei clienti."]
+    },
+    {
+      "name": "Progetti personali",
+      "position": "Sviluppatrice",
+      "summary": "Ruolo senza date: deve restare visibile anche senza barra."
+    }
+  ],
+  "volunteer": [
+    {
+      "organization": "Community di esempio",
+      "position": "Organizzatrice",
+      "startDate": "2019-01",
+      "summary": "Meetup mensili e una conferenza all'anno."
+    }
+  ],
+  "education": [
+    {
+      "institution": "Università di Esempio",
+      "area": "Informatica",
+      "studyType": "Laurea",
+      "startDate": "2010",
+      "endDate": "2014"
+    }
+  ],
+  "awards": [
+    {
+      "title": "Premio di esempio",
+      "date": "2021-05-01",
+      "awarder": "Ente",
+      "summary": "Per un progetto open source."
+    }
+  ],
+  "certificates": [
+    {
+      "name": "Certificazione di esempio",
+      "date": "2020-01",
+      "issuer": "Ente",
+      "url": "https://example.org/cert",
+      "x-validUntil": "2027-01"
+    }
+  ],
+  "publications": [
+    {
+      "name": "Articolo di esempio",
+      "publisher": "Rivista",
+      "releaseDate": "2023-06",
+      "url": "https://example.org/articolo",
+      "summary": "Sintesi dell'articolo."
+    }
+  ],
+  "skills": [
+    {
+      "name": "Guida",
+      "keywords": ["mentoring", "delivery", "roadmap"]
+    },
+    {
+      "name": "Tecnologie",
+      "level": "Esperta",
+      "keywords": ["TypeScript", "Go", "PostgreSQL"]
+    }
+  ],
+  "languages": [
+    {
+      "language": "Italiano",
+      "fluency": "madrelingua"
+    },
+    {
+      "language": "Inglese",
+      "fluency": "C1"
+    }
+  ],
+  "interests": [
+    {
+      "name": "Montagna",
+      "keywords": ["trekking", "arrampicata"]
+    }
+  ],
+  "references": [
+    {
+      "name": "Collega",
+      "reference": "Lavorare con Ada è stato un piacere."
+    }
+  ],
+  "projects": [
+    {
+      "name": "Progetto di esempio",
+      "description": "Uno strumento open source.",
+      "startDate": "2021",
+      "url": "https://example.org/progetto"
+    }
+  ],
+  "x-talks": [
+    {
+      "title": "Un talk di esempio",
+      "event": "Conferenza di esempio",
+      "date": "2025-11",
+      "url": "https://example.org/talk"
+    },
+    "Un talk senza link, Meetup, 2024"
+  ],
+  "x-objective": "Obiettivo riservato per i test: non deve comparire sul sito.",
+  "meta": {
+    "version": "1.0.0",
+    "lastModified": "2026-10-05",
+    "themeOptions": {
+      "tagline": {
+        "from": "Dalle idee dei clienti",
+        "to": "al software che il team sa mantenere"
+      },
+      "labels": {
+        "x-talks": "Talk"
+      },
+      "order": ["work", "x-talks", "projects", "skills"],
+      "expanded": 2
+    }
+  }
+}

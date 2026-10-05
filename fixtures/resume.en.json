@@ -1,0 +1,167 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jsonresume/resume-schema/v1.0.0/schema.json",
+  "basics": {
+    "name": "Ada Esempio",
+    "label": "Engineering Manager",
+    "email": "ada@example.org",
+    "phone": "+39 011 555 0199",
+    "url": "https://example.org",
+    "summary": "Sample person for the tests: leads a product team, writes code when needed and speaks at conferences. Covers every section of the JSON Resume schema, extensions included.",
+    "location": {
+      "city": "Torino",
+      "countryCode": "IT"
+    },
+    "profiles": [
+      {
+        "network": "LinkedIn",
+        "username": "ada-esempio",
+        "url": "https://www.linkedin.com/in/ada-esempio"
+      },
+      {
+        "network": "GitHub",
+        "username": "ada",
+        "url": "https://github.com/ada"
+      }
+    ]
+  },
+  "work": [
+    {
+      "name": "Azienda Uno",
+      "location": "Torino",
+      "description": "Software company building logistics products.",
+      "position": "Engineering Manager",
+      "startDate": "2022-03",
+      "summary": "Leads a product team of eight.",
+      "highlights": ["Quarterly roadmap shared with product and sales.", "Weekly releases instead of quarterly ones."],
+      "x-internal": "Nota riservata per i test"
+    },
+    {
+      "name": "Azienda Uno",
+      "position": "Tech Lead",
+      "startDate": "2019-06",
+      "endDate": "2022-02",
+      "summary": "Technical reference of the team, code and architecture reviews."
+    },
+    {
+      "name": "Azienda Due",
+      "position": "Software Engineer",
+      "startDate": "2014",
+      "endDate": "2019-05",
+      "highlights": ["Integration services with customer systems."]
+    },
+    {
+      "name": "Side projects",
+      "position": "Developer",
+      "summary": "Role without dates: it must stay visible without a bar."
+    }
+  ],
+  "volunteer": [
+    {
+      "organization": "Sample community",
+      "position": "Organiser",
+      "startDate": "2019-01",
+      "summary": "Monthly meetups and a yearly conference."
+    }
+  ],
+  "education": [
+    {
+      "institution": "Sample University",
+      "area": "Computer Science",
+      "studyType": "Degree",
+      "startDate": "2010",
+      "endDate": "2014"
+    }
+  ],
+  "awards": [
+    {
+      "title": "Sample award",
+      "date": "2021-05-01",
+      "awarder": "Body",
+      "summary": "For an open source project."
+    }
+  ],
+  "certificates": [
+    {
+      "name": "Sample certification",
+      "date": "2020-01",
+      "issuer": "Body",
+      "url": "https://example.org/cert",
+      "x-validUntil": "2027-01"
+    }
+  ],
+  "publications": [
+    {
+      "name": "Sample article",
+      "publisher": "Magazine",
+      "releaseDate": "2023-06",
+      "url": "https://example.org/articolo",
+      "summary": "Summary of the article."
+    }
+  ],
+  "skills": [
+    {
+      "name": "Leadership",
+      "keywords": ["mentoring", "delivery", "roadmap"]
+    },
+    {
+      "name": "Technologies",
+      "level": "Expert",
+      "keywords": ["TypeScript", "Go", "PostgreSQL"]
+    }
+  ],
+  "languages": [
+    {
+      "language": "Italian",
+      "fluency": "native"
+    },
+    {
+      "language": "English",
+      "fluency": "C1"
+    }
+  ],
+  "interests": [
+    {
+      "name": "Mountains",
+      "keywords": ["hiking", "climbing"]
+    }
+  ],
+  "references": [
+    {
+      "name": "Colleague",
+      "reference": "Working with Ada was a pleasure."
+    }
+  ],
+  "projects": [
+    {
+      "name": "Sample project",
+      "description": "An open source tool.",
+      "startDate": "2021",
+      "url": "https://example.org/progetto"
+    }
+  ],
+  "x-talks": [
+    {
+      "title": "A sample talk",
+      "event": "Sample Conference",
+      "date": "2025-11",
+      "url": "https://example.org/talk"
+    },
+    "A talk without link, Meetup, 2024"
+  ],
+  "x-objective": "Private objective for the tests: it must not appear on the site.",
+  "meta": {
+    "version": "1.0.0",
+    "lastModified": "2026-10-05",
+    "themeOptions": {
+      "tagline": {
+        "from": "From customer ideas",
+        "to": "to software the team can maintain"
+      },
+      "labels": {
+        "x-talks": "Talks"
+      },
+      "order": ["work", "x-talks", "projects", "skills"],
+      "expanded": 2
+    }
+  }
+}
