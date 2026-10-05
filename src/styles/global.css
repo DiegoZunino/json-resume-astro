@@ -198,12 +198,14 @@ ul {
   :root:root .photo {
     filter: none;
   }
-  /* Printing the web page: no title alone at the bottom of a page, no entry cut in two. */
+  /* Printing the web page: no title alone at the bottom of a page, no short entry or table
+     row cut in two (long ones, like a role with its highlights, may break). */
   h2,
   h3 {
     break-after: avoid;
   }
-  li {
+  .entries > li,
+  .pairs > div {
     break-inside: avoid;
   }
 }
