@@ -1,180 +1,97 @@
 ---
 /**
- * The page's actions: one primary button (download the CV), then email and profiles as
- * secondary buttons with icon and label. Used under the hero (as a labelled group) and
- * in the contact section, where the address is also shown in full with a copy button.
+ * The first screen's actions: one primary button (download the CV), then email and
+ * profiles as secondary buttons. Text only: the labels are short and clear on their own.
  */
 import type { Resume } from '../core/schema';
 import type { Labels } from '../i18n/labels';
-import Icon, { type IconName } from './Icon.astro';
 
 interface Props {
   resume: Resume;
   labels: Labels;
   pdfUrl: string;
-  /** Accessible name of the group; without it the surrounding section names the actions. */
-  label?: string;
-  /** Show the email address in full, to read or copy (once per page is enough). */
-  showEmail?: boolean;
+  /** Accessible name of the group. */
+  label: string;
 }
 
-const { resume, labels, pdfUrl, label, showEmail = false } = Astro.props;
+const { resume, labels, pdfUrl, label } = Astro.props;
 const { email, profiles } = resume.basics;
-
-const iconFor = (network = ''): IconName => {
-  const name = network.toLowerCase();
-  if (['github', 'gitlab', 'codeberg', 'bitbucket'].includes(name)) return 'code';
-  if (['linkedin', 'xing'].includes(name)) return 'profile';
-  if (['sessionize', 'youtube', 'speakerdeck'].includes(name)) return 'talk';
-  return 'link';
-};
 const links = profiles.filter((profile) => profile.url);
 ---
 
-<div class="actions" role={label ? 'group' : undefined} aria-label={label}>
+<div class="actions" role="group" aria-label={label}>
   <a class="button primary" href={pdfUrl} download>
-    <Icon name="download" />
-    <span>
-      {labels.downloadCv}
-      <span class="detail">{labels.downloadCvDetail}</span>
-    </span>
+    {labels.downloadCv} <span class="detail">{labels.downloadCvDetail}</span>
   </a>
   {email && (
-    <a class="button email-button" href={`mailto:${email}`} data-href={email}>
-      <Icon name="mail" />
-      <span>
-        {labels.email}
-        {/* Webmail users have no mail client: the address is right there to copy. */}
-        {!showEmail && <span class="detail address-detail">{email}</span>}
-      </span>
+    <a class="button" href={`mailto:${email}`} data-href={email}>
+      {labels.email}
     </a>
   )}
   {links.map((profile) => (
     <a class="button" href={profile.url} rel="me" data-href={profile.url}>
-      <Icon name={iconFor(profile.network)} />
-      <span>{profile.network ?? profile.url}</span>
+      {profile.network ?? profile.url}
     </a>
   ))}
 </div>
-{showEmail && email && (
-  <p class="email">
-    <span class="address">{email}</span>
-    <button
-      class="copy"
-      type="button"
-      data-copy={email}
-      data-copied={labels.copied}
-      data-failed={labels.copyFailed}
-      hidden
-    >
-      {labels.copy}
-    </button>
-    <span class="status" role="status"></span>
-  </p>
-)}
-
-<script>
-  import { initCopyButtons } from '../site/copy';
-  initCopyButtons();
-</script>
 
 <style>
   .actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
-    align-items: stretch;
+    gap: 0.625rem;
   }
   .button {
     display: inline-flex;
     align-items: center;
-    gap: 0.55rem;
-    min-height: 2.75rem;
-    padding: 0.55rem 1rem;
-    border: 1.5px solid var(--mare);
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3.125rem;
+    padding: 0 1.25rem;
+    border: 1.5px solid var(--bordo);
     border-radius: var(--radius);
     color: var(--mare);
     background: transparent;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 0.9375rem;
     line-height: 1.2;
     text-decoration: none;
-    transition: background-color 0.15s;
-  }
-  .button :global(svg) {
-    flex: none;
+    transition:
+      transform 0.15s ease,
+      border-color 0.15s ease;
   }
   .button:hover {
-    background: color-mix(in srgb, var(--mare) 9%, transparent);
+    transform: translateY(-2px);
+    border-color: var(--mare);
   }
   .primary {
-    min-height: 3rem;
-    padding-inline: 1.15rem 1.35rem;
+    padding-inline: 1.5rem;
+    border-color: var(--mare);
     background: var(--mare);
     color: var(--mare-ink);
-  }
-  .primary:hover {
-    background: color-mix(in srgb, var(--mare) 86%, var(--ardesia));
+    font-size: 1rem;
+    font-weight: 650;
   }
   .detail {
-    display: block;
-    font-size: 0.8rem;
-    font-weight: 500;
-    opacity: 0.9;
-  }
-  .email {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem 0.75rem;
-    margin: 1.25rem 0 0;
-    font-size: 1rem;
-  }
-  .address {
-    font-weight: 560;
-    overflow-wrap: anywhere;
-    user-select: all;
-  }
-  .copy {
-    min-height: 2.25rem;
-    padding: 0 0.8rem;
-    border: 1px solid var(--linea);
-    border-radius: var(--radius);
-    background: var(--superficie);
-    color: var(--ardesia);
-    font: inherit;
-    font-size: var(--step--1);
-    font-weight: 560;
-    cursor: pointer;
-  }
-  .status {
-    color: var(--nebbia);
-    font-size: var(--step--1);
-  }
-  .copy:hover {
-    border-color: var(--mare);
+    font-size: 0.8125rem;
+    font-weight: 450;
+    opacity: 0.85;
   }
   /* Up to tablet width: the download button on its own row, the secondary buttons share
      the next one in equal parts, however many there are. */
   @media (max-width: 46rem) {
     .actions > .primary {
       flex: 1 0 100%;
-      justify-content: center;
     }
     .actions > :not(.primary) {
       flex: 1 1 0;
       min-width: 0;
-      justify-content: center;
-      padding-inline: 0.6rem;
-    }
-    .address-detail {
-      display: none;
+      padding-inline: 0.5rem;
     }
   }
-  /* Very narrow screens: the secondary buttons keep their words and drop the icons. */
-  @media (max-width: 25rem) {
-    .actions > :not(.primary) :global(svg) {
-      display: none;
+  @media (prefers-reduced-motion: reduce) {
+    .button:hover {
+      transform: none;
     }
   }
   @media (forced-colors: active) {
@@ -189,11 +106,7 @@ const links = profiles.filter((profile) => profile.url);
   }
   /* On paper the buttons become plain contact lines; the download button has no meaning there. */
   @media print {
-    .button.primary,
-    .detail,
-    .email,
-    .copy,
-    .actions :global(svg) {
+    .button.primary {
       display: none;
     }
     .actions {

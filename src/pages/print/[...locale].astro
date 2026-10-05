@@ -170,11 +170,11 @@ const contacts = [
     font-size: 1.1rem;
   }
   /* On paper the nodes must stay visible: larger dots on a thinner line. */
-  .sheet :global(.tagline .line) {
+  .sheet :global(.tagline .stroke) {
     border-top-width: 1.6pt;
   }
-  .sheet :global(.tagline .line::before),
-  .sheet :global(.tagline .line::after) {
+  .sheet :global(.tagline .stroke::before),
+  .sheet :global(.tagline .stroke::after) {
     top: -0.4em;
     border-width: 0.32em;
     margin-top: -0.8pt;

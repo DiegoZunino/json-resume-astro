@@ -1,7 +1,9 @@
 ---
 /**
- * A list of titled entries (talks, projects, publications, awards, volunteering,
- * extension lists): title (linked if there is a URL), a meta line, a summary.
+ * A list of entries (talks, projects, publications, awards, volunteering, extension
+ * lists) on the page's shared grid. A plain line of text gets an ochre mark in the label
+ * column; a titled entry gets its meta line (event, date) there and its title, linked
+ * if there is a URL, with summary and points in the body.
  */
 export interface ListEntry {
   title: string;
@@ -19,71 +21,97 @@ interface Props {
 }
 
 const { entries, note } = Astro.props;
+const isPlain = (entry: ListEntry) => !entry.url && !entry.meta && !entry.summary && !entry.points?.length;
 ---
 
-{note && <p class="note muted small">{note}</p>}
-<ul class="entries">
-  {entries.map((entry) => (
-    <li>
-      <p
-        class:list={['title', { plain: !entry.url && !entry.meta && !entry.summary && !entry.points?.length }]}
-        lang={entry.lang}
-      >
-        {entry.url ? <a href={entry.url}>{entry.title}</a> : entry.title}
-      </p>
-      {entry.meta && <p class="meta muted small">{entry.meta}</p>}
-      {entry.summary && <p class="summary">{entry.summary}</p>}
-      {entry.points?.length ? (
-        <ul class="points">
-          {entry.points.map((point) => (
-            <li>{point}</li>
-          ))}
-        </ul>
-      ) : null}
-    </li>
-  ))}
+{note && <p class="note">{note}</p>}
+<ul class="rows entries">
+  {entries.map((entry) =>
+    isPlain(entry) ? (
+      <li class="row plain">
+        <span class="row-label mark" aria-hidden="true">
+          <span></span>
+        </span>
+        <p class="row-body" lang={entry.lang}>
+          {entry.title}
+        </p>
+      </li>
+    ) : (
+      <li class="row">
+        <p class="row-label meta">{entry.meta}</p>
+        <div class="row-body">
+          <p class="title" lang={entry.lang}>
+            {entry.url ? <a href={entry.url}>{entry.title}</a> : entry.title}
+          </p>
+          {entry.summary && <p class="summary">{entry.summary}</p>}
+          {entry.points?.length ? (
+            <ul class="points">
+              {entry.points.map((point) => (
+                <li>{point}</li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      </li>
+    ),
+  )}
 </ul>
 
 <style>
   .note {
     margin: -0.5rem 0 0.75rem;
+    font-size: var(--step--1);
+    color: var(--nebbia);
   }
-  .entries {
-    list-style: none;
-    padding: 0;
-    max-width: var(--measure);
+  .row-body {
+    line-height: 1.6;
   }
-  .entries > li {
-    padding: 0.75rem 0;
-    border-top: 1px solid var(--linea);
+  .mark {
+    display: flex;
+    align-items: center;
+    height: 1.6em;
   }
-  .entries > li:last-child {
-    border-bottom: 1px solid var(--linea);
+  .mark span {
+    width: 1.125rem;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--gru);
+  }
+  .meta {
+    font-size: var(--step--1);
+    color: var(--nebbia);
+    padding-top: 0.15rem;
   }
   .title {
     margin: 0;
     font-weight: 600;
-  }
-  .title.plain {
-    font-weight: 400;
-  }
-  .meta {
-    margin: 0.1rem 0 0;
+    color: var(--ardesia);
   }
   .summary {
-    margin: 0.35rem 0 0;
+    margin: 0.25rem 0 0;
   }
-  /* On paper (the PDF and Ctrl+P): no rules between entries, just a little air. */
+  .points {
+    margin-top: 0.375rem;
+    padding-left: 1.125rem;
+  }
+  /* On paper (the PDF and Ctrl+P): no rules between entries, just a little air; a plain
+     line takes the full width instead of leaving the label column empty. */
   @media print {
-    .entries > li,
-    .entries > li:last-child {
+    .entries > .row {
       padding: 0 0 1.4mm;
       border: 0;
       break-inside: avoid;
     }
+    .plain .mark {
+      display: none;
+    }
+    .plain .row-body {
+      flex-basis: 100%;
+    }
   }
-  .points {
-    margin-top: 0.35rem;
-    padding-left: 1.1rem;
+  @media (forced-colors: active) {
+    .mark span {
+      background: CanvasText;
+    }
   }
 </style>

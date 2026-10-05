@@ -5,10 +5,9 @@
  */
 import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
 import { getAbsoluteLocaleUrl, getRelativeLocaleUrl } from 'astro:i18n';
-import Actions from '../components/Actions.astro';
+import Contact from '../components/Contact.astro';
 import Hero from '../components/Hero.astro';
 import Sections from '../components/Sections.astro';
-import SectionShell from '../components/sections/SectionShell.astro';
 import { formatLongDate } from '../core/dates';
 import { labelsFor, STATEMENT_DATE } from '../i18n/labels';
 import Web from '../layouts/Web.astro';
@@ -35,9 +34,7 @@ const statementUrl = (other: string) => getAbsoluteLocaleUrl(other, labelsFor(ot
   <Web context={context} structuredData>
     <Hero resume={resume} labels={labels} pdfUrl={context.pdfUrl} />
     <Sections sections={context.sections} resume={resume} labels={labels} reference={context.reference} />
-    <SectionShell id="contact" title={labels.sections.contact}>
-      <Actions resume={resume} labels={labels} pdfUrl={context.pdfUrl} showEmail />
-    </SectionShell>
+    <Contact resume={resume} labels={labels} pdfUrl={context.pdfUrl} />
   </Web>
 ) : (
   <Web

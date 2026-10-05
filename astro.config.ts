@@ -10,7 +10,7 @@ import { themeScriptHash } from './src/integrations/theme-script';
 const env = buildEnv(process.cwd());
 const locales = Object.keys(resumeConfig.sources);
 // Unicode ranges of the Fontsource "latin" and "latin-ext" subsets, copied from
-// @fontsource/schibsted-grotesk/index.css: each file is downloaded only if the page uses its range.
+// @fontsource/bricolage-grotesque/index.css: each file is downloaded only if the page uses its range.
 const LATIN: [string, ...string[]] = [
   'U+0000-00FF',
   'U+0131',
@@ -19,6 +19,9 @@ const LATIN: [string, ...string[]] = [
   'U+02C6',
   'U+02DA',
   'U+02DC',
+  'U+0304',
+  'U+0308',
+  'U+0329',
   'U+2000-206F',
   'U+20AC',
   'U+2122',
@@ -30,10 +33,15 @@ const LATIN: [string, ...string[]] = [
   'U+FFFD',
 ];
 const LATIN_EXT: [string, ...string[]] = [
-  'U+0100-02AF',
+  'U+0100-02BA',
+  'U+02BD-02C5',
+  'U+02C7-02CC',
+  'U+02CE-02D7',
+  'U+02DD-02FF',
   'U+0304',
   'U+0308',
   'U+0329',
+  'U+1D00-1DBF',
   'U+1E00-1E9F',
   'U+1EF2-1EFF',
   'U+2020',
@@ -45,7 +53,7 @@ const LATIN_EXT: [string, ...string[]] = [
 ];
 const fontVariants = [400, 500, 600, 700].flatMap((weight) =>
   (['latin', 'latin-ext'] as const).map((subset) => ({
-    src: [`@fontsource/schibsted-grotesk/files/schibsted-grotesk-${subset}-${weight}-normal.woff2`] as [string],
+    src: [`@fontsource/bricolage-grotesque/files/bricolage-grotesque-${subset}-${weight}-normal.woff2`] as [string],
     weight,
     style: 'normal' as const,
     unicodeRange: subset === 'latin' ? LATIN : LATIN_EXT,
@@ -70,7 +78,7 @@ export default defineConfig({
   fonts: [
     {
       provider: fontProviders.local(),
-      name: 'Schibsted Grotesk',
+      name: 'Bricolage Grotesque',
       cssVariable: '--font-sans',
       fallbacks: ['system-ui', 'sans-serif'],
       options: {

@@ -1,4 +1,5 @@
 ---
+/** Skill groups on the page's shared grid: the group in the label column, the keywords in the body. */
 import type { Resume } from '../../core/schema';
 
 interface Props {
@@ -8,11 +9,11 @@ interface Props {
 const { skills } = Astro.props;
 ---
 
-<dl class="pairs">
+<dl class="rows pairs">
   {skills.map((skill) => (
-    <div>
-      <dt>{skill.name}</dt>
-      <dd>
+    <div class="row">
+      <dt class="row-label">{skill.name}</dt>
+      <dd class="row-body">
         {skill.keywords?.join(', ')}
         {skill.level && <span class="muted"> · {skill.level}</span>}
       </dd>
@@ -21,29 +22,8 @@ const { skills } = Astro.props;
 </dl>
 
 <style>
-  .pairs {
-    margin: 0;
-    max-width: var(--measure);
-  }
-  .pairs > div {
-    display: grid;
-    grid-template-columns: minmax(9rem, 14rem) 1fr;
-    gap: 0.25rem 1.5rem;
-    padding: 0.6rem 0;
-    border-top: 1px solid var(--linea);
-  }
-  .pairs > div:last-child {
-    border-bottom: 1px solid var(--linea);
-  }
   dt {
     font-weight: 650;
-  }
-  dd {
-    margin: 0;
-  }
-  @media (max-width: 36rem) {
-    .pairs > div {
-      grid-template-columns: 1fr;
-    }
+    color: var(--ardesia);
   }
 </style>

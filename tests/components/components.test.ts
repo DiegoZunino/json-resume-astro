@@ -20,21 +20,31 @@ beforeAll(async () => {
 });
 
 describe('Timeline', () => {
-  it('renders every role expanded; only roles with details are accordion buttons', async () => {
+  const reference = new Date(Date.UTC(2026, 9, 5));
+
+  it('renders every role open, each as an accordion button with a readable name', async () => {
     const html = await container.renderToString(Timeline, {
-      props: { work: resume.work, labels, reference: new Date(Date.UTC(2026, 9, 5)), expanded: 2 },
+      props: { work: resume.work, labels, reference, expanded: 2 },
     });
-    const detailed = resume.work.filter((role) => role.highlights?.length).length;
-    expect(html.match(/<h3[^>]*><button[^>]*aria-expanded="true"/g)).toHaveLength(detailed);
-    // Roles without details are headings with one hidden, readable name and an aria-hidden visual line.
-    expect(
-      html.match(/<h3[^>]*><span class="visually-hidden"[^>]*>[^<]+<\/span><span[^>]*aria-hidden="true"/g),
-    ).toHaveLength(resume.work.length - detailed);
-    expect(html).toContain('Sviluppatrice, Progetti personali</span>');
+    expect(html.match(/<h3[^>]*><button[^>]*aria-expanded="true"/g)).toHaveLength(resume.work.length);
     expect(html).toMatch(/aria-label="Engineering Manager, Azienda Uno, mar 2022 – oggi"/);
     expect(html).toContain('Ruolo senza date');
     expect(html.match(/class="span"/g)).toHaveLength(3);
+    expect(html).toMatch(/data-x="[\d.]+" data-w="[\d.]+"/);
     expect(html).not.toMatch(/style="/);
+  });
+
+  it('keeps a role with nothing to read as a plain heading, named once', async () => {
+    const html = await container.renderToString(Timeline, {
+      props: {
+        work: [{ position: 'Webmaster', name: 'Freelance', startDate: '2010-10' }],
+        labels,
+        reference,
+        expanded: 1,
+      },
+    });
+    expect(html).not.toContain('<button');
+    expect(html).toMatch(/<span class="visually-hidden"[^>]*>Webmaster, Freelance, ott 2010 – oggi<\/span>/);
   });
 });
 

@@ -1,0 +1,144 @@
+---
+/**
+ * The end of the page: how to get in touch. The address in full (to read, copy or
+ * click), the profiles and the CV, in a box in the colour of the sea.
+ */
+import type { Resume } from '../core/schema';
+import type { Labels } from '../i18n/labels';
+
+interface Props {
+  resume: Resume;
+  labels: Labels;
+  pdfUrl: string;
+}
+
+const { resume, labels, pdfUrl } = Astro.props;
+const { email, profiles } = resume.basics;
+const links = profiles.filter((profile) => profile.url);
+---
+
+<section class="contact section" id="contact" aria-labelledby="contact-title">
+  <h2 id="contact-title">{labels.sections.contact}</h2>
+  {email && (
+    <p class="email">
+      <a class="address" href={`mailto:${email}`}>
+        {email}
+      </a>
+      <button
+        class="copy"
+        type="button"
+        data-copy={email}
+        data-copied={labels.copied}
+        data-failed={labels.copyFailed}
+        hidden
+      >
+        {labels.copy}
+      </button>
+      <span class="status" role="status"></span>
+    </p>
+  )}
+  <p class="links">
+    {links.map((profile) => (
+      <a href={profile.url} rel="me">
+        {profile.network ?? profile.url}
+      </a>
+    ))}
+    <a href={pdfUrl} download>
+      {labels.downloadCv}
+    </a>
+  </p>
+</section>
+
+<script>
+  import { initCopyButtons } from '../site/copy';
+  initCopyButtons();
+</script>
+
+<style>
+  .contact {
+    padding: 2.25rem 2rem;
+    border-radius: 1.375rem;
+    background: var(--fascia);
+    color: var(--fascia-ink);
+  }
+  .email {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 0.875rem;
+    margin: 0;
+  }
+  .address {
+    display: inline-flex;
+    align-items: center;
+    min-height: 3.125rem;
+    padding: 0 1.375rem;
+    border-radius: var(--radius);
+    background: var(--gru);
+    color: var(--gru-ink);
+    font-weight: 700;
+    font-size: 1.0625rem;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+    transition: transform 0.15s ease;
+  }
+  .address:hover {
+    transform: translateY(-2px);
+  }
+  .copy {
+    min-height: 3.125rem;
+    padding: 0 1.125rem;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--fascia-linea);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .status {
+    font-size: 0.9375rem;
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.625rem;
+    margin: 1.25rem 0 0;
+    font-weight: 600;
+  }
+  .links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    color: inherit;
+  }
+  .contact :focus-visible {
+    outline-color: var(--gru);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .address:hover {
+      transform: none;
+    }
+  }
+  @media (forced-colors: active) {
+    .contact {
+      border: 2px solid CanvasText;
+    }
+  }
+  @media print {
+    .contact {
+      padding: 0;
+    }
+    .copy,
+    .status {
+      display: none;
+    }
+    .address {
+      padding: 0;
+      min-height: 0;
+      background: none;
+      color: var(--ardesia);
+    }
+  }
+</style>

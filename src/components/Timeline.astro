@@ -1,12 +1,11 @@
 ---
 /**
  * Career timeline (WAI-ARIA accordion pattern: heading > button[aria-expanded]).
- * Only roles with a list of highlights collapse; a role described by one sentence is
- * always visible (hiding twenty words behind a click costs more than it saves).
- * Server-rendered fully expanded, so it works without JavaScript and in print; the
- * script then collapses all but the most recent roles and adds "expand all".
- * Bars are SVG geometry, not inline styles, so they survive a strict CSP and are
- * repainted with system colours in forced-colours mode.
+ * Every role with something to read opens and closes; the most recent `expanded` roles
+ * start open. Server-rendered fully open, so it works without JavaScript and in print.
+ * Each row pairs the role (left) with a bar on a shared time axis (right): pointing at a
+ * role lights its bar and marks its years on the axis. Bars are SVG geometry, not inline
+ * styles, so they survive a strict CSP and are repainted in forced-colours mode.
  */
 import { formatRange } from '../core/dates';
 import { joinParts } from '../core/text';
@@ -26,7 +25,7 @@ interface Props {
 
 const { work, labels, reference, expanded, idPrefix = 'role' } = Astro.props;
 const { entries, years } = buildTimeline(work, reference);
-const collapsible = (item: WorkItem) => Boolean(item.highlights?.length);
+const collapsible = (item: WorkItem) => Boolean(item.summary || item.description || item.highlights?.length);
 const hasOrg = (item: WorkItem) => Boolean(item.position && item.name);
 const hasDates = (item: WorkItem) => Boolean(item.startDate || item.endDate);
 const range = (item: WorkItem) => formatRange(item.startDate, item.endDate, labels.intl, labels.ongoing);
@@ -35,6 +34,7 @@ const range = (item: WorkItem) => formatRange(item.startDate, item.endDate, labe
 const accessibleName = (item: WorkItem) =>
   joinParts([item.position ?? item.name, hasOrg(item) && item.name, hasDates(item) && range(item)], ', ');
 const showToggleAll = entries.filter(({ item }) => collapsible(item)).length > expanded;
+const lastTick = years.at(-1);
 ---
 
 <div class="timeline" data-timeline data-open={expanded}>
@@ -54,63 +54,81 @@ const showToggleAll = entries.filter(({ item }) => collapsible(item)).length > e
   )}
   {years.length > 0 && (
     <div class="axis" aria-hidden="true">
-      <span />
-      <svg class="years" width="100%" height="28" focusable="false">
+      <span class="axis-hint" data-axis-hint></span>
+      <svg class="years" width="100%" height="34" focusable="false">
         {years.map((tick, index) => (
-          <>
-            <text x={`${tick.x}%`} y="13" text-anchor={index === 0 ? 'start' : 'middle'}>
-              {tick.year}
-            </text>
-            <line x1={`${tick.x}%`} x2={`${tick.x}%`} y1="19" y2="27" />
-          </>
+          <text
+            x={`${tick.x}%`}
+            y="13"
+            text-anchor={index === 0 ? 'start' : tick === lastTick && tick.x > 94 ? 'end' : 'middle'}
+          >
+            {tick.year}
+          </text>
         ))}
+        <line class="baseline" x1="0" x2="100%" y1="27" y2="27" />
+        <rect class="axis-span" data-axis-span x="0" y="25" width="0" height="5" rx="2.5" />
       </svg>
     </div>
   )}
   <ol class="roles">
     {entries.map(({ item, current, bar }, index) => {
-      // A role with highlights is an accordion button; the others are plain headings.
-      const Head = collapsible(item) ? 'button' : 'span';
+      const open = collapsible(item);
+      const Head = open ? 'button' : 'span';
       return (
-        <li class:list={['role', { current, static: !collapsible(item) }]}>
-          <h3>
-            {!collapsible(item) && <span class="visually-hidden">{accessibleName(item)}</span>}
-            <Head
-              {...(collapsible(item)
-                ? {
-                    type: 'button',
-                    'aria-expanded': 'true',
-                    'aria-controls': `${idPrefix}-${index}`,
-                    'aria-label': accessibleName(item),
-                  }
-                : { 'aria-hidden': 'true' })}
-              class="head"
-            >
-              <span class="what">
-                <span class="position">{item.position ?? item.name}</span>
-                {hasOrg(item) && <span class="org muted">{item.name}</span>}
-              </span>
-              {hasDates(item) && <span class="when muted">{range(item)}</span>}
-              {collapsible(item) && <Icon name="chevron" size={18} class="chevron" />}
-            </Head>
-          </h3>
-          {bar && (
-            <svg class="bar" width="100%" height="12" aria-hidden="true" focusable="false">
-              <rect class="track" x="0" y="3" width="100%" height="6" rx="3" />
-              <rect class="span" x={`${bar.x}%`} y="3" width={`${bar.width}%`} height="6" rx="3" />
-            </svg>
-          )}
-          <div class="panel" id={`${idPrefix}-${index}`}>
-            {item.description && <p class="context muted small">{item.description}</p>}
-            {item.summary && <p>{item.summary}</p>}
-            {item.highlights?.length ? (
-              <ul>
-                {item.highlights.map((highlight) => (
-                  <li>{highlight}</li>
-                ))}
-              </ul>
-            ) : null}
+        <li
+          class:list={['role', { current }]}
+          data-role
+          data-x={bar?.x}
+          data-w={bar?.width}
+          data-when={hasDates(item) ? range(item) : undefined}
+        >
+          <div class="line">
+            <h3 class="label">
+              {!open && <span class="visually-hidden">{accessibleName(item)}</span>}
+              <Head
+                {...(open
+                  ? {
+                      type: 'button',
+                      'aria-expanded': 'true',
+                      'aria-controls': `${idPrefix}-${index}`,
+                      'aria-label': accessibleName(item),
+                    }
+                  : { 'aria-hidden': 'true' })}
+                class="head"
+              >
+                <span class="what">
+                  <span class="position">
+                    {item.position ?? item.name}
+                    {current && <span class="now" />}
+                  </span>
+                  <span class="meta">{joinParts([hasOrg(item) && item.name, hasDates(item) && range(item)])}</span>
+                </span>
+                {open && <Icon name="chevron" size={16} class="chevron" />}
+              </Head>
+            </h3>
+            {bar && (
+              <svg class="bar" width="100%" height="10" aria-hidden="true" focusable="false">
+                <rect class="track" x="0" y="0" width="100%" height="10" rx="5" />
+                <rect class="span" x={`${bar.x}%`} y="0" width={`${bar.width}%`} height="10" rx="5" />
+              </svg>
+            )}
           </div>
+          {open && (
+            <div class="panel" id={`${idPrefix}-${index}`}>
+              <p class="where">{item.location}</p>
+              <div class="body">
+                {item.description && <p class="context">{item.description}</p>}
+                {item.summary && <p>{item.summary}</p>}
+                {item.highlights?.length ? (
+                  <ul>
+                    {item.highlights.map((highlight) => (
+                      <li>{highlight}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            </div>
+          )}
         </li>
       );
     })}
@@ -123,24 +141,20 @@ const showToggleAll = entries.filter(({ item }) => collapsible(item)).length > e
 </script>
 
 <style>
-  .timeline {
-    --label: minmax(14rem, 22rem);
-  }
   .tools {
     display: flex;
-    margin: -0.5rem 0 0.5rem;
+    justify-content: flex-end;
+    margin: -3.75rem 0 1.5rem;
   }
   .toggle-all {
-    min-height: 2.75rem;
-    padding: 0;
+    min-height: 2.5rem;
+    padding: 0 0.25rem;
     border: 0;
     background: transparent;
     color: var(--mare);
     font: inherit;
-    font-size: 1rem;
+    font-size: 0.9375rem;
     font-weight: 600;
-    text-decoration: underline;
-    text-underline-offset: 0.2em;
     cursor: pointer;
   }
   .axis {
@@ -150,24 +164,35 @@ const showToggleAll = entries.filter(({ item }) => collapsible(item)).length > e
     list-style: none;
     margin: 0;
     padding: 0;
-    border-top: 1px solid var(--linea);
   }
   .role {
-    border-bottom: 1px solid var(--linea);
+    border-top: 1px solid var(--linea);
+    border-radius: 0.625rem;
+    transition: background-color 0.2s ease;
   }
-  h3 {
+  .role:hover {
+    background: var(--hover);
+  }
+  .line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 1.5rem;
+    padding: 0.75rem 0.5rem;
+  }
+  .label {
+    flex: 0 1 var(--label);
+    min-width: 0;
     margin: 0;
     font-size: inherit;
   }
-  /* Title, organisation and dates stacked on the left, the chevron on the right: the same at every width. */
   .head {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: baseline;
-    gap: 0.25rem 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
     width: 100%;
-    min-height: 3rem;
-    padding: 0.85rem 0.25rem;
+    min-height: 2.75rem;
+    padding: 0;
     border: 0;
     background: transparent;
     color: inherit;
@@ -177,117 +202,192 @@ const showToggleAll = entries.filter(({ item }) => collapsible(item)).length > e
   button.head {
     cursor: pointer;
   }
-  h3 > button:hover .position {
+  .what {
+    flex: 1;
+    min-width: 0;
+  }
+  .position {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 650;
+  }
+  button.head:hover .position {
     text-decoration: underline;
     text-underline-offset: 0.2em;
   }
-  .what {
-    display: flex;
-    flex-direction: column;
+  .now {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--gru);
+    animation: pulse 2.4s ease-out 2s 3;
   }
-  .position {
-    font-weight: 650;
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 var(--gru);
+    }
+    70% {
+      box-shadow: 0 0 0 7px transparent;
+    }
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+    }
   }
-  .org,
-  .when {
-    font-weight: 400;
-    font-size: var(--step--1);
-  }
-  .when {
-    grid-column: 1;
-    grid-row: 2;
-    white-space: nowrap;
+  .meta {
+    display: block;
+    margin-top: 0.125rem;
+    font-size: 0.8125rem;
+    color: var(--nebbia);
     font-variant-numeric: tabular-nums;
   }
   :global(.chevron) {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-    align-self: center;
+    flex: none;
+    margin-top: 0.2rem;
     color: var(--mare);
-    transition: transform 0.2s;
+    transition: transform 0.2s ease;
   }
   h3 > button[aria-expanded='true'] :global(.chevron) {
     transform: rotate(90deg);
   }
   .bar {
+    flex: 1 1 23rem;
+    min-width: 0;
+    height: 0.625rem;
     display: none;
   }
   .track {
-    fill: color-mix(in srgb, var(--linea) 70%, transparent);
+    fill: var(--traccia);
   }
   .span {
     fill: var(--barra);
+    transform-box: fill-box;
+    transform-origin: left center;
+    animation: grow 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    transition: fill 0.2s ease;
   }
-  .current .span {
+  .role:nth-child(2) .span {
+    animation-delay: 0.08s;
+  }
+  .role:nth-child(3) .span {
+    animation-delay: 0.16s;
+  }
+  .role:nth-child(4) .span {
+    animation-delay: 0.24s;
+  }
+  .role:nth-child(5) .span {
+    animation-delay: 0.32s;
+  }
+  .role:nth-child(n + 6) .span {
+    animation-delay: 0.4s;
+  }
+  .current .span,
+  .role:hover .span {
     fill: var(--gru);
   }
+  @keyframes grow {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
   .panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.5rem;
+    padding: 0 0.5rem 1rem;
+    animation: fade 0.25s ease-out both;
+  }
+  @keyframes fade {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .where {
+    flex: 0 1 var(--label);
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--nebbia);
+  }
+  .body {
+    flex: 1 1 23rem;
+    min-width: 0;
     max-width: var(--measure);
-    padding: 0 0.25rem 1.25rem;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--testo);
   }
-  .panel ul {
-    padding-left: 1.1rem;
-  }
-  .panel li {
-    margin-bottom: 0.35rem;
+  .body p {
+    margin: 0;
   }
   .context {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.375rem !important;
+    font-size: 0.8125rem;
+    color: var(--nebbia);
   }
-  .panel > :last-child {
-    margin-bottom: 0;
+  .body ul {
+    margin-top: 0.5rem;
+    padding-left: 1.125rem;
   }
-  :global(h3:has(> button[aria-expanded='false'])) ~ .panel {
+  .body li {
+    margin-bottom: 0.25rem;
+  }
+  .role:has(button[aria-expanded='false']) .panel {
     display: none;
   }
 
-  /* Wide screens: the time axis, one bar per role. */
+  /* Wide screens: the time axis and one bar per role. */
   @media (min-width: 52rem) {
     .axis {
-      display: grid;
-      grid-template-columns: var(--label) 1fr;
-      column-gap: 1.5rem;
-      margin-bottom: 0.25rem;
+      display: flex;
+      gap: 0 1.5rem;
+      padding: 0 0.5rem 0.25rem;
       color: var(--nebbia);
     }
+    .axis-hint {
+      flex: 0 1 var(--label);
+      font-size: 0.8125rem;
+      align-self: center;
+    }
     .years {
-      grid-column: 2;
+      flex: 1 1 23rem;
       overflow: visible;
     }
     .years text {
       fill: currentColor;
-      font-size: 0.8125rem;
+      font-size: 0.75rem;
     }
-    .years line {
+    .baseline {
       stroke: var(--linea);
     }
-    /* The text starts beside the title, right under the bar: no empty band under each role. */
-    .role {
-      display: grid;
-      grid-template-columns: var(--label) 1fr;
-      grid-template-rows: auto 1fr;
-      column-gap: 1.5rem;
-      align-items: start;
-    }
-    h3 {
-      grid-column: 1;
-      grid-row: 1 / span 2;
+    .axis-span {
+      fill: var(--gru);
+      opacity: 0;
+      transition:
+        opacity 0.2s ease,
+        x 0.25s ease,
+        width 0.25s ease;
     }
     .bar {
       display: block;
-      grid-column: 2;
-      grid-row: 1;
-      width: 100%;
-      height: 0.75rem;
-      margin-top: 1.1rem;
-    }
-    .panel {
-      grid-column: 2;
-      grid-row: 2;
-      padding-top: 0.6rem;
     }
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .span,
+    .panel,
+    .now {
+      animation: none;
+    }
+  }
   @media print {
     .tools,
     .axis,
@@ -295,16 +395,17 @@ const showToggleAll = entries.filter(({ item }) => collapsible(item)).length > e
     :global(.chevron) {
       display: none;
     }
-    .role {
-      display: block;
-    }
     .panel {
-      display: block !important;
+      display: flex !important;
+    }
+    .role:hover {
+      background: none;
     }
   }
   @media (forced-colors: active) {
     .span,
-    .current .span {
+    .current .span,
+    .role:hover .span {
       fill: CanvasText;
     }
     .track {

@@ -1,64 +1,85 @@
 /*
- * Colours of Genoa: slate roofs (ardesia), the sea (mare), stone (pietra) and the
- * yellow of the harbour cranes (gru). Every colour has one role; yellow is a mark,
- * never text and never the only carrier of information.
+ * Colours of the Ligurian coast: the slate-green ink of the sea (ardesia), the sea
+ * green of actions and titles (mare), the stone of the page (pietra) and the ochre
+ * of the palazzi (gru, the wire that connects). Every colour has one role; the ochre
+ * is a mark, never body text and never the only carrier of information.
  */
 :root {
-  --ardesia: #22303c; /* text */
-  --mare: #1f4e79; /* links, buttons, focus */
+  --ardesia: #16302f; /* headings, names */
+  --testo: #2b4140; /* body text */
+  --mare: #0f5c63; /* links, buttons, focus */
   --mare-ink: #ffffff; /* text on --mare */
-  --pietra: #eef1f3; /* page */
-  --superficie: #f8fafb; /* raised surfaces */
-  --nebbia: #56636e; /* secondary text */
-  --gru: #f2b705; /* the wire that connects */
-  --linea: #cfd7de; /* rules */
-  --barra: #8fa6bb; /* timeline bars */
+  --pietra: #f5f6f3; /* page */
+  --superficie: #e9ede8; /* controls, raised surfaces */
+  --hover: #eef1ec; /* the row under the pointer */
+  --nebbia: #566866; /* secondary text */
+  --gru: #d39b2a; /* the wire, the current role */
+  --gru-ink: #1f1503; /* text on --gru */
+  --linea: #dfe5df; /* rules */
+  --bordo: #9fb7b3; /* outlines of secondary buttons */
+  --traccia: #e6ebe5; /* timeline tracks */
+  --barra: #8fb0ab; /* past roles */
+  --fascia: #0f5c63; /* contact box */
+  --fascia-ink: #ffffff;
+  --fascia-linea: #4f8d92;
   --focus: var(--mare);
   color-scheme: light;
 
   --step--1: 0.875rem;
   --step-0: 1.0625rem;
-  --step-1: 1.25rem;
-  --step-2: 1.5rem;
+  --step-1: 1.1875rem;
+  --step-2: 1.625rem;
   --step-3: 2.125rem;
-  --step-4: clamp(2.125rem, 1.4rem + 3.4vw, 3.25rem);
-  /* Two widths: the page frame, and the measure for text and lists. */
-  --measure: 42rem;
-  --page: 64rem;
-  --radius: 0.5rem;
-}
-
-@media (min-width: 48rem) {
-  :root {
-    --step-0: 1.125rem;
-    --step-2: 1.75rem;
-  }
+  --step-4: clamp(2.5rem, 1.6rem + 3vw, 3.375rem);
+  /* Two widths: the page frame, and the measure for text. */
+  --measure: 40rem;
+  --page: 66rem;
+  --label: 17.5rem; /* left column of every list: role, skill group, study */
+  --radius: 0.75rem;
 }
 
 /* Dark theme: from the system unless the visitor chose light, or chosen explicitly. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --ardesia: #e4eaef;
-    --mare: #9cc4ea;
-    --mare-ink: #10202e;
-    --pietra: #15202a;
-    --superficie: #1b2834;
-    --nebbia: #a3b0bb;
-    --linea: #2f3f4d;
-    --barra: #48667f;
+    --ardesia: #e8efed;
+    --testo: #c3d1ce;
+    --mare: #7cc4c4;
+    --mare-ink: #0f1e1e;
+    --pietra: #0f1e1e;
+    --superficie: #172b2b;
+    --hover: #142626;
+    --nebbia: #93a6a3;
+    --gru: #e0ad45;
+    --gru-ink: #1a1406;
+    --linea: #22393a;
+    --bordo: #355654;
+    --traccia: #1d3332;
+    --barra: #4f7a75;
+    --fascia: #0b3236;
+    --fascia-ink: #eef6f5;
+    --fascia-linea: #2d5c5f;
     --focus: var(--gru);
     color-scheme: dark;
   }
 }
 :root[data-theme='dark'] {
-  --ardesia: #e4eaef;
-  --mare: #9cc4ea;
-  --mare-ink: #10202e;
-  --pietra: #15202a;
-  --superficie: #1b2834;
-  --nebbia: #a3b0bb;
-  --linea: #2f3f4d;
-  --barra: #48667f;
+  --ardesia: #e8efed;
+  --testo: #c3d1ce;
+  --mare: #7cc4c4;
+  --mare-ink: #0f1e1e;
+  --pietra: #0f1e1e;
+  --superficie: #172b2b;
+  --hover: #142626;
+  --nebbia: #93a6a3;
+  --gru: #e0ad45;
+  --gru-ink: #1a1406;
+  --linea: #22393a;
+  --bordo: #355654;
+  --traccia: #1d3332;
+  --barra: #4f7a75;
+  --fascia: #0b3236;
+  --fascia-ink: #eef6f5;
+  --fascia-linea: #2d5c5f;
   --focus: var(--gru);
   color-scheme: dark;
 }
@@ -79,6 +100,9 @@ body {
   font-family: var(--font-sans), system-ui, sans-serif;
   font-size: var(--step-0);
   line-height: 1.6;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 /* Components set their own display; the hidden attribute must still win. */
 [hidden] {
@@ -111,8 +135,8 @@ h3 {
 }
 h2 {
   font-size: var(--step-2);
-  font-weight: 650;
-  margin: 0 0 1.25rem;
+  font-weight: 700;
+  margin: 0 0 1.125rem;
 }
 h3 {
   font-size: var(--step-0);
@@ -141,8 +165,33 @@ ul {
   font-size: var(--step--1);
 }
 .section {
-  margin-top: clamp(3.5rem, 8vw, 5.5rem);
+  margin-top: clamp(3.5rem, 8vw, 5rem);
   scroll-margin-top: 1rem;
+}
+/* Every list on the page shares one grid: a label column and a body column, one rule
+   between rows. The eye follows a single alignment from the top to the end. */
+.rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+  padding: 0.875rem 0.5rem;
+  border-top: 1px solid var(--linea);
+}
+.row-label {
+  flex: 0 1 var(--label);
+  min-width: 0;
+  margin: 0;
+}
+.row-body {
+  flex: 1 1 23rem;
+  min-width: 0;
+  margin: 0;
+  color: var(--testo);
 }
 .visually-hidden {
   position: absolute;
@@ -169,6 +218,7 @@ ul {
     --gru: CanvasText;
     --barra: CanvasText;
     --linea: CanvasText;
+    --traccia: Canvas;
   }
 }
 
@@ -185,14 +235,19 @@ ul {
 /* Printing the web page (Ctrl+P): always the light palette on white paper. */
 @media print {
   :root:root {
-    --ardesia: #22303c;
-    --mare: #1f4e79;
+    --ardesia: #16302f;
+    --testo: #2b4140;
+    --mare: #0f5c63;
     --mare-ink: #ffffff;
     --pietra: #ffffff;
     --superficie: #ffffff;
-    --nebbia: #56636e;
-    --linea: #cfd7de;
-    --barra: #8fa6bb;
+    --nebbia: #566866;
+    --gru: #d39b2a;
+    --linea: #dfe5df;
+    --traccia: #e6ebe5;
+    --barra: #8fb0ab;
+    --fascia: #ffffff;
+    --fascia-ink: #16302f;
     color-scheme: light;
   }
   :root:root .photo {
@@ -205,7 +260,7 @@ ul {
     break-after: avoid;
   }
   .entries > li,
-  .pairs > div {
+  .row {
     break-inside: avoid;
   }
 }

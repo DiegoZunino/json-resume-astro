@@ -23,11 +23,11 @@ const certificateDetails = (certificate: Resume['certificates'][number]) =>
   );
 ---
 
-<dl class="pairs">
+<dl class="rows pairs">
   {resume.education.map((entry) => (
-    <div>
-      <dt>{joinParts([entry.studyType, entry.area], ', ') || entry.institution}</dt>
-      <dd>
+    <div class="row">
+      <dt class="row-label">{joinParts([entry.studyType, entry.area], ', ') || entry.institution}</dt>
+      <dd class="row-body">
         {entry.url ? <a href={entry.url}>{entry.institution}</a> : entry.institution}
         {(entry.startDate || entry.endDate) && (
           <span class="muted"> · {formatRange(entry.startDate, entry.endDate, labels.intl, labels.ongoing)}</span>
@@ -36,9 +36,9 @@ const certificateDetails = (certificate: Resume['certificates'][number]) =>
     </div>
   ))}
   {resume.certificates.length > 0 && (
-    <div>
-      <dt>{labels.sections.certificates}</dt>
-      <dd>
+    <div class="row">
+      <dt class="row-label">{labels.sections.certificates}</dt>
+      <dd class="row-body">
         <ul>
           {resume.certificates.map((certificate) => (
             <li>
@@ -51,41 +51,22 @@ const certificateDetails = (certificate: Resume['certificates'][number]) =>
     </div>
   )}
   {resume.languages.length > 0 && (
-    <div>
-      <dt>{labels.sections.languages}</dt>
-      <dd>{resume.languages.map((entry) => languageLine(entry.language, entry.fluency)).join(', ')}</dd>
+    <div class="row">
+      <dt class="row-label">{labels.sections.languages}</dt>
+      <dd class="row-body">
+        {resume.languages.map((entry) => languageLine(entry.language, entry.fluency)).join(', ')}
+      </dd>
     </div>
   )}
 </dl>
 
 <style>
-  .pairs {
-    margin: 0;
-    max-width: var(--measure);
-  }
-  .pairs > div {
-    display: grid;
-    grid-template-columns: minmax(9rem, 14rem) 1fr;
-    gap: 0.25rem 1.5rem;
-    padding: 0.6rem 0;
-    border-top: 1px solid var(--linea);
-  }
-  .pairs > div:last-child {
-    border-bottom: 1px solid var(--linea);
-  }
   dt {
     font-weight: 650;
-  }
-  dd {
-    margin: 0;
+    color: var(--ardesia);
   }
   dd ul {
     list-style: none;
     padding: 0;
-  }
-  @media (max-width: 36rem) {
-    .pairs > div {
-      grid-template-columns: 1fr;
-    }
   }
 </style>

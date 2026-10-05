@@ -1,6 +1,7 @@
 /**
  * Progressive enhancement of the timeline: collapse all but the first `data-open`
- * roles, toggle a role on click, and offer "expand all / collapse all".
+ * roles, toggle a role on click, offer "expand all / collapse all", and mark on the
+ * time axis the years of the role under the pointer or keyboard focus.
  */
 export function initTimelines(): void {
   for (const timeline of document.querySelectorAll<HTMLElement>('[data-timeline]')) {
@@ -22,6 +23,26 @@ export function initTimelines(): void {
         refreshToggleAll();
       });
     });
+
+    const span = timeline.querySelector<SVGRectElement>('[data-axis-span]');
+    const hint = timeline.querySelector<HTMLElement>('[data-axis-hint]');
+    const mark = (role: HTMLElement | null) => {
+      if (!span) return;
+      const x = role?.dataset.x;
+      const w = role?.dataset.w;
+      if (x && w) {
+        span.setAttribute('x', `${x}%`);
+        span.setAttribute('width', `${w}%`);
+        span.style.opacity = '1';
+      } else span.style.opacity = '0';
+      if (hint) hint.textContent = (x && role?.dataset.when) || '';
+    };
+    for (const role of timeline.querySelectorAll<HTMLElement>('[data-role]')) {
+      role.addEventListener('pointerenter', () => mark(role));
+      role.addEventListener('pointerleave', () => mark(null));
+      role.addEventListener('focusin', () => mark(role));
+      role.addEventListener('focusout', () => mark(null));
+    }
 
     if (toggleAll) {
       toggleAll.hidden = false;

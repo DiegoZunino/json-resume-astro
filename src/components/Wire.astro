@@ -1,18 +1,19 @@
 ---
 /**
- * The wire: one yellow line that leads from where the work starts to where it lands.
- * It is the single drawn element of the identity (hero, PDF, social card).
+ * The wire: an ochre line between where the work starts and where it lands, the single
+ * drawn element of the identity (hero, PDF, social card).
  *
- *   Where it starts
- *   ●────────────────● where it lands
+ *   Where it starts  ●──────────●  where it lands
  *
- * Drawn with borders, not backgrounds, so it stays visible in forced-colours mode.
- * Decorative: the two phrases carry the meaning, the line is hidden from assistive tech.
+ * On the web it tells the passage in sequence: the first phrase, the line drawing
+ * itself towards the right, then the destination. Drawn with borders, not backgrounds,
+ * so it stays visible in forced-colours mode. The two phrases carry the meaning; the
+ * line is hidden from assistive technology.
  */
 interface Props {
   from: string;
   to: string;
-  /** Draw it once on load (web only; skipped with reduced motion). */
+  /** Tell it in sequence on load (web only; skipped with reduced motion). */
   animate?: boolean;
   class?: string;
 }
@@ -22,65 +23,67 @@ const { from, to, animate = false, class: className } = Astro.props;
 
 <p class:list={['wire', className, { animate }]}>
   <span class="from">{from}</span>
-  <span class="line" aria-hidden="true"></span>
+  <span class="line" aria-hidden="true">
+    <span class="stroke"></span>
+  </span>
   <span class="to">{to}</span>
 </p>
 
 <style>
   .wire {
-    display: grid;
-    grid-template-columns: minmax(2.5em, 6em) auto;
-    justify-content: start;
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    column-gap: 0.55em;
-    row-gap: 0.2em;
+    gap: 0.4em 0.75em;
     margin: 0;
     font-weight: 600;
     letter-spacing: -0.01em;
     line-height: 1.25;
   }
-  .from {
-    grid-column: 1 / -1;
-  }
   .to {
-    text-wrap: balance;
-  }
-  /* Narrow screens: one column; the line gets its own row, the destination the full width. */
-  @media (max-width: 30rem) {
-    .wire {
-      grid-template-columns: 1fr;
-      row-gap: 0.5em;
-    }
-    .line {
-      width: 6em;
-    }
+    color: var(--mare);
   }
   .line {
-    position: relative;
-    height: 0;
-    border-top: 3px solid var(--gru);
-    border-radius: 2px;
-    transform-origin: left center;
+    flex: 1 1 3em;
+    min-width: 3em;
+    max-width: 9em;
+    display: flex;
+    align-items: center;
+    height: 0.7em;
   }
-  .line::before,
-  .line::after {
+  .stroke {
+    position: relative;
+    flex: 1;
+    height: 0;
+    border-top: 4px solid var(--gru);
+    margin-inline: 0.25em;
+  }
+  .stroke::before,
+  .stroke::after {
     content: '';
     position: absolute;
-    top: -0.32em;
+    top: -0.3em;
     width: 0;
     height: 0;
     border: 0.25em solid var(--gru);
     border-radius: 50%;
-    margin-top: -1.5px;
+    margin-top: -2px;
   }
-  .line::before {
-    left: -0.1em;
+  .stroke::before {
+    left: -0.3em;
   }
-  .line::after {
-    right: -0.1em;
+  .stroke::after {
+    right: -0.3em;
   }
-  .animate .line {
-    animation: draw 0.9s cubic-bezier(0.65, 0, 0.35, 1) 0.25s both;
+  .animate .from {
+    animation: enter 0.5s ease-out 0.05s both;
+  }
+  .animate .stroke {
+    transform-origin: left center;
+    animation: draw 0.9s cubic-bezier(0.65, 0, 0.35, 1) 0.55s both;
+  }
+  .animate .to {
+    animation: enter 0.6s ease-out 1.45s both;
   }
   @keyframes draw {
     from {
@@ -90,8 +93,20 @@ const { from, to, animate = false, class: className } = Astro.props;
       transform: scaleX(1);
     }
   }
+  @keyframes enter {
+    from {
+      opacity: 0;
+      transform: translateX(-0.5rem);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
-    .animate .line {
+    .animate .from,
+    .animate .stroke,
+    .animate .to {
       animation: none;
     }
   }
