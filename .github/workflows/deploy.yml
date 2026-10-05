@@ -1,7 +1,7 @@
 # Publishes the site to Netlify, built from the real resume (RESUME_SOURCE_* variables).
 #
 # Runs:
-#  - after every push to main, once the checks have passed;
+#  - after the ci workflow has passed on main (workflow_run: the checks run once per push);
 #  - when the resume changes: repository_dispatch "resume-updated" sent by whoever writes
 #    the gist, with the gist revision in client_payload.revision;
 #  - every hour, as a cheap check: if the gist revision differs from the published one
@@ -10,12 +10,18 @@
 #    public repository are paused by GitHub after 60 days without activity;
 #  - by hand (workflow_dispatch).
 #
+# Three jobs with separate privileges: "build" runs npm and Chromium but never sees the
+# Netlify token; "publish" sees the token but runs no third-party code (curl and jq only);
+# "verify" checks that the live site serves the revision that was just built.
+#
 # Secrets: NETLIFY_AUTH_TOKEN, NETLIFY_SITE_ID.
 # Variables: SITE_URL; RESUME_GIST ("<user>/<id>" of a gist with resume.json and
 # resume.en.json) or RESUME_SOURCE_IT / RESUME_SOURCE_EN (any URL, e.g. an API).
 name: deploy
 on:
-  push:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
     branches: [main]
   repository_dispatch:
     types: [resume-updated]
@@ -33,6 +39,10 @@ concurrency:
 jobs:
   revision:
     name: Resume revision
+    # After ci, only when it passed on a push to main (not on a pull request from a fork).
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     outputs:
       build: ${{ steps.revision.outputs.build }}
@@ -63,22 +73,17 @@ jobs:
           echo "build=$build" >> "$GITHUB_OUTPUT"
           echo "Gist revision: ${revision:-none}; build: $build"
 
-  checks:
+  build:
+    name: Build from the real resume
     needs: revision
     if: needs.revision.outputs.build == 'true'
-    uses: ./.github/workflows/checks.yml
-
-  deploy:
-    needs: [revision, checks]
-    if: needs.revision.outputs.build == 'true'
     runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: ${{ vars.SITE_URL }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # After ci, build exactly the commit that passed.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
@@ -100,30 +105,87 @@ jobs:
           fi
           echo "RESUME_SOURCE_IT=$SOURCE_IT" >> "$GITHUB_ENV"
           echo "RESUME_SOURCE_EN=$SOURCE_EN" >> "$GITHUB_ENV"
-      - name: Build from the real resume
+      - name: Build (fails on schema errors, private-data leaks or a photo that cannot be fetched)
         env:
           SITE_URL: ${{ vars.SITE_URL }}
+          RESUME_STRICT_PHOTO: '1'
         run: npm run build
+      - run: npm run validate:html
       - name: Record the published revision
         env:
           REVISION: ${{ needs.revision.outputs.revision }}
-        run: '[ -z "$REVISION" ] || printf "%s" "$REVISION" > dist/resume-revision.txt'
-      - name: Deploy to Netlify (zip upload through the API, no third-party code with the token)
+        run: printf "%s" "${REVISION:-$GITHUB_SHA}" > dist/resume-revision.txt
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: site
+          path: dist/
+          retention-days: 7
+          if-no-files-found: error
+
+  publish:
+    name: Publish to Netlify
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.SITE_URL }}
+    outputs:
+      deploy: ${{ steps.upload.outputs.deploy }}
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: site
+          path: dist
+      - id: upload
+        name: Zip upload through the API (curl only, no third-party code sees the token)
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         run: |
           set -euo pipefail
           (cd dist && zip -qr ../site.zip .)
-          curl -fsS --max-time 300 \
+          response="$(curl -fsS --max-time 300 \
             -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" -H "Content-Type: application/zip" \
-            --data-binary @site.zip "https://api.netlify.com/api/v1/sites/$NETLIFY_SITE_ID/deploys" \
-            | jq '{id, state, deploy_url}'
-      - name: Smoke test of the live site
+            --data-binary @site.zip "https://api.netlify.com/api/v1/sites/$NETLIFY_SITE_ID/deploys")"
+          id="$(jq -r .id <<<"$response")"
+          [[ "$id" =~ ^[0-9a-f]{24}$ ]] || { echo "::error::Unexpected Netlify answer"; exit 1; }
+          echo "deploy=$id" >> "$GITHUB_OUTPUT"
+          # Wait until Netlify has processed the upload: "ready", or fail on "error".
+          for _ in $(seq 1 30); do
+            state="$(curl -fsS --max-time 15 -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
+              "https://api.netlify.com/api/v1/deploys/$id" | jq -r .state)"
+            echo "Deploy $id: $state"
+            case "$state" in
+              ready) exit 0 ;;
+              error) echo "::error::Netlify could not publish deploy $id"; exit 1 ;;
+            esac
+            sleep 10
+          done
+          echo "::error::Deploy $id not ready after five minutes"; exit 1
+
+  verify:
+    name: Verify the live site
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: site
+          path: dist
+      - name: The live site serves what was built
         env:
           SITE_URL: ${{ vars.SITE_URL }}
         run: |
           set -euo pipefail
-          sleep 20
-          curl -fsS --max-time 15 "$SITE_URL/" | grep -q '<h1'
+          expected="$(cat dist/resume-revision.txt)"
+          for _ in $(seq 1 12); do
+            live="$(curl -fsS --max-time 10 -H 'Cache-Control: no-cache' "$SITE_URL/resume-revision.txt" || true)"
+            [ "$live" = "$expected" ] && break
+            sleep 10
+          done
+          [ "$live" = "$expected" ] || { echo "::error::Live revision '$live', expected '$expected'"; exit 1; }
+          home="$(curl -fsS --max-time 15 "$SITE_URL/")"
+          grep -q '<h1' <<<"$home"
+          grep -Eq '<img[^>]+class="photo' <<<"$home"
           curl -fsS --max-time 15 -o /dev/null "$SITE_URL/resume.json"
+          curl -fsSI --max-time 15 "$SITE_URL/$(cd dist && ls ./*.pdf | head -1 | sed 's|^\./||')" | grep -qi 'application/pdf'
