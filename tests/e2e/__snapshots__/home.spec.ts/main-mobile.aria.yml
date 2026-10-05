@@ -1,0 +1,122 @@
+- main:
+  - heading "Ada Esempio" [level=1]
+  - paragraph: Engineering Manager
+  - paragraph: Torino
+  - paragraph: Dalle idee dei clienti al software che il team sa mantenere
+  - paragraph: "Persona di esempio per i test: guida un team di prodotto, scrive codice quando serve e parla a conferenze. Copre tutte le sezioni dello schema JSON Resume, comprese le estensioni."
+  - group "Contatti – Ada Esempio":
+    - link "Scarica il CV PDF, italiano":
+      - /url: /cv-it.pdf
+    - link "Email":
+      - /url: mailto:ada@example.org
+    - link "LinkedIn":
+      - /url: https://www.linkedin.com/in/ada-esempio
+    - link "GitHub":
+      - /url: https://github.com/ada
+  - region "Percorso":
+    - heading "Percorso" [level=2]
+    - button "Apri tutti"
+    - list:
+      - listitem:
+        - heading /Engineering Manager Azienda Uno mar \d+ – oggi/ [level=3]:
+          - button /Engineering Manager Azienda Uno mar \d+ – oggi/ [expanded]
+        - paragraph: Guida di un team di prodotto di otto persone.
+        - list:
+          - listitem: Roadmap trimestrale condivisa con prodotto e vendite.
+          - listitem: Rilasci settimanali al posto di quelli trimestrali.
+        - paragraph: Software house di prodotti per la logistica.
+      - listitem:
+        - heading /Tech Lead Azienda Uno giu \d+ – feb \d+/ [level=3]:
+          - button /Tech Lead Azienda Uno giu \d+ – feb \d+/ [expanded]
+        - paragraph: Riferimento tecnico del team, revisione del codice e delle architetture.
+      - listitem:
+        - heading /Software Engineer Azienda Due \d+ – mag \d+/ [level=3]:
+          - button /Software Engineer Azienda Due \d+ – mag \d+/
+      - listitem:
+        - heading "Sviluppatrice Progetti personali" [level=3]:
+          - button "Sviluppatrice Progetti personali"
+  - region "Talk":
+    - heading "Talk" [level=2]
+    - list:
+      - listitem:
+        - paragraph:
+          - link "Un talk di esempio":
+            - /url: https://example.org/talk
+        - paragraph: /Conferenza di esempio · nov \d+/
+      - listitem:
+        - paragraph: /Un talk senza link, Meetup, \d+/
+  - region "Progetti":
+    - heading "Progetti" [level=2]
+    - list:
+      - listitem:
+        - paragraph:
+          - link "Progetto di esempio":
+            - /url: https://example.org/progetto
+        - paragraph: /\d+ – oggi/
+        - paragraph: Uno strumento open source.
+  - region "Competenze":
+    - heading "Competenze" [level=2]
+    - term: Guida
+    - definition: mentoring, delivery, roadmap
+    - term: Tecnologie
+    - definition: TypeScript, Go, PostgreSQL · Esperta
+  - region "Volontariato":
+    - heading "Volontariato" [level=2]
+    - list:
+      - listitem:
+        - paragraph: Community di esempio · Organizzatrice
+        - paragraph: /gen \d+ – oggi/
+        - paragraph: Meetup mensili e una conferenza all'anno.
+  - region "Formazione":
+    - heading "Formazione" [level=2]
+    - term: Laurea, Informatica
+    - definition: /Università di Esempio · \d+ – \d+/
+    - term: Certificazioni
+    - definition:
+      - list:
+        - listitem:
+          - link "Certificazione di esempio":
+            - /url: https://example.org/cert
+          - text: /, Ente, gen \d+, valida fino a gen \d+/
+    - term: Lingue
+    - definition: Italiano (madrelingua), Inglese (C1)
+  - region "Riconoscimenti":
+    - heading "Riconoscimenti" [level=2]
+    - list:
+      - listitem:
+        - paragraph: Premio di esempio
+        - paragraph: /Ente · mag \d+/
+        - paragraph: Per un progetto open source.
+  - region "Pubblicazioni":
+    - heading "Pubblicazioni" [level=2]
+    - list:
+      - listitem:
+        - paragraph:
+          - link "Articolo di esempio":
+            - /url: https://example.org/articolo
+        - paragraph: /Rivista · giu \d+/
+        - paragraph: Sintesi dell'articolo.
+  - region "Interessi":
+    - heading "Interessi" [level=2]
+    - list:
+      - listitem:
+        - paragraph: Montagna
+        - paragraph: trekking, arrampicata
+  - region "Referenze":
+    - heading "Referenze" [level=2]
+    - list:
+      - listitem:
+        - paragraph: Collega
+        - paragraph: Lavorare con Ada è stato un piacere.
+  - region "Contatti":
+    - heading "Contatti" [level=2]
+    - group "Contatti":
+      - link "Scarica il CV PDF, italiano":
+        - /url: /cv-it.pdf
+      - link "Email":
+        - /url: mailto:ada@example.org
+      - link "LinkedIn":
+        - /url: https://www.linkedin.com/in/ada-esempio
+      - link "GitHub":
+        - /url: https://github.com/ada
+    - paragraph: ada@example.org
