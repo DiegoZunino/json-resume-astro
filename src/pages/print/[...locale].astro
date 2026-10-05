@@ -1,0 +1,229 @@
+---
+/**
+ * Source of the PDF CV (A4). Same data and identity as the web page, laid out for paper:
+ * no interactions, every role expanded, links kept clickable. Removed from the
+ * published site after the build integration prints it.
+ */
+import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
+import { getRelativeLocaleUrl } from 'astro:i18n';
+import Photo from '../../components/Photo.astro';
+import Wire from '../../components/Wire.astro';
+import ItemList from '../../components/sections/ItemList.astro';
+import Skills from '../../components/sections/Skills.astro';
+import Education from '../../components/sections/Education.astro';
+import { formatRange } from '../../core/dates';
+import { entriesFor, extensionEntries } from '../../core/entries';
+import { displayUrl, joinParts } from '../../core/text';
+import { groupByOrganisation } from '../../core/timeline';
+import { sectionTitle } from '../../i18n/labels';
+import Document from '../../layouts/Document.astro';
+import { locales, pageContext, routeParam } from '../../site/context';
+
+export const getStaticPaths = (() =>
+  locales.map((locale) => ({
+    params: { locale: routeParam(getRelativeLocaleUrl(locale)) },
+    props: { locale },
+  }))) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { locale } = Astro.props as Props;
+const context = await pageContext(locale, Astro.site);
+const { resume, labels } = context;
+const { basics } = resume;
+const options = resume.meta.themeOptions ?? {};
+const title = (key: string) => sectionTitle(key, labels, options.labels ?? {});
+const range = (start?: string, end?: string) => formatRange(start, end, locale, labels.ongoing);
+const contacts = [
+  basics.email && { label: basics.email, href: `mailto:${basics.email}` },
+  basics.url && { label: displayUrl(basics.url), href: basics.url },
+  ...basics.profiles
+    .filter((profile) => profile.url)
+    .map((profile) => ({ label: displayUrl(profile.url!), href: profile.url! })),
+].filter((contact): contact is { label: string; href: string } => Boolean(contact));
+---
+
+<Document lang={locale} title={joinParts([basics.name, 'CV'])} description={context.description} noindex artifact>
+  <div class="sheet">
+    <header class="head">
+      <Photo src={basics.image} name={basics.name} size={80} eager />
+      <div class="who">
+        <h1>{basics.name}</h1>
+        {basics.label && <p class="role">{basics.label}</p>}
+        <p class="contacts">
+          {joinParts([basics.location?.city], '')}
+          {contacts.map((contact, index) => (
+            <>
+              {(index > 0 || basics.location?.city) && <span class="sep"> · </span>}
+              <a href={contact.href}>{contact.label}</a>
+            </>
+          ))}
+        </p>
+      </div>
+    </header>
+    {options.tagline && <Wire class="tagline" from={options.tagline.from} to={options.tagline.to} />}
+
+    {basics.summary && (
+      <section>
+        <h2>{labels.profile}</h2>
+        <p>{basics.summary}</p>
+      </section>
+    )}
+
+    {context.sections.map((section) => (
+      <section class={`print-${section.key}`}>
+        <h2>{title(section.key)}</h2>
+        {section.key === 'work' ? (
+          groupByOrganisation(resume.work).map((group) => (
+            <div class="org">
+              {group.roles.length > 1 && <h3 class="org-name">{group.name}</h3>}
+              {group.roles.map((role) => (
+                <div class="job">
+                  <div class="job-head">
+                    <h3 class="job-title">
+                      {role.position}
+                      {group.roles.length === 1 && role.name && <span class="job-org"> · {role.name}</span>}
+                    </h3>
+                    <span class="job-when">
+                      {joinParts([range(role.startDate, role.endDate), group.roles.length === 1 && role.location])}
+                    </span>
+                  </div>
+                  {role.summary && <p>{role.summary}</p>}
+                  {role.highlights?.length ? (
+                    <ul>
+                      {role.highlights.map((highlight) => (
+                        <li>{highlight}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          ))
+        ) : section.key === 'skills' ? (
+          <Skills skills={resume.skills} />
+        ) : section.kind === 'education' ? (
+          <Education resume={resume} locale={locale} labels={labels} />
+        ) : section.kind === 'extension' ? (
+          <ItemList entries={extensionEntries(section.items, locale, labels.ongoing)} />
+        ) : (
+          <ItemList entries={entriesFor(section.key, resume, locale, labels.ongoing)} />
+        )}
+      </section>
+    ))}
+  </div>
+</Document>
+
+<style>
+  @page {
+    size: A4;
+    margin: 14mm 15mm 13mm;
+  }
+  :global(html) {
+    font-size: 9.4pt;
+    background: #fff;
+  }
+  :global(body) {
+    background: #fff;
+    font-size: 1rem;
+    line-height: 1.42;
+  }
+  .sheet {
+    --photo-size: 17mm;
+    color: var(--ardesia);
+  }
+  .head {
+    display: flex;
+    align-items: center;
+    gap: 5mm;
+  }
+  h1 {
+    margin: 0;
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .role {
+    margin: 0.15rem 0 0.2rem;
+    font-size: 1.2rem;
+    font-weight: 560;
+    color: var(--mare);
+  }
+  .contacts {
+    margin: 0;
+    color: var(--nebbia);
+    font-size: 0.92rem;
+  }
+  .contacts a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .sheet :global(.tagline) {
+    margin: 4mm 0 1mm;
+    font-size: 1.1rem;
+  }
+  h2 {
+    margin: 5mm 0 2mm;
+    padding-bottom: 1mm;
+    border-bottom: 0.6pt solid var(--linea);
+    color: var(--mare);
+    font-size: 1rem;
+    font-weight: 650;
+    letter-spacing: 0;
+    break-after: avoid;
+  }
+  section > p {
+    margin: 0;
+  }
+  h3 {
+    font-size: 1rem;
+  }
+  .org-name {
+    margin: 2mm 0 1mm;
+    font-weight: 650;
+  }
+  .org .job {
+    break-inside: avoid;
+    margin-bottom: 2mm;
+  }
+  .org:has(.org-name) .job {
+    padding-left: 3mm;
+    border-left: 1.2pt solid var(--linea);
+  }
+  .job-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 4mm;
+  }
+  .job-title {
+    margin: 0;
+    font-weight: 620;
+  }
+  .job-org {
+    font-weight: 500;
+  }
+  .job-when {
+    color: var(--nebbia);
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+  .job p {
+    margin: 0.5mm 0;
+  }
+  .job ul {
+    margin: 0.5mm 0 0;
+    padding-left: 4mm;
+  }
+  .job li {
+    margin-bottom: 0.4mm;
+  }
+  section :global(.pairs > div),
+  section :global(.entries > li) {
+    padding: 1mm 0;
+  }
+  section :global(.pairs),
+  section :global(.entries) {
+    max-width: none;
+  }
+</style>

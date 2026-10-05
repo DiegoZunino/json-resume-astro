@@ -1,0 +1,85 @@
+---
+/**
+ * Social card (1200×630), screenshotted by the build integration to og-<locale>.png
+ * and then removed from the site. Shown when the page is shared on LinkedIn and elsewhere.
+ */
+import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
+import { getRelativeLocaleUrl } from 'astro:i18n';
+import Photo from '../../components/Photo.astro';
+import Wire from '../../components/Wire.astro';
+import { displayUrl } from '../../core/text';
+import Document from '../../layouts/Document.astro';
+import { locales, pageContext, routeParam } from '../../site/context';
+
+export const getStaticPaths = (() =>
+  locales.map((locale) => ({
+    params: { locale: routeParam(getRelativeLocaleUrl(locale)) },
+    props: { locale },
+  }))) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { locale } = Astro.props as Props;
+const { resume } = await pageContext(locale, Astro.site);
+const { basics } = resume;
+const tagline = resume.meta.themeOptions?.tagline;
+const site = basics.url ?? (Astro.site ? Astro.site.href : undefined);
+---
+
+<Document lang={locale} title={basics.name} noindex artifact>
+  <div class="card">
+    <div class="identity">
+      <Photo src={basics.image} name={basics.name} size={220} eager />
+      <div>
+        <p class="name">{basics.name}</p>
+        {basics.label && <p class="role">{basics.label}</p>}
+      </div>
+    </div>
+    {tagline && <Wire class="tagline" from={tagline.from} to={tagline.to} />}
+    {site && <p class="site">{displayUrl(site)}</p>}
+  </div>
+</Document>
+
+<style>
+  :global(body) {
+    margin: 0;
+  }
+  .card {
+    --photo-size: 220px;
+    box-sizing: border-box;
+    width: 1200px;
+    height: 630px;
+    padding: 72px 84px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: var(--pietra);
+    color: var(--ardesia);
+  }
+  .identity {
+    display: flex;
+    align-items: center;
+    gap: 48px;
+  }
+  .name {
+    margin: 0;
+    font-size: 76px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .role {
+    margin: 16px 0 0;
+    font-size: 34px;
+    font-weight: 560;
+    color: var(--mare);
+  }
+  .card :global(.tagline) {
+    font-size: 36px;
+  }
+  .site {
+    margin: 0;
+    font-size: 26px;
+    color: var(--nebbia);
+  }
+</style>
