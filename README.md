@@ -101,29 +101,6 @@ Variabili: `SITE_URL`, `RESUME_GIST` (oppure `RESUME_SOURCE_<LINGUA>`). Segreti:
 
 **Privacy.** Se la sorgente è pubblica (un gist), i campi privati vanno tolti _prima_ di pubblicarla: la configurazione `private` protegge il sito, non la sorgente.
 
-<!-- BOZZA da validare con Diego prima della pubblicazione del repository -->
-
-## Come è stato costruito
-
-Il progetto è anche un esperimento di sviluppo con un assistente AI (Claude) usato come agente. Io ho dato requisiti e vincoli e ho preso le decisioni; l'assistente ha scritto codice, test e documentazione, ed è l'autore dei commit, raccolti in commit tematici.
-
-La qualità non si affida alla fiducia. Ogni modifica passa dai controlli automatici descritti sopra. In più il risultato è stato rivisto a giri da tre revisori separati, anch'essi agenti AI, ciascuno con un mandato diverso e senza aver scritto il codice: un CTO per il codice, un esperto di UI e accessibilità, un recruiter per il contenuto. A ogni giro: rapporto scritto con voto, correzioni, nuovo giro. I voti:
-
-| Giro | Codice | UI e accessibilità | Contenuto |
-| ---- | ------ | ------------------ | --------- |
-| 1    | 6      | 4                  | 4         |
-| 2    | 8      | 7                  | 6,5       |
-| 3    | 8,5    | 8                  | 7,5       |
-| 4    | 9      | 8,5                | 8         |
-| 5    | 9,5    | 8,5 → 9            | 8,5       |
-
-Restano da fare a mano, e non sono ancora fatte: la prova con i lettori di schermo (NVDA, VoiceOver). Le decisioni sui contenuti restano mie. Le scelte di fondo sono nelle [ADR](docs/adr/).
-
-## Prossimi esperimenti
-
-- La stessa pagina da un'API invece che da un file (ASP.NET Core Minimal API, Node.js), con le live collection di Astro.
-- Una seconda implementazione in .NET con `HtmlRenderer`, per confrontare i due approcci.
-
 ## Licenza
 
 [MIT](LICENSE) per il codice. I dati di esempio sono inventati.
