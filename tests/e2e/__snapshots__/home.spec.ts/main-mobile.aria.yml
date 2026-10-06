@@ -129,7 +129,7 @@
       - listitem:
         - link "Scarica il CV":
           - /url: /cv-it.pdf
-    - paragraph: "Scrivimi da qui: il messaggio arriva direttamente nella mia casella di posta."
+    - paragraph: "Scrivimi da qui: il messaggio arriva direttamente nella mia casella di posta. Tutti i campi sono obbligatori."
     - paragraph:
       - text: Nome
       - textbox "Nome"
@@ -140,7 +140,7 @@
       - text: Messaggio
       - textbox "Messaggio"
     - paragraph:
-      - text: Uso nome, email e messaggio solo per risponderti.
+      - text: Uso nome, email e messaggio solo per risponderti. Il modulo è gestito da Netlify (USA).
       - link "Informativa privacy":
         - /url: /privacy/
     - paragraph:

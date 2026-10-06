@@ -80,6 +80,8 @@ const PHOTO_SIZES = '(max-width: 30rem) 7rem, 9.25rem';
     padding-top: 0.5rem;
   }
   .hero:has(.cover) .identity {
+    position: relative; /* above the masked image */
+    z-index: 1;
     align-items: flex-end;
     margin-top: -4.875rem;
     padding-left: 1.5rem;
@@ -94,6 +96,34 @@ const PHOTO_SIZES = '(max-width: 30rem) 7rem, 9.25rem';
       align-items: flex-start;
       margin-top: -3.5rem;
       padding-left: 0;
+    }
+  }
+  /* Small tablets and phones held sideways: name and role stay beside the photo. */
+  @media (min-width: 30.0625rem) and (max-width: 40rem) {
+    .hero:has(.cover) .identity {
+      flex-wrap: nowrap;
+      align-items: flex-end;
+    }
+    .hero:has(.cover) .part {
+      display: block;
+    }
+    .hero:has(.cover) .sep {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+  @media (forced-colors: active) {
+    .hero:has(.cover) .identity {
+      margin-top: 0;
+      padding-left: 0;
+    }
+    .hero:has(.cover) .identity :global(.photo) {
+      outline-width: 2px;
+      outline-offset: 0;
     }
   }
   @keyframes ring {

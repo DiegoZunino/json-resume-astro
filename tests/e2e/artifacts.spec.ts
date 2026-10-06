@@ -45,6 +45,8 @@ test.describe('published files', () => {
     const sitemap = await (await request.get('/sitemap-0.xml')).text();
     expect(sitemap).toContain('/en/');
     expect(sitemap).not.toContain('/print/');
+    expect(sitemap).toContain('/privacy/');
+    expect(sitemap).not.toContain('/messaggio-inviato/');
     expect((await request.get('/favicon.svg')).headers()['content-type']).toContain('image/svg+xml');
     await page.goto('/');
     const jsonLd = JSON.parse((await page.locator('script[type="application/ld+json"]').textContent()) ?? '{}');

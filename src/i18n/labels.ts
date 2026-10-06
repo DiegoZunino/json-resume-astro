@@ -14,6 +14,14 @@ export interface PrivacyFacts {
   email?: string | undefined;
   /** The contact form and who handles it. */
   form?: 'netlify' | undefined;
+  /** Who hosts the site, e.g. "Netlify, Inc. (USA)". */
+  host?: string | undefined;
+  /** Provider of the owner's mailbox, where form notifications arrive. */
+  mailbox?: string | undefined;
+  /** Days within which messages are deleted from the form service. */
+  formDays: number;
+  /** Months after the last exchange within which messages are deleted from the mailbox. */
+  mailMonths: number;
 }
 
 export interface Notice {
@@ -81,7 +89,9 @@ export interface Labels {
       send: string;
       sending: string;
       sent: string;
-      failed: (email?: string) => string;
+      failed: string;
+      /** Shown with the address after a failed send. */
+      fallback: string;
       /** Short notice under the form, with a link to the full notice. */
       notice: string;
       noticeLink: string;
@@ -102,6 +112,8 @@ export interface Labels {
     paragraphs: (contactEmail?: string) => string[];
   };
   notFound: { title: string; body: string; home: string };
+  /** Link back to the home page from the secondary pages. */
+  backTo: (name: string) => string;
 }
 
 const en: Labels = {
@@ -147,16 +159,16 @@ const en: Labels = {
   contact: {
     vcard: 'Add to contacts',
     form: {
-      intro: 'Write to me here: your message goes straight to my inbox.',
+      intro: 'Write to me here: your message goes straight to my inbox. All fields are required.',
       name: 'Name',
       email: 'Email',
       message: 'Message',
       send: 'Send',
       sending: 'Sending…',
       sent: 'Message sent. Thank you: I will reply as soon as I can.',
-      failed: (email) =>
-        email ? `The message could not be sent. Please write to ${email}.` : 'The message could not be sent.',
-      notice: 'I use your name, email and message only to reply to you.',
+      failed: 'The message could not be sent.',
+      fallback: 'Please write to me directly:',
+      notice: 'I use your name, email and message only to reply to you. The form is handled by Netlify (USA).',
       noticeLink: 'Privacy notice',
     },
     sentPage: { slug: 'message-sent', title: 'Message sent', body: 'Thank you: I will reply as soon as I can.' },
@@ -165,18 +177,18 @@ const en: Labels = {
     slug: 'privacy',
     title: 'Privacy notice',
     reviewed: 'Notice last reviewed on',
-    sections: ({ owner, email, form }) => [
+    sections: ({ owner, email, form, host, mailbox, formDays, mailMonths }) => [
       {
         title: 'Who is responsible',
         paragraphs: [
-          `${owner} is the controller of the personal data described here${email ? `, and can be reached at ${email}` : ''}.`,
+          `${owner} is the controller of the personal data described here.${email ? ` For any question about your data, write to ${email}.` : ''}`,
         ],
       },
       {
         title: 'Visiting the site',
         paragraphs: [
-          'The site sets no cookies, uses no analytics and loads nothing from other sites: fonts and images are served by the site itself.',
-          'Like any web server, the service hosting the site records technical data about each request (IP address, page, time, browser) to deliver the pages and protect them from abuse.',
+          'The site sets no cookies, uses no analytics and loads nothing from other sites: fonts and images are served by the site itself. If you choose the light or dark theme, the choice is kept only in your browser and is never sent to me.',
+          `${host ? `The site is hosted by ${host}, which` : 'The service hosting the site'} processes the technical data of each request on my behalf (such as the IP address and the browser) to deliver the pages and protect them from abuse, and keeps it according to its own policies. Legal basis: my legitimate interest in running the site securely (Article 6(1)(f) GDPR).`,
         ],
       },
       ...(form === 'netlify'
@@ -184,9 +196,12 @@ const en: Labels = {
             {
               title: 'The contact form',
               paragraphs: [
-                'If you write through the form I receive your name, email address and message, and I use them only to read and answer your request. The legal basis is your request (Article 6(1)(b) GDPR) and, for messages unrelated to work, my legitimate interest in replying (Article 6(1)(f)). No consent is needed, the data is not used for anything else and is not shared with anyone.',
-                'Messages are received and stored by Netlify, Inc., which hosts the site and acts as processor under its data processing agreement; they are stored in the United States, under the EU-US Data Privacy Framework. Netlify checks messages for spam with the Akismet service and sends me a copy by email.',
-                'I keep messages for as long as the conversation needs, and no longer than 12 months after the last exchange; then I delete them from Netlify and from my inbox.',
+                'If you write through the form I process your name, email address and message, plus the technical data the service records with each message (IP address, browser, referring page). I use them only to read your request and reply: no newsletters, no advertising. Name, email and message are needed to reply: without them the form is not sent.',
+                'Legal basis: if you write about possible work together, the pre-contractual steps you ask for (Article 6(1)(b) GDPR); otherwise my legitimate interest in answering whoever writes to me (Article 6(1)(f)). No consent is needed.',
+                `The form is handled by Netlify, Inc. (USA), which hosts the site and acts as processor under its data processing agreement. Netlify relies on other providers, among them Automattic Inc. (the Akismet service) for automatic spam filtering and Twilio SendGrid to send me an email notification. The notification reaches my mailbox${mailbox ? `, provided by ${mailbox}` : ''}. I share the data with no one else.`,
+                "Messages are stored in the United States. Netlify states that it takes part in the EU-US Data Privacy Framework (European Commission adequacy decision of 10 July 2023); as a fallback, its agreement includes the Commission's standard contractual clauses.",
+                `I delete messages from Netlify within ${formDays} days of arrival; I keep the copy in my mailbox for as long as the conversation needs, and no longer than ${mailMonths} months after the last exchange.`,
+                `Spam filtering is automatic: a genuine message may be discarded by mistake and not reach me. In that case, please write to me directly${email ? ` at ${email}` : ''}.`,
               ],
             },
           ]
@@ -194,7 +209,9 @@ const en: Labels = {
       {
         title: 'Your rights',
         paragraphs: [
-          `You can ask to access, correct or delete your data, to restrict or object to its use, and to receive it in a portable format (Articles 15-22 GDPR)${email ? ` by writing to ${email}` : ''}. You can also lodge a complaint with your data protection authority.`,
+          `You can ask to access, correct or delete your data, to restrict its use and to receive it in a portable format (Articles 15-20 GDPR)${email ? ` by writing to ${email}` : ''}.`,
+          'You can object at any time to processing based on my legitimate interest (Article 21 GDPR).',
+          'You can lodge a complaint with the data protection authority of the EU country where you live or work, or with the Italian Garante per la protezione dei dati personali (garanteprivacy.it).',
         ],
       },
     ],
@@ -214,6 +231,7 @@ const en: Labels = {
     ],
   },
   notFound: { title: 'Page not found', body: 'This address does not exist (any more).', home: 'Go to the home page' },
+  backTo: (name) => `Back to ${name}’s page`,
 };
 
 const it: Labels = {
@@ -259,15 +277,17 @@ const it: Labels = {
   contact: {
     vcard: 'Aggiungi ai contatti',
     form: {
-      intro: 'Scrivimi da qui: il messaggio arriva direttamente nella mia casella di posta.',
+      intro:
+        'Scrivimi da qui: il messaggio arriva direttamente nella mia casella di posta. Tutti i campi sono obbligatori.',
       name: 'Nome',
       email: 'Email',
       message: 'Messaggio',
       send: 'Invia',
       sending: 'Invio in corso…',
       sent: 'Messaggio inviato. Grazie: ti rispondo appena posso.',
-      failed: (email) => (email ? `Invio non riuscito. Scrivimi a ${email}.` : 'Invio non riuscito.'),
-      notice: 'Uso nome, email e messaggio solo per risponderti.',
+      failed: 'Invio non riuscito.',
+      fallback: 'Scrivimi direttamente:',
+      notice: 'Uso nome, email e messaggio solo per risponderti. Il modulo è gestito da Netlify (USA).',
       noticeLink: 'Informativa privacy',
     },
     sentPage: { slug: 'messaggio-inviato', title: 'Messaggio inviato', body: 'Grazie: ti rispondo appena posso.' },
@@ -276,18 +296,18 @@ const it: Labels = {
     slug: 'privacy',
     title: 'Informativa sulla privacy',
     reviewed: 'Informativa aggiornata il',
-    sections: ({ owner, email, form }) => [
+    sections: ({ owner, email, form, host, mailbox, formDays, mailMonths }) => [
       {
         title: 'Chi tratta i dati',
         paragraphs: [
-          `Il titolare del trattamento dei dati descritti qui è ${owner}${email ? `, che puoi contattare all’indirizzo ${email}` : ''}.`,
+          `Il titolare del trattamento dei dati descritti qui è ${owner}.${email ? ` Per qualunque domanda sui tuoi dati scrivi a ${email}.` : ''}`,
         ],
       },
       {
         title: 'La visita del sito',
         paragraphs: [
-          'Il sito non usa cookie, non usa strumenti di statistica e non carica nulla da altri siti: caratteri e immagini sono serviti dal sito stesso.',
-          'Come ogni server web, il servizio che ospita il sito registra dati tecnici delle richieste (indirizzo IP, pagina, ora, browser) per mostrare le pagine e proteggerle dagli abusi.',
+          'Il sito non usa cookie, non usa strumenti di statistica e non carica nulla da altri siti: caratteri e immagini sono serviti dal sito stesso. Se scegli il tema chiaro o scuro, la scelta resta salvata solo nel tuo browser e non mi viene inviata.',
+          `${host ? `Il sito è ospitato da ${host}, che` : 'Il servizio che ospita il sito'} tratta per mio conto i dati tecnici di ogni richiesta (come l’indirizzo IP e il browser) per consegnare le pagine e proteggerle dagli abusi, e li conserva secondo le proprie politiche. Base giuridica: il mio legittimo interesse al funzionamento e alla sicurezza del sito (art. 6.1.f del GDPR).`,
         ],
       },
       ...(form === 'netlify'
@@ -295,9 +315,12 @@ const it: Labels = {
             {
               title: 'Il modulo di contatto',
               paragraphs: [
-                'Se mi scrivi dal modulo ricevo nome, indirizzo email e messaggio, e li uso solo per leggere e rispondere alla tua richiesta. La base giuridica è la tua richiesta (art. 6.1.b del GDPR) e, per i messaggi che non riguardano il lavoro, il mio legittimo interesse a risponderti (art. 6.1.f). Non serve un consenso; i dati non sono usati per altro né comunicati ad altri.',
-                'I messaggi sono ricevuti e conservati da Netlify, Inc., che ospita il sito e agisce come responsabile del trattamento secondo il suo accordo sul trattamento dei dati; sono conservati negli Stati Uniti, nel quadro dell’EU-US Data Privacy Framework. Netlify controlla i messaggi contro lo spam con il servizio Akismet e me ne invia una copia per email.',
-                'Conservo i messaggi per il tempo che serve alla conversazione e comunque non oltre 12 mesi dall’ultimo scambio; poi li cancello da Netlify e dalla mia casella.',
+                'Se mi scrivi dal modulo tratto il tuo nome, il tuo indirizzo email e il messaggio, più i dati tecnici che il servizio registra con l’invio (indirizzo IP, browser, pagina di provenienza). Li uso solo per leggere la tua richiesta e risponderti: niente newsletter né pubblicità. Nome, email e messaggio servono per risponderti: senza, il modulo non si invia.',
+                'Base giuridica: se mi scrivi per una possibile collaborazione o un incarico, le misure precontrattuali che chiedi (art. 6.1.b del GDPR); negli altri casi il mio legittimo interesse a rispondere a chi mi scrive (art. 6.1.f). Non serve un consenso.',
+                `Il modulo è gestito da Netlify, Inc. (USA), che ospita il sito e agisce come responsabile del trattamento secondo il suo accordo sul trattamento dei dati. Netlify si avvale di altri fornitori, tra cui Automattic Inc. (servizio Akismet) per il filtro antispam automatico e Twilio SendGrid per inviarmi la notifica per email. La notifica arriva nella mia casella di posta${mailbox ? `, gestita da ${mailbox}` : ''}. Non comunico i dati a nessun altro.`,
+                'I messaggi sono conservati negli Stati Uniti. Netlify dichiara di aderire all’EU-US Data Privacy Framework (decisione di adeguatezza della Commissione europea del 10 luglio 2023); in subordine, il suo accordo prevede le clausole contrattuali tipo della Commissione.',
+                `Cancello i messaggi da Netlify entro ${formDays} giorni dall’arrivo; la copia nella mia casella la tengo per il tempo che serve alla conversazione, e comunque non oltre ${mailMonths} mesi dall’ultimo scambio.`,
+                `Il filtro antispam è automatico: se un messaggio vero viene scartato per errore, può non arrivarmi. In quel caso scrivimi direttamente${email ? ` a ${email}` : ''}.`,
               ],
             },
           ]
@@ -305,7 +328,9 @@ const it: Labels = {
       {
         title: 'I tuoi diritti',
         paragraphs: [
-          `Puoi chiedere di accedere ai tuoi dati, correggerli o cancellarli, limitarne l’uso o opporti, e riceverli in un formato portabile (artt. 15-22 del GDPR)${email ? ` scrivendo a ${email}` : ''}. Puoi anche presentare reclamo al Garante per la protezione dei dati personali.`,
+          `Puoi chiedere di accedere ai tuoi dati, correggerli o cancellarli, limitarne l’uso e riceverli in un formato portabile (artt. 15-20 del GDPR)${email ? `, scrivendo a ${email}` : ''}.`,
+          'Puoi opporti in qualsiasi momento ai trattamenti basati sul mio legittimo interesse (art. 21 del GDPR).',
+          'Puoi presentare reclamo al Garante per la protezione dei dati personali (garanteprivacy.it) o all’autorità del Paese dell’Unione europea in cui vivi o lavori.',
         ],
       },
     ],
@@ -329,6 +354,7 @@ const it: Labels = {
     body: 'Questo indirizzo non esiste (più).',
     home: 'Vai alla pagina principale',
   },
+  backTo: (name) => `Torna alla pagina di ${name}`,
 };
 
 const catalog: Record<string, Labels> = { en, it };

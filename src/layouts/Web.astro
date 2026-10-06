@@ -21,9 +21,11 @@ interface Props {
   structuredData?: boolean;
   /** Pages that are not for search engines (the confirmation after sending a message). */
   noindex?: boolean;
+  /** The secondary page this is, marked in the footer links. */
+  current?: 'accessibility' | 'privacy';
 }
 
-const { context, title, canonical, alternates, structuredData = false, noindex = false } = Astro.props;
+const { context, title, canonical, alternates, structuredData = false, noindex = false, current } = Astro.props;
 const { resume, labels, locale } = context;
 const pageTitle = title ?? joinParts([resume.basics.name, resume.basics.label]);
 const updated = resume.meta.lastModified ? referenceDate(resume.meta.lastModified, new Date(0)) : undefined;
@@ -36,8 +38,8 @@ const photoUrl = photo && Astro.site ? new URL(photo.src, Astro.site).href : und
   lang={locale}
   title={pageTitle}
   description={context.description}
-  canonical={canonical ?? context.absoluteHomeUrl}
-  alternates={alternates ?? alternatesFor((other) => getAbsoluteLocaleUrl(other))}
+  canonical={noindex ? undefined : (canonical ?? context.absoluteHomeUrl)}
+  alternates={noindex ? [] : (alternates ?? alternatesFor((other) => getAbsoluteLocaleUrl(other)))}
   ogImage={context.ogImageUrl}
   ogLocale={ogLocale(locale)}
   jsonLd={structuredData ? profilePage(resume, context.absoluteHomeUrl, photoUrl) : undefined}
@@ -54,6 +56,7 @@ const photoUrl = photo && Astro.site ? new URL(photo.src, Astro.site).href : und
     repository={context.repository}
     accessibilityUrl={context.accessibilityUrl}
     privacyUrl={context.privacyUrl}
+    current={current}
     dataUrl={context.dataUrl}
     otherLocales={context.otherLocales}
   />

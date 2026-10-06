@@ -5,11 +5,14 @@
 import sharp from 'sharp';
 
 export async function vcardPhoto(src: string | undefined): Promise<string | undefined> {
-  if (!src) return undefined;
+  // Same rule as the page's remote images: https only (http only for a local preview).
+  if (!src || !/^https:|^http:\/\/127\.0\.0\.1[:/]/.test(src)) return undefined;
   try {
-    const response = await fetch(src);
+    const response = await fetch(src, { signal: AbortSignal.timeout(15000) });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    // rotate(): turn the photo upright from its EXIF orientation, which the JPEG then drops.
     const jpeg = await sharp(Buffer.from(await response.arrayBuffer()))
+      .rotate()
       .resize(256, 256, { fit: 'cover' })
       .jpeg({ quality: 80 })
       .toBuffer();

@@ -9,7 +9,7 @@ import { referenceDate } from '../core/dates';
 import { visibleSections, type Section } from '../core/sections';
 import type { Resume } from '../core/schema';
 import { shorten } from '../core/text';
-import { labelsFor, languageName, type Labels } from '../i18n/labels';
+import { labelsFor, languageName, type Labels, type PrivacyFacts } from '../i18n/labels';
 import { contactFormFor } from '../config/define';
 import { buildEnv } from '../config/env';
 import { ogFile, pdfFile } from '../config/paths';
@@ -42,6 +42,8 @@ export interface PageContext {
   privacyUrl: string;
   vcardUrl: string;
   contactForm: 'netlify' | undefined;
+  /** What the privacy notice says about this site. */
+  privacy: PrivacyFacts;
 }
 
 /** The contact form in use, from the configuration and the environment. */
@@ -68,6 +70,9 @@ export async function pageContext(locale: string, site: URL | undefined): Promis
   const labels = labelsFor(locale);
   const options = resume.meta.themeOptions ?? {};
   const absolute = (path: string) => (site ? new URL(path, site).href : path);
+  // The privacy notice must name a contact for the controller (GDPR art. 13.1.a).
+  if (contactForm && !resume.basics.email)
+    throw new Error('The contact form needs basics.email: the privacy notice must say how to reach the owner.');
 
   return {
     locale,
@@ -89,6 +94,15 @@ export async function pageContext(locale: string, site: URL | undefined): Promis
     privacyUrl: getRelativeLocaleUrl(locale, labels.privacy.slug),
     vcardUrl: await vcardPath(locale),
     contactForm,
+    privacy: {
+      owner: resume.basics.name,
+      email: resume.basics.email,
+      form: contactForm,
+      host: resumeConfig.privacy.host ?? (contactForm === 'netlify' ? 'Netlify, Inc. (USA)' : undefined),
+      mailbox: resumeConfig.privacy.mailbox,
+      formDays: resumeConfig.privacy.formDays,
+      mailMonths: resumeConfig.privacy.mailMonths,
+    },
   };
 }
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { contactFormFor } from '../../src/config/define';
 import { parseResume } from '../../src/core/schema';
-import { vcard, vcardName } from '../../src/core/vcard';
+import { unfoldVcard, vcard, vcardName } from '../../src/core/vcard';
 
 const basics = parseResume({
   basics: {
@@ -9,8 +9,11 @@ const basics = parseResume({
     label: 'Engineering Manager, platform; data',
     email: 'ada@example.org',
     phone: '+39 011 555 0199',
-    location: { city: 'Torino', countryCode: 'IT' },
-    profiles: [{ network: 'LinkedIn', url: 'https://www.linkedin.com/in/ada' }],
+    location: { address: 'Via Roma 1', postalCode: '10100', city: 'Torino', countryCode: 'IT' },
+    profiles: [
+      { network: 'LinkedIn', url: 'https://www.linkedin.com/in/ada' },
+      { network: 'Stack Overflow: dev, ops', url: 'https://stackoverflow.com/users/1' },
+    ],
   },
 }).basics;
 
@@ -35,13 +38,26 @@ describe('vcard', () => {
     expect(card).toContain('REV:2026-10-01');
   });
 
-  it('never writes the phone', () => {
-    expect(card).not.toMatch(/TEL|555/);
+  it('never writes the phone or the street address', () => {
+    expect(card).not.toMatch(/TEL|555|Via Roma|10100/);
+  });
+
+  it('keeps parameter values plain, so the URL after them stays whole', () => {
+    expect(unfoldVcard(card)).toContain(
+      'X-SOCIALPROFILE;TYPE=stack-overflow-dev-ops:https://stackoverflow.com/users/1',
+    );
+  });
+
+  it('reads back as plain text for the privacy check', () => {
+    expect(unfoldVcard(vcard({ basics, photo: 'B'.repeat(200) }))).toContain(
+      'TITLE:Engineering Manager, platform; data',
+    );
   });
 
   it('folds long lines at 75 octets without splitting a character', () => {
     const photo = 'A'.repeat(300);
-    const lines = vcard({ basics: { ...basics, name: 'Àda Lovelace' }, photo }).split('\r\n');
+    const name = 'Àda Lovelace '.repeat(8).trim();
+    const lines = vcard({ basics: { ...basics, name }, photo }).split('\r\n');
     for (const line of lines) expect(new TextEncoder().encode(line).length).toBeLessThanOrEqual(75);
     expect(lines.filter((line) => line.startsWith(' ')).length).toBeGreaterThan(2);
   });
@@ -57,7 +73,25 @@ describe('contactFormFor', () => {
     expect(contactFormFor({ contactForm: undefined }, {})).toBeUndefined();
     expect(contactFormFor({ contactForm: 'netlify' }, {})).toBe('netlify');
     expect(contactFormFor({ contactForm: undefined }, { CONTACT_FORM: 'netlify' })).toBe('netlify');
-    expect(contactFormFor({ contactForm: 'netlify' }, { CONTACT_FORM: '' })).toBeUndefined();
+    expect(contactFormFor({ contactForm: 'netlify' }, { CONTACT_FORM: '' })).toBe('netlify');
+    expect(contactFormFor({ contactForm: 'netlify' }, { CONTACT_FORM: 'off' })).toBeUndefined();
     expect(() => contactFormFor({}, { CONTACT_FORM: 'formspree' })).toThrow(/not supported/);
+  });
+});
+
+describe('privacy notice', () => {
+  const facts = { owner: 'Ada', email: 'ada@example.org', formDays: 30, mailMonths: 12 };
+
+  it('names the form service and its terms only when the form is on', async () => {
+    const { labelsFor } = await import('../../src/i18n/labels');
+    const text = (form?: 'netlify') =>
+      labelsFor('it')
+        .privacy.sections({ ...facts, form, host: form ? 'Netlify, Inc. (USA)' : undefined })
+        .flatMap((notice) => notice.paragraphs)
+        .join(' ');
+    expect(text()).not.toMatch(/Netlify|Akismet/);
+    expect(text('netlify')).toMatch(/Netlify, Inc\. \(USA\)/);
+    expect(text('netlify')).toContain('entro 30 giorni');
+    expect(text('netlify')).toContain('ada@example.org');
   });
 });

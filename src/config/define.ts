@@ -29,6 +29,19 @@ export const ResumeConfig = z
      * site must be deployed on Netlify with form detection enabled. `CONTACT_FORM` overrides it.
      */
     contactForm: z.enum(['netlify']).optional(),
+    /** What the privacy notice says about hosting and the contact form (see the README). */
+    privacy: z
+      .object({
+        /** Who hosts the site, e.g. "Netlify, Inc. (USA)"; with the Netlify form it is Netlify. */
+        host: z.string().min(1).optional(),
+        /** Provider of the owner's mailbox, where form notifications arrive, e.g. "Microsoft (Outlook.com)". */
+        mailbox: z.string().min(1).optional(),
+        /** Days within which messages are deleted from the form service. */
+        formDays: z.number().int().positive().default(30),
+        /** Months after the last exchange within which messages are deleted from the mailbox. */
+        mailMonths: z.number().int().positive().default(12),
+      })
+      .default({ formDays: 30, mailMonths: 12 }),
   })
   .superRefine((config, ctx) => {
     if (!(config.defaultLocale in config.sources))
@@ -58,15 +71,17 @@ export function defineResumeConfig(config: z.input<typeof ResumeConfig>): Resume
 /** Name of the environment variable that overrides the source of a locale: `RESUME_SOURCE_EN_GB`. */
 export const sourceVariable = (locale: string): string => `RESUME_SOURCE_${locale.replace('-', '_').toUpperCase()}`;
 
-/** The contact form in use: the environment (`CONTACT_FORM`, empty to turn it off) wins over the file. */
+/**
+ * The contact form in use. `CONTACT_FORM` wins over the file: "netlify" turns it on, "off"
+ * turns it off; empty or unset (a CI variable that is not defined) leaves the file's choice.
+ */
 export function contactFormFor(
   config: Pick<ResumeConfig, 'contactForm'>,
   env: Record<string, string | undefined>,
 ): ResumeConfig['contactForm'] {
-  const value = env.CONTACT_FORM;
-  if (value === undefined) return config.contactForm;
-  if (value === '') return undefined;
-  if (value !== 'netlify')
-    throw new Error(`CONTACT_FORM="${value}" is not supported: use "netlify" or leave it empty.`);
+  const value = env.CONTACT_FORM?.trim();
+  if (!value) return config.contactForm;
+  if (value === 'off') return undefined;
+  if (value !== 'netlify') throw new Error(`CONTACT_FORM="${value}" is not supported: use "netlify" or "off".`);
   return value;
 }

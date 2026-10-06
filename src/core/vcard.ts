@@ -1,7 +1,8 @@
 /**
  * A contact card (vCard 3.0, the version every address book reads, Outlook included)
  * built from `basics`: name, role, email, site, city and profiles, with the photo when
- * there is one. The phone is never written: it is a private field of the resume.
+ * there is one. By choice of the theme it never carries the phone or the street address,
+ * whatever the configuration.
  */
 import type { Resume } from './schema';
 
@@ -25,6 +26,14 @@ function fold(line: string): string {
   }
   return parts.join('\r\n ');
 }
+
+/** A parameter value (TYPE=…): lower-case letters, digits and hyphens, nothing a reader could split on. */
+const parameter = (value: string): string =>
+  value
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '') || 'web';
 
 /** "Ada Lovelace King" → family "King", given "Ada Lovelace": a guess, but FN keeps the name whole. */
 function nameParts(name: string): [family: string, given: string] {
@@ -61,8 +70,8 @@ export function vcard({ basics, site, photo, revision }: VCardInput): string {
     ...basics.profiles
       .filter((profile) => profile.url)
       .flatMap((profile) => [
-        `X-SOCIALPROFILE;TYPE=${escape((profile.network ?? 'web').toLowerCase())}:${profile.url}`,
-        `URL;TYPE=${escape((profile.network ?? 'web').toLowerCase())}:${profile.url}`,
+        `X-SOCIALPROFILE;TYPE=${parameter(profile.network ?? 'web')}:${profile.url}`,
+        `URL;TYPE=${parameter(profile.network ?? 'web')}:${profile.url}`,
       ]),
     photo && `PHOTO;ENCODING=b;TYPE=JPEG:${photo}`,
     revision && `REV:${revision}`,
@@ -80,4 +89,12 @@ export function vcardName(name: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
   return `${slug || 'contact'}.vcf`;
+}
+
+/** The card as plain text: folded lines joined, text escapes undone (for the privacy check). */
+export function unfoldVcard(card: string): string {
+  return card
+    .replace(/\r?\n[ \t]/g, '')
+    .replace(/\\n/g, '\n')
+    .replace(/\\([,;\\])/g, '$1');
 }

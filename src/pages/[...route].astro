@@ -35,6 +35,11 @@ const context = await pageContext(locale, Astro.site);
 const { resume, labels } = context;
 const statementUrl = (other: string) => getAbsoluteLocaleUrl(other, labelsFor(other).accessibility.slug);
 const privacyUrl = (other: string) => getAbsoluteLocaleUrl(other, labelsFor(other).privacy.slug);
+const email = resume.basics.email;
+/** A paragraph split around the owner's address, so the address can be a link. */
+const withEmailLink = (paragraph: string): string[] =>
+  email ? paragraph.split(email).flatMap((part, index) => (index ? [email, part] : [part])) : [paragraph];
+const back = `← ${labels.backTo(resume.basics.name)}`;
 ---
 
 {page === 'home' ? (
@@ -57,22 +62,25 @@ const privacyUrl = (other: string) => getAbsoluteLocaleUrl(other, labelsFor(othe
     title={`${labels.privacy.title} · ${resume.basics.name}`}
     canonical={privacyUrl(locale)}
     alternates={alternatesFor(privacyUrl)}
+    current="privacy"
   >
     <article class="statement measure">
       <p class="back">
-        <a href={context.homeUrl}>{resume.basics.name}</a>
+        <a href={context.homeUrl}>{back}</a>
       </p>
       <h1>{labels.privacy.title}</h1>
-      {labels.privacy
-        .sections({ owner: resume.basics.name, email: resume.basics.email, form: context.contactForm })
-        .map((notice) => (
-          <section>
-            <h2>{notice.title}</h2>
-            {notice.paragraphs.map((paragraph) => (
-              <p>{paragraph}</p>
-            ))}
-          </section>
-        ))}
+      {labels.privacy.sections(context.privacy).map((notice) => (
+        <section>
+          <h2>{notice.title}</h2>
+          {notice.paragraphs.map((paragraph) => (
+            <p>
+              {withEmailLink(paragraph).map((part) =>
+                part === email ? <a href={`mailto:${email}`}>{email}</a> : part,
+              )}
+            </p>
+          ))}
+        </section>
+      ))}
       <p class="muted small">
         {labels.privacy.reviewed}{' '}
         <time datetime={PRIVACY_DATE}>{formatLongDate(new Date(PRIVACY_DATE), labels.intl)}</time>
@@ -84,8 +92,8 @@ const privacyUrl = (other: string) => getAbsoluteLocaleUrl(other, labelsFor(othe
     <article class="statement measure">
       <h1>{labels.contact.sentPage.title}</h1>
       <p>{labels.contact.sentPage.body}</p>
-      <p>
-        <a href={context.homeUrl}>{resume.basics.name}</a>
+      <p class="back">
+        <a href={context.homeUrl}>{back}</a>
       </p>
     </article>
   </Web>
@@ -95,10 +103,11 @@ const privacyUrl = (other: string) => getAbsoluteLocaleUrl(other, labelsFor(othe
     title={`${labels.accessibility.title} · ${resume.basics.name}`}
     canonical={statementUrl(locale)}
     alternates={alternatesFor(statementUrl)}
+    current="accessibility"
   >
     <article class="statement measure">
       <p class="back">
-        <a href={context.homeUrl}>{resume.basics.name}</a>
+        <a href={context.homeUrl}>{back}</a>
       </p>
       <h1>{labels.accessibility.title}</h1>
       {labels.accessibility.paragraphs(resume.basics.email).map((paragraph) => (

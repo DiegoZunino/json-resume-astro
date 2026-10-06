@@ -46,10 +46,20 @@ const SIZES = '63.5rem';
 )}
 
 <style>
+  /* The image fades out at the bottom and at the sides, so it melts into the page and
+     never draws a rectangle behind the name. */
   .cover {
     height: clamp(8.5rem, 6rem + 8vw, 11rem);
     overflow: hidden;
     border-radius: 1.375rem;
+    -webkit-mask-image:
+      linear-gradient(to bottom, transparent, #000 1.25rem, #000 40%, transparent 92%),
+      linear-gradient(to right, transparent, #000 2.5rem, #000 calc(100% - 2.5rem), transparent);
+    mask-image:
+      linear-gradient(to bottom, transparent, #000 1.25rem, #000 40%, transparent 92%),
+      linear-gradient(to right, transparent, #000 2.5rem, #000 calc(100% - 2.5rem), transparent);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
   }
   .cover-image {
     width: 100%;
@@ -81,9 +91,12 @@ const SIZES = '63.5rem';
     .cover {
       margin-inline: -1.25rem;
       border-radius: 0;
+      -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent 92%);
+      mask-image: linear-gradient(to bottom, #000 40%, transparent 92%);
     }
   }
-  @media print {
+  /* Decoration only: on paper and in high-contrast modes the page goes without it. */
+  @media print, (forced-colors: active) {
     .cover {
       display: none;
     }

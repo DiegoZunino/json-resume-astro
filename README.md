@@ -59,74 +59,39 @@ Esempio completo: [`fixtures/resume.it.json`](fixtures/resume.it.json).
 
 Il riquadro in fondo alla pagina mostra l'indirizzo email per intero, i profili, il CV e **"Aggiungi ai contatti"**: una scheda contatto (vCard 3.0, `/vcard/<nome>.vcf`) generata dal JSON Resume con nome, ruolo, email, sito, città, profili e foto. Il telefono non c'è mai.
 
-**Modulo di contatto (facoltativo, solo su Netlify).** Con `contactForm: 'netlify'` in `resume.config.ts` (o `CONTACT_FORM=netlify`) il riquadro ha anche un modulo (nome, email, messaggio) gestito da [Netlify Forms](https://docs.netlify.com/manage/forms/setup/). Funziona solo se il sito è pubblicato su Netlify:
+**Modulo di contatto (facoltativo, solo su Netlify).** Con `contactForm: 'netlify'` in `resume.config.ts` (o `CONTACT_FORM=netlify`) il riquadro ha anche un modulo (nome, email, messaggio) gestito da [Netlify Forms](https://docs.netlify.com/manage/forms/setup/). Serve `basics.email`: senza, la build si ferma, perché l'informativa deve dire come contattare il titolare. Funziona solo se il sito è pubblicato su Netlify:
 
-1. nelle impostazioni del sito su Netlify, **Forms → Enable form detection** (spenta di default), poi un nuovo deploy; il modulo deve comparire tra gli _Active forms_;
-2. le notifiche per email si attivano in **Forms → Form notifications**;
-3. lo spam si ferma in due modi senza captcha né cookie: il filtro Akismet che Netlify applica a ogni invio e un campo trappola nascosto (`netlify-honeypot`) che i bot riempiono;
-4. senza JavaScript il modulo invia normalmente e Netlify mostra la pagina di conferma (`/messaggio-inviato/`); con JavaScript invia sul posto e annuncia l'esito.
+1. nelle impostazioni del sito, **Forms → Enable form detection** (spenta di default), poi un nuovo deploy; il modulo deve comparire tra gli _Active forms_;
+2. le notifiche per email si attivano in **Forms → Form notifications → Submission notifications**; partono solo per gli invii verificati, quindi ogni tanto conviene guardare anche _Spam submissions_;
+3. lo spam si ferma senza captcha né cookie: il filtro Akismet che Netlify applica a ogni invio e un campo trappola nascosto (`netlify-honeypot`) che i bot riempiono;
+4. Netlify non cancella mai gli invii da sola: la cancellazione promessa nell'informativa (`privacy.formDays`) si fa a mano, da **Forms**; gli invii sono conservati negli Stati Uniti;
+5. sui piani a crediti i moduli sono compresi senza limite; sui piani _legacy_ il livello gratuito ha circa 100 invii al mese;
+6. senza JavaScript il modulo invia normalmente e Netlify mostra la pagina di conferma (`/messaggio-inviato/`); con JavaScript invia sul posto e annuncia l'esito.
 
-Con il modulo attivo la Content Security Policy passa da `form-action 'none'` a `form-action 'self'`, e la pagina `/privacy/` aggiunge la sezione sul modulo (Netlify come responsabile del trattamento, conservazione per al massimo 12 mesi). L'informativa è un modello generico in `src/i18n/labels.ts`: va letta e adattata da chi pubblica il sito, che ne è responsabile.
+Al primo deploy conviene controllare che il modulo sia tra gli _Active forms_, che un invio di prova arrivi (e quali dati registra Netlify nel CSV) e che la scheda contatto sia servita come `text/vcard` (regola in `public/_headers`).
 
-## Qualità
+Con il modulo attivo la Content Security Policy passa da `form-action 'none'` a `form-action 'self'`. La pagina `/privacy/` c'è sempre e si adatta a ciò che il sito fa; i dati che non si possono ricavare vanno in `resume.config.ts`:
 
-```sh
-npm run verify   # lint, tipi, test unitari, di componente e di contratto, build, HTML, end-to-end
-```
+| Opzione `privacy` | Effetto                                                                                       |
+| ----------------- | --------------------------------------------------------------------------------------------- |
+| `host`            | chi ospita il sito, per esempio `"Netlify, Inc. (USA)"` (con il modulo Netlify è già Netlify) |
+| `mailbox`         | chi gestisce la casella dove arrivano le notifiche, per esempio `"Microsoft (Outlook.com)"`   |
+| `formDays`        | entro quanti giorni si cancellano i messaggi dal servizio del modulo (predefinito 30)         |
+| `mailMonths`      | entro quanti mesi dall'ultimo scambio si cancellano dalla casella (predefinito 12)            |
 
-- **Tipi**: TypeScript con `astro/tsconfigs/strictest`, `astro check`.
-- **Unitari** (Vitest) sul nucleo di funzioni pure: schema, privacy, JSON pubblico, date, timeline, sezioni, voci, testo, JSON-LD, configurazione; copertura minima del nucleo 90% delle righe.
-- **Componenti** con la Container API di Astro (sperimentale).
-- **Contratto** con lo schema ufficiale (`@jsonresume/schema` + Ajv).
-- **End-to-end** (Playwright, desktop e mobile, sui dati di esempio, con la foto servita in locale durante la build): comportamento, funzionamento senza JavaScript, tema, lingue, axe (WCAG 2.2 AA) in chiaro e in scuro, contrasto del focus, dimensione dei target, reflow a 320 px, ARIA snapshot, regressione visiva, file pubblicati.
-- **CI**: gli stessi controlli più Lighthouse con soglie (accessibilità e SEO a 100), CodeQL, revisione delle dipendenze, OpenSSF Scorecard; action bloccate a SHA, permessi minimi.
-
-## Architettura
-
-```mermaid
-flowchart LR
-  subgraph sorgenti[Sorgenti]
-    F[file locale]
-    G[gist o API]
-  end
-  F & G --> L[content loader<br/>lettura, campi privati, validazione]
-  L --> C[(collection resume<br/>una voce per lingua)]
-  C --> P[pagine web<br/>/, /en/, dichiarazione]
-  C --> D[/resume.json]
-  C --> X[pagine /print/ e /og/]
-  X --> I[integrazione<br/>astro:build:done]
-  I --> PDF[cv-it.pdf, cv-en.pdf]
-  I --> OG[og-it.png, og-en.png]
-  I --> K{controllo privacy<br/>su tutto dist/}
-```
-
-```
-src/
-  core/          nucleo puro e testato: schema, privacy, date, timeline, sezioni, testo, JSON-LD
-  config/        configurazione validata e lettura delle sorgenti (condivise da loader e integrazione)
-  loaders/       content loader di Astro
-  integrations/  PDF, immagini di condivisione, controllo privacy; script del tema con hash CSP
-  i18n/          testi dell'interfaccia
-  components/    Hero, azioni, filo, timeline, sezioni, contatti, barra superiore, piè di pagina
-  layouts/       documento (metadati) e pagina web
-  pages/         pagine, JSON pubblico, favicon, robots, 404
-  site/          contesto di pagina e script lato client
-docs/adr/        decisioni di architettura
-```
-
-Le scelte sono motivate nelle [ADR](docs/adr/): Astro statico, contratto dei dati, privacy, PDF, pubblicazione, accessibilità.
+L'informativa è un modello in `src/i18n/labels.ts`, scritto in prima persona: chi pubblica il sito la legge, la adatta e ne è responsabile. Prima di pubblicarla va verificata a mano l'adesione di Netlify all'EU-US Data Privacy Framework sul [registro ufficiale](https://www.dataprivacyframework.gov/list). Le scelte sono motivate nell'[ADR 7](docs/adr/0007-contact-form-and-card.md).
 
 ## Variabili d'ambiente
 
 Si leggono dall'ambiente o da un file `.env` nella radice del progetto (mai versionato).
 
-| Variabile                | Uso                                                                                     |
-| ------------------------ | --------------------------------------------------------------------------------------- |
-| `SITE_URL`               | indirizzo pubblico del sito (URL canonici, sitemap, anteprime)                          |
-| `RESUME_SOURCE_<LINGUA>` | sorgente di una lingua, file o URL (es. `RESUME_SOURCE_EN`); vince sulla configurazione |
-| `RESUME_STRICT_PHOTO`    | `1`: una foto (o una testata) che non si scarica ferma la build                         |
-| `CONTACT_FORM`           | `netlify` per il modulo di contatto, vuota per spegnerlo; vince sulla configurazione    |
-| `CONTRACT_FILES`         | file in più da verificare contro lo schema ufficiale nei test di contratto              |
+| Variabile                | Uso                                                                                      |
+| ------------------------ | ---------------------------------------------------------------------------------------- |
+| `SITE_URL`               | indirizzo pubblico del sito (URL canonici, sitemap, anteprime)                           |
+| `RESUME_SOURCE_<LINGUA>` | sorgente di una lingua, file o URL (es. `RESUME_SOURCE_EN`); vince sulla configurazione  |
+| `RESUME_STRICT_PHOTO`    | `1`: una foto (o una testata) che non si scarica ferma la build                          |
+| `CONTACT_FORM`           | `netlify` accende il modulo di contatto, `off` lo spegne; vuota lascia la configurazione |
+| `CONTRACT_FILES`         | file in più da verificare contro lo schema ufficiale nei test di contratto               |
 
 ## Pubblicazione
 

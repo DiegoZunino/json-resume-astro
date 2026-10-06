@@ -15,8 +15,9 @@ import { ARTIFACT_ROUTES, ogFile, pdfFile } from '../config/paths';
 import { buildEnv } from '../config/env';
 import { loadResume } from '../config/source';
 import { findLeaks } from '../core/privacy';
+import { unfoldVcard } from '../core/vcard';
 
-const TEXT_FILES = new Set(['.html', '.json', '.xml', '.txt', '.svg', '.webmanifest']);
+const TEXT_FILES = new Set(['.html', '.json', '.xml', '.txt', '.svg', '.webmanifest', '.vcf']);
 
 export function resumeArtifacts(config: ResumeConfig): AstroIntegration {
   let root = '';
@@ -83,7 +84,9 @@ async function checkLeaks(
   const leaks: string[] = [];
   for (const file of await walk(out)) {
     if (!TEXT_FILES.has(extname(file))) continue;
-    for (const value of findLeaks(await readFile(file, 'utf8'), [...withheld]))
+    const text = await readFile(file, 'utf8');
+    // A contact card folds long lines and escapes commas: read it as plain text first.
+    for (const value of findLeaks(extname(file) === '.vcf' ? unfoldVcard(text) : text, [...withheld]))
       leaks.push(`${file.slice(out.length)}: "${value}"`);
   }
   if (leaks.length) throw new Error(`Private values found in the build output:\n  ${leaks.join('\n  ')}`);

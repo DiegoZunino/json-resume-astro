@@ -135,7 +135,7 @@ test.describe('contact', () => {
 
   test('the form sends in place and announces the result', async ({ page }) => {
     let posted = '';
-    await page.route('/', async (route) => {
+    await page.route('**/messaggio-inviato/', async (route) => {
       if (route.request().method() !== 'POST') return route.continue();
       posted = route.request().postData() ?? '';
       await route.fulfill({ status: 200, body: 'ok' });
@@ -153,7 +153,7 @@ test.describe('contact', () => {
   });
 
   test('a failed send says where to write instead', async ({ page }) => {
-    await page.route('/', (route) =>
+    await page.route('**/messaggio-inviato/', (route) =>
       route.request().method() === 'POST' ? route.fulfill({ status: 500 }) : route.continue(),
     );
     await page.goto('/');
@@ -162,7 +162,10 @@ test.describe('contact', () => {
     await form.getByLabel('Email').fill('grace@example.org');
     await form.getByLabel('Messaggio').fill('Ciao');
     await form.getByRole('button', { name: 'Invia' }).click();
-    await expect(form.getByRole('status')).toHaveText('Invio non riuscito. Scrivimi a ada@example.org.');
+    await expect(form.getByRole('status')).toHaveText('Invio non riuscito.');
+    await expect(form.getByRole('link', { name: 'ada@example.org' })).toHaveAttribute('href', 'mailto:ada@example.org');
+    // The button keeps the keyboard focus through the attempt.
+    await expect(form.getByRole('button', { name: 'Invia' })).toBeFocused();
   });
 
   test('without JavaScript the form posts to a confirmation page that search engines skip', async ({ page }) => {
@@ -170,6 +173,11 @@ test.describe('contact', () => {
     const form = page.locator('form[data-contact-form]');
     await expect(form).toHaveAttribute('method', 'POST');
     await expect(form).toHaveAttribute('action', '/messaggio-inviato/');
+    // The contract with Netlify's form detection, read from the static HTML.
+    await expect(form).toHaveAttribute('name', 'contact');
+    await expect(form).toHaveAttribute('data-netlify', 'true');
+    await expect(form).toHaveAttribute('netlify-honeypot', 'bot-field');
+    await expect(form.locator('input[type="hidden"][name="form-name"]')).toHaveValue('contact');
     await expect(form.locator('input[name="bot-field"]')).toBeHidden();
     const csp = await page.locator('meta[http-equiv="content-security-policy"]').getAttribute('content');
     expect(csp).toContain("form-action 'self'");
@@ -182,7 +190,7 @@ test.describe('contact', () => {
     await page.goto('/');
     await page.locator('form[data-contact-form]').getByRole('link', { name: 'Informativa privacy' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Informativa sulla privacy');
-    await expect(page.getByText(/Netlify, Inc\./)).toBeVisible();
+    await expect(page.getByText(/Netlify, Inc\./).first()).toBeVisible();
     await expect(page.getByText(/non usa cookie/)).toBeVisible();
   });
 });

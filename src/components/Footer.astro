@@ -14,11 +14,13 @@ interface Props {
   repository: string | undefined;
   accessibilityUrl: string;
   privacyUrl: string;
+  /** The page being shown, if it is one of the footer's own pages. */
+  current?: 'accessibility' | 'privacy' | undefined;
   dataUrl: string;
   otherLocales: LocaleLink[];
 }
 
-const { labels, updated, repository, accessibilityUrl, privacyUrl, dataUrl, otherLocales } = Astro.props;
+const { labels, updated, repository, accessibilityUrl, privacyUrl, current, dataUrl, otherLocales } = Astro.props;
 ---
 
 <footer class="footer page">
@@ -51,8 +53,12 @@ const { labels, updated, repository, accessibilityUrl, privacyUrl, dataUrl, othe
           <time datetime={updated.toISOString().slice(0, 10)}>{formatLongDate(updated, labels.intl)}</time>
         </span>
       )}
-      <a href={accessibilityUrl}>{labels.footer.accessibility}</a>
-      <a href={privacyUrl}>{labels.footer.privacy}</a>
+      <a href={accessibilityUrl} aria-current={current === 'accessibility' ? 'page' : undefined}>
+        {labels.footer.accessibility}
+      </a>
+      <a href={privacyUrl} aria-current={current === 'privacy' ? 'page' : undefined}>
+        {labels.footer.privacy}
+      </a>
       {otherLocales.map((link) => (
         <a href={link.href} hreflang={link.locale} lang={link.locale}>
           {link.name}

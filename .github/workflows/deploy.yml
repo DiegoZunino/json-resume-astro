@@ -148,6 +148,8 @@ jobs:
         env:
           SITE_URL: ${{ vars.SITE_URL }}
           RESUME_STRICT_PHOTO: '1'
+          # "netlify" or "off"; undefined (empty) keeps the choice in resume.config.ts.
+          CONTACT_FORM: ${{ vars.CONTACT_FORM }}
         run: npm run build
       - run: npm run validate:html
       - name: The repository linked in the footer exists (no 404 where the page promises the code)
