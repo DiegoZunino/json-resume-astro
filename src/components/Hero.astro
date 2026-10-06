@@ -75,18 +75,14 @@ const PHOTO_SIZES = '(max-width: 30rem) 7rem, 9.25rem';
   .identity :global(.photo) {
     animation: ring 1.9s ease-out both;
   }
-  /* With a cover the photo rises into its lower edge, the name stays below it. */
+  /* With a cover the photo and the name rise into its lower part, as on a profile page. */
   .hero:has(.cover) {
     padding-top: 0.5rem;
   }
   .hero:has(.cover) .identity {
-    --overlap: 3.25rem;
-    align-items: flex-start;
-    margin-top: calc(-1 * var(--overlap));
+    align-items: flex-end;
+    margin-top: -4.875rem;
     padding-left: 1.5rem;
-  }
-  .hero:has(.cover) .identity > div {
-    padding-top: calc(var(--overlap) + 0.5rem);
   }
   /* A ring of page colour outside the ochre one, so the photo stands off the image. */
   .hero:has(.cover) .identity :global(.photo) {
@@ -95,10 +91,9 @@ const PHOTO_SIZES = '(max-width: 30rem) 7rem, 9.25rem';
   }
   @media (max-width: 36rem) {
     .hero:has(.cover) .identity {
+      align-items: flex-start;
+      margin-top: -3.5rem;
       padding-left: 0;
-    }
-    .hero:has(.cover) .identity > div {
-      padding-top: 0;
     }
   }
   @keyframes ring {
