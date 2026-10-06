@@ -142,6 +142,11 @@ jobs:
             base="https://gist.githubusercontent.com/$GIST/raw${REVISION:+/$REVISION}"
             SOURCE_IT="$base/resume.json"; SOURCE_EN="$base/resume.en.json"
           fi
+          # Without a source the build would publish the example resume: stop instead.
+          if [ -z "$SOURCE_IT" ] || [ -z "$SOURCE_EN" ]; then
+            echo "::error::No resume source: set the RESUME_GIST variable (or RESUME_SOURCE_IT and RESUME_SOURCE_EN)."
+            exit 1
+          fi
           echo "RESUME_SOURCE_IT=$SOURCE_IT" >> "$GITHUB_ENV"
           echo "RESUME_SOURCE_EN=$SOURCE_EN" >> "$GITHUB_ENV"
       - name: Build (fails on schema errors, private-data leaks or a photo that cannot be fetched)
