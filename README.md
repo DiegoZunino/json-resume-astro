@@ -57,9 +57,9 @@ Esempio completo: [`fixtures/resume.it.json`](fixtures/resume.it.json).
 
 ### Contatti
 
-Il riquadro in fondo alla pagina mostra l'indirizzo email per intero, i profili, il CV e **"Aggiungi ai contatti"**: una scheda contatto (vCard 3.0, `/vcard/<nome>.vcf`) generata dal JSON Resume con nome, ruolo, email, sito, città, profili e foto. Il telefono non c'è mai.
+I bottoni in alto (CV, email, **"Aggiungi ai contatti"**, profili) sono gli unici collegamenti di contatto della pagina. "Aggiungi ai contatti" scarica una scheda contatto (vCard 3.0, `/vcard/<nome>.vcf`) generata dal JSON Resume con nome, ruolo, email, sito, città, profili e foto; il telefono non c'è mai. Il riquadro in fondo serve solo a scrivere: con il modulo è il modulo, senza è l'indirizzo email in grande.
 
-**Modulo di contatto (facoltativo, solo su Netlify).** Con `contactForm: 'netlify'` in `resume.config.ts` (o `CONTACT_FORM=netlify`) il riquadro ha anche un modulo (nome, email, messaggio) gestito da [Netlify Forms](https://docs.netlify.com/manage/forms/setup/). Serve `basics.email`: senza, la build si ferma, perché l'informativa deve dire come contattare il titolare. Funziona solo se il sito è pubblicato su Netlify:
+**Modulo di contatto (facoltativo, solo su Netlify).** Con `contactForm: 'netlify'` in `resume.config.ts` (o `CONTACT_FORM=netlify`) il riquadro diventa un modulo (nome, email, messaggio) gestito da [Netlify Forms](https://docs.netlify.com/manage/forms/setup/). Serve `basics.email`: senza, la build si ferma, perché l'informativa deve dire come contattare il titolare. Funziona solo se il sito è pubblicato su Netlify:
 
 1. nelle impostazioni del sito, **Forms → Enable form detection** (spenta di default), poi un nuovo deploy; il modulo deve comparire tra gli _Active forms_;
 2. le notifiche per email si attivano in **Forms → Form notifications → Submission notifications**; partono solo per gli invii verificati, quindi ogni tanto conviene guardare anche _Spam submissions_;

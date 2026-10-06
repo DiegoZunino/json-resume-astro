@@ -16,3 +16,7 @@ Il riquadro in fondo alla pagina ripeteva i bottoni in alto. Chi legge fino in f
 ## Conseguenze
 
 Il modulo lega il sito a Netlify: con un altro hosting si spegne. Netlify non cancella gli invii da sola: la conservazione promessa si rispetta a mano. Il testo dell'informativa è un modello: chi pubblica lo adatta e ne risponde; l'adesione di Netlify al Data Privacy Framework va verificata sul registro ufficiale prima di pubblicare.
+
+## Aggiornamento (07/10/2026)
+
+Anche così il riquadro ripeteva profili e CV dei bottoni in alto, e confondeva. "Aggiungi ai contatti" passa tra i bottoni in alto, accanto all'email; il riquadro serve solo a scrivere: con il modulo è il modulo, a tutta larghezza; senza, l'indirizzo in grande. L'indirizzo per intero resta nella pagina dell'informativa e nel messaggio che il modulo mostra se l'invio non riesce.

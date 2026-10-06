@@ -44,14 +44,12 @@ const back = `← ${labels.backTo(resume.basics.name)}`;
 
 {page === 'home' ? (
   <Web context={context} structuredData>
-    <Hero resume={resume} labels={labels} pdfUrl={context.pdfUrl} />
+    <Hero resume={resume} labels={labels} pdfUrl={context.pdfUrl} vcardUrl={context.vcardUrl} />
     <Sections sections={context.sections} resume={resume} labels={labels} reference={context.reference} />
     <Contact
       resume={resume}
       labels={labels}
       locale={locale}
-      pdfUrl={context.pdfUrl}
-      vcardUrl={context.vcardUrl}
       privacyUrl={context.privacyUrl}
       form={context.contactForm}
     />
