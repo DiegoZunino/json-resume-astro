@@ -8,9 +8,16 @@ updates:
       astro:
         patterns: ['astro', '@astrojs/*']
       testing:
-        patterns: ['vitest', '@vitest/*', '@playwright/*', '@axe-core/*']
+        patterns: ['vitest', '@vitest/*', 'playwright', 'playwright-core', '@playwright/*', '@axe-core/*']
       lint:
         patterns: ['eslint*', '@eslint/*', 'typescript-eslint', 'prettier*', 'globals']
+    ignore:
+      # Follows the Node version in .nvmrc, not the latest Node.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+      # TypeScript 7 (the native compiler) waits for astro check and typescript-eslint.
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
     commit-message:
       prefix: 'chore(deps)'
   - package-ecosystem: github-actions
