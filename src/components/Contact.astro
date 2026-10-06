@@ -153,6 +153,12 @@ const FORM_NAME = 'contact';
   .address:hover {
     transform: translateY(-2px);
   }
+  /* With the form, "Send" is the one ochre button of the box; the address is outlined. */
+  .with-form .address {
+    border: 1.5px solid var(--fascia-ink);
+    background: transparent;
+    color: inherit;
+  }
   .links {
     display: flex;
     flex-wrap: wrap;
@@ -200,7 +206,7 @@ const FORM_NAME = 'contact';
     width: 100%;
     min-height: 2.875rem;
     padding: 0.625rem 0.875rem;
-    border: 1.5px solid transparent;
+    border: 1.5px solid var(--campo-bordo);
     border-radius: var(--radius);
     background: var(--campo);
     color: var(--campo-ink);

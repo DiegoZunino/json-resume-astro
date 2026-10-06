@@ -25,6 +25,7 @@
   --fascia-linea: #4f8d92;
   --campo: #ffffff; /* form fields in the contact box */
   --campo-ink: #16302f;
+  --campo-bordo: #ffffff;
   --focus: var(--mare);
   color-scheme: light;
 
@@ -63,8 +64,9 @@
     --fascia: #11393d;
     --fascia-ink: #eef6f5;
     --fascia-linea: #2d5c5f;
-    --campo: #e8efed;
-    --campo-ink: #0f1e1e;
+    --campo: #0f1e1e;
+    --campo-ink: #e8efed;
+    --campo-bordo: #7cc4c4;
     --focus: var(--gru);
     color-scheme: dark;
   }
@@ -88,8 +90,9 @@
   --fascia: #11393d;
   --fascia-ink: #eef6f5;
   --fascia-linea: #2d5c5f;
-  --campo: #e8efed;
-  --campo-ink: #0f1e1e;
+  --campo: #0f1e1e;
+  --campo-ink: #e8efed;
+  --campo-bordo: #7cc4c4;
   --focus: var(--gru);
   color-scheme: dark;
 }
