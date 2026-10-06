@@ -18,8 +18,8 @@
 # "verify" checks that the live site serves the revision that was just built.
 #
 # Secrets: NETLIFY_AUTH_TOKEN, NETLIFY_SITE_ID.
-# Variables: SITE_URL; RESUME_GIST ("<user>/<id>" of a gist with resume.json and
-# resume.en.json) or RESUME_SOURCE_IT / RESUME_SOURCE_EN (any URL, e.g. an API).
+# Variables: SITE_URL; RESUME_GIST ("<user>/<id>", or just "<id>" for a gist of the repository
+# owner, with resume.json and resume.en.json) or RESUME_SOURCE_IT / RESUME_SOURCE_EN (any URL, e.g. an API).
 name: deploy
 on:
   workflow_run:
@@ -92,7 +92,8 @@ jobs:
 
           revision="${PAYLOAD_REVISION:-}"
           if [ -z "$revision" ] && [ -n "$GIST" ]; then
-            revision="$(gh api "gists/${GIST#*/}" --jq '.history[0].version')"
+            # Read from the gist's git repository: the job token cannot use the gists API.
+            revision="$(git ls-remote "https://gist.github.com/${GIST#*/}.git" HEAD | cut -f1)"
           fi
           if [ -n "$revision" ] && ! [[ "$revision" =~ ^[0-9a-f]{40}$ ]]; then
             echo "::error::Invalid gist revision: $revision"; exit 1
@@ -132,6 +133,7 @@ jobs:
       - name: Resume sources
         env:
           GIST: ${{ vars.RESUME_GIST }}
+          OWNER: ${{ github.repository_owner }}
           REVISION: ${{ needs.revision.outputs.revision }}
           SOURCE_IT: ${{ vars.RESUME_SOURCE_IT }}
           SOURCE_EN: ${{ vars.RESUME_SOURCE_EN }}
@@ -139,6 +141,7 @@ jobs:
           set -euo pipefail
           # The raw URL pinned to a revision bypasses the few minutes of cache of the unpinned one.
           if [ -n "$GIST" ]; then
+            [[ "$GIST" == */* ]] || GIST="$OWNER/$GIST"
             base="https://gist.githubusercontent.com/$GIST/raw${REVISION:+/$REVISION}"
             SOURCE_IT="$base/resume.json"; SOURCE_EN="$base/resume.en.json"
           fi
