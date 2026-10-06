@@ -184,9 +184,14 @@ const accessibleName = (item: WorkItem) =>
     font-size: 1rem;
     font-weight: 700;
   }
-  button.head:hover .position {
-    text-decoration: underline;
-    text-underline-offset: 0.2em;
+  /* The role under the pointer or focus turns ochre (a darker shade on the light page,
+     to stay readable). */
+  .position {
+    transition: color 0.15s ease;
+  }
+  button.head:hover .position,
+  button.head:focus-visible .position {
+    color: var(--oro-testo);
   }
   .now {
     width: 0.5rem;

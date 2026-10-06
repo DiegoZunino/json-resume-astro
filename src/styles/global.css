@@ -15,6 +15,7 @@
   --nebbia: #566866; /* secondary text */
   --gru: #d39b2a; /* the wire, the current role */
   --gru-ink: #1f1503; /* text on --gru */
+  --oro-testo: #8f6410; /* the ochre as text (pointed role): darker, to read at 4.5:1 */
   --linea: #dfe5df; /* rules */
   --bordo: #9fb7b3; /* outlines of secondary buttons */
   --traccia: #e6ebe5; /* timeline tracks */
@@ -52,6 +53,7 @@
     --nebbia: #93a6a3;
     --gru: #e0ad45;
     --gru-ink: #1a1406;
+    --oro-testo: #e0ad45;
     --linea: #22393a;
     --bordo: #355654;
     --traccia: #1d3332;
@@ -74,6 +76,7 @@
   --nebbia: #93a6a3;
   --gru: #e0ad45;
   --gru-ink: #1a1406;
+  --oro-testo: #e0ad45;
   --linea: #22393a;
   --bordo: #355654;
   --traccia: #1d3332;

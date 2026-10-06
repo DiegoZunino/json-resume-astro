@@ -164,7 +164,11 @@
         "x-talks": "Talks"
       },
       "order": ["work", "x-talks", "projects", "skills"],
-      "expanded": 2
+      "expanded": 2,
+      "cover": {
+        "light": "http://127.0.0.1:4599/cover-light.png",
+        "dark": "http://127.0.0.1:4599/cover-dark.png"
+      }
     }
   },
   "x-privacy": "Sample consent for the tests, private"

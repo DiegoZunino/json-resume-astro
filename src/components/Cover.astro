@@ -1,0 +1,87 @@
+---
+/**
+ * The header band (`meta.themeOptions.cover`): the owner's image, light and dark, behind
+ * the top of the photo, the way a profile cover sits on LinkedIn. Purely decorative: no
+ * alternative text, hidden from assistive technology, left out of print. Both images are
+ * lazy, so only the one for the current theme is downloaded.
+ */
+import { optimisedCover } from '../site/cover';
+
+interface Props {
+  light: string;
+  dark?: string | undefined;
+}
+
+const { light, dark } = Astro.props;
+const [lightImage, darkImage] = await Promise.all([optimisedCover(light), optimisedCover(dark)]);
+const SIZES = '(max-width: 66rem) 100vw, 66rem';
+---
+
+{lightImage && (
+  <div class="cover" aria-hidden="true">
+    <img
+      class:list={['cover-image', { light: Boolean(darkImage) }]}
+      src={lightImage.src}
+      srcset={lightImage.srcSet.attribute}
+      sizes={SIZES}
+      alt=""
+      decoding="async"
+      loading="lazy"
+    />
+    {darkImage && (
+      <img
+        class="cover-image dark"
+        src={darkImage.src}
+        srcset={darkImage.srcSet.attribute}
+        sizes={SIZES}
+        alt=""
+        decoding="async"
+        loading="lazy"
+      />
+    )}
+  </div>
+)}
+
+<style>
+  .cover {
+    height: clamp(6.5rem, 4rem + 9vw, 11rem);
+    overflow: hidden;
+    border-radius: 1.375rem;
+    background: var(--superficie);
+  }
+  .cover-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  /* One image per theme: the system's, unless the visitor chose one. */
+  .dark {
+    display: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .light {
+      display: none;
+    }
+    :global(:root:not([data-theme='light'])) .dark {
+      display: block;
+    }
+  }
+  :global(:root[data-theme='dark']) .light {
+    display: none;
+  }
+  :global(:root[data-theme='dark']) .dark {
+    display: block;
+  }
+  /* On a phone the band runs edge to edge. */
+  @media (max-width: 30rem) {
+    .cover {
+      margin-inline: -1.25rem;
+      border-radius: 0;
+    }
+  }
+  @media print {
+    .cover {
+      display: none;
+    }
+  }
+</style>

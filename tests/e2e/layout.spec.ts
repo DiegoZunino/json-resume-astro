@@ -105,3 +105,24 @@ test.describe('the wire', () => {
     }
   });
 });
+
+test.describe('the cover', () => {
+  for (const colorScheme of ['light', 'dark'] as const) {
+    test(`shows only the ${colorScheme} image, served by the site, behind the photo`, async ({ browser }) => {
+      const context = await browser.newContext({ colorScheme, reducedMotion: 'reduce' });
+      const page = await context.newPage();
+      await page.goto('/');
+      const visible = page.locator('.cover img:visible');
+      await expect(visible).toHaveCount(1);
+      await expect(visible).toHaveAttribute('src', new RegExp(`^/_astro/cover-${colorScheme}.+\\.webp$`));
+      await expect(page.locator('.cover')).toHaveAttribute('aria-hidden', 'true');
+      // The photo overlaps the band; the name starts below it.
+      const [band, photo, name] = await Promise.all(
+        ['.cover', '.hero .photo', 'h1'].map((s) => page.locator(s).boundingBox()),
+      );
+      expect(photo!.y).toBeLessThan(band!.y + band!.height);
+      expect(name!.y).toBeGreaterThanOrEqual(band!.y + band!.height);
+      await context.close();
+    });
+  }
+});

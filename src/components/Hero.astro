@@ -8,6 +8,7 @@
 import type { Resume } from '../core/schema';
 import type { Labels } from '../i18n/labels';
 import Actions from './Actions.astro';
+import Cover from './Cover.astro';
 import Photo from './Photo.astro';
 import Wire from './Wire.astro';
 
@@ -28,6 +29,7 @@ const PHOTO_SIZES = '(max-width: 30rem) 7rem, 9.25rem';
 ---
 
 <div class="hero">
+  {options.cover && <Cover light={options.cover.light} dark={options.cover.dark} />}
   <div class="identity">
     <Photo src={basics.image} name={basics.name} size={148} sizes={PHOTO_SIZES} eager />
     <div>
@@ -72,6 +74,32 @@ const PHOTO_SIZES = '(max-width: 30rem) 7rem, 9.25rem';
   }
   .identity :global(.photo) {
     animation: ring 1.9s ease-out both;
+  }
+  /* With a cover the photo rises into its lower edge, the name stays below it. */
+  .hero:has(.cover) {
+    padding-top: 0.5rem;
+  }
+  .hero:has(.cover) .identity {
+    --overlap: 3.25rem;
+    align-items: flex-start;
+    margin-top: calc(-1 * var(--overlap));
+    padding-left: 1.5rem;
+  }
+  .hero:has(.cover) .identity > div {
+    padding-top: calc(var(--overlap) + 0.5rem);
+  }
+  /* A ring of page colour outside the ochre one, so the photo stands off the image. */
+  .hero:has(.cover) .identity :global(.photo) {
+    outline: 5px solid var(--pietra);
+    outline-offset: 4px;
+  }
+  @media (max-width: 36rem) {
+    .hero:has(.cover) .identity {
+      padding-left: 0;
+    }
+    .hero:has(.cover) .identity > div {
+      padding-top: 0;
+    }
   }
   @keyframes ring {
     0%,
@@ -157,6 +185,11 @@ const PHOTO_SIZES = '(max-width: 30rem) 7rem, 9.25rem';
     .identity :global(.photo) {
       animation: none;
       box-shadow: none;
+      outline: 0;
+    }
+    .hero:has(.cover) .identity {
+      margin-top: 0;
+      padding-left: 0;
     }
   }
 </style>

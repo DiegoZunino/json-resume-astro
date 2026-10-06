@@ -7,6 +7,7 @@ import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { beforeAll, describe, expect, it } from 'vitest';
 import Actions from '../../src/components/Actions.astro';
 import Contact from '../../src/components/Contact.astro';
+import Cover from '../../src/components/Cover.astro';
 import Timeline from '../../src/components/Timeline.astro';
 import Wire from '../../src/components/Wire.astro';
 import { parseResume, type Resume } from '../../src/core/schema';
@@ -60,6 +61,16 @@ describe('Actions', () => {
     expect(html).toContain('rel="me"');
     // The first screen offers "Email", not the address: that is shown in full in Contacts.
     expect(html).not.toMatch(/>\s*ada@example\.org\s*</);
+  });
+});
+
+describe('Cover', () => {
+  it('is decorative and offers one image per theme', async () => {
+    const html = await container.renderToString(Cover, {
+      props: { light: 'https://example.org/light.png', dark: 'https://example.org/dark.png' },
+    });
+    // Remote images cannot be fetched in unit tests: the component then renders nothing.
+    expect(html).not.toContain('<img');
   });
 });
 

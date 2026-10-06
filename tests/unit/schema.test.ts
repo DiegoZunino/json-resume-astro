@@ -31,6 +31,14 @@ describe('parseResume', () => {
     ).toThrow(/basics\.profiles\.0\.url/);
   });
 
+  it('takes a cover as one or two absolute image URLs', () => {
+    const cover = (value: unknown) =>
+      parseResume({ basics: { name: 'Ada' }, meta: { themeOptions: { cover: value } } });
+    expect(cover({ light: 'https://example.org/a.png' }).meta.themeOptions?.cover?.dark).toBeUndefined();
+    expect(() => cover({ light: 'https://example.org/a.png', dark: 'file:///b.png' })).toThrow(/cover\.dark/);
+    expect(() => cover({ dark: 'https://example.org/b.png' })).toThrow(/cover\.light/);
+  });
+
   it('accepts lastModified only as a real date or date-time', () => {
     const meta = (lastModified: string) => () => parseResume({ basics: { name: 'Ada' }, meta: { lastModified } });
     expect(meta('2026-10-05')).not.toThrow();

@@ -42,15 +42,16 @@ SITE_URL=https://example.org npm run build
 
 Opzioni del tema, tutte facoltative, in `meta.themeOptions` del JSON Resume:
 
-| Opzione                 | Effetto                                                                |
-| ----------------------- | ---------------------------------------------------------------------- |
-| `tagline: { from, to }` | la frase sotto nome e ruolo, unita dal filo                            |
-| `intro: string[]`       | paragrafi di presentazione (altrimenti `basics.summary`)               |
-| `description`           | meta description (altrimenti il sommario accorciato)                   |
-| `labels`                | titoli delle sezioni, anche delle estensioni (`{ "x-talks": "Talk" }`) |
-| `order`, `hide`         | ordine delle sezioni e sezioni da non mostrare                         |
-| `printHide`             | sezioni mostrate nella pagina ma non nel PDF (per tenerlo corto)       |
-| `expanded`              | quanti ruoli recenti restano aperti (predefinito 2)                    |
+| Opzione                 | Effetto                                                                                                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tagline: { from, to }` | la frase sotto nome e ruolo, unita dal filo                                                                                                       |
+| `intro: string[]`       | paragrafi di presentazione (altrimenti `basics.summary`)                                                                                          |
+| `description`           | meta description (altrimenti il sommario accorciato)                                                                                              |
+| `labels`                | titoli delle sezioni, anche delle estensioni (`{ "x-talks": "Talk" }`)                                                                            |
+| `order`, `hide`         | ordine delle sezioni e sezioni da non mostrare                                                                                                    |
+| `printHide`             | sezioni mostrate nella pagina ma non nel PDF (per tenerlo corto)                                                                                  |
+| `expanded`              | quanti ruoli recenti restano aperti (predefinito 2)                                                                                               |
+| `cover`                 | immagine di testata, `{ "light": URL, "dark": URL }` (dark facoltativa): la propria, ospitata dove si vuole, come la foto; senza, nessuna testata |
 
 Esempio completo: [`fixtures/resume.it.json`](fixtures/resume.it.json).
 

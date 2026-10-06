@@ -162,6 +162,12 @@ export const ThemeOptions = z.looseObject({
   hide: list.optional(),
   /** Sections shown on the page but left out of the PDF, to keep it short (e.g. a list of talks). */
   printHide: list.optional(),
+  /**
+   * Header image above the photo, like a profile cover: decorative, the owner's own image
+   * (hosted wherever they like, e.g. next to their profile photo). `dark` is used with the
+   * dark theme; without it the light image is used for both.
+   */
+  cover: z.object({ light: webUrl, dark: webUrl.optional() }).optional(),
   /** How many of the most recent roles with details (highlights) start expanded (default 2). */
   expanded: z.number().int().min(0).optional(),
 });
