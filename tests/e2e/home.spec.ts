@@ -114,14 +114,12 @@ test.describe('theme', () => {
 });
 
 test.describe('contact', () => {
-  test('shows the address in full and offers the contact card, without the phone', async ({ page, request }) => {
+  test('the box holds only the form; the contact card sits with the buttons at the top', async ({ page, request }) => {
     await page.goto('/');
     const contact = page.getByRole('region', { name: 'Contatti' });
-    await expect(contact.getByRole('link', { name: 'ada@example.org' })).toHaveAttribute(
-      'href',
-      'mailto:ada@example.org',
-    );
-    const card = contact.getByRole('link', { name: 'Aggiungi ai contatti' });
+    // No repeat of the buttons at the top: the form is the only way in the box.
+    await expect(contact.getByRole('link')).toHaveText(['Informativa privacy']);
+    const card = page.getByRole('group', { name: 'CV e contatti' }).getByRole('link', { name: 'Aggiungi ai contatti' });
     await expect(card).toHaveAttribute('download', '');
     const href = (await card.getAttribute('href'))!;
     expect(href).toMatch(/^\/vcard\/ada-esempio\.vcf$/);

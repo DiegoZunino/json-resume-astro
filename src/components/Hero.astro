@@ -16,9 +16,10 @@ interface Props {
   resume: Resume;
   labels: Labels;
   pdfUrl: string;
+  vcardUrl: string;
 }
 
-const { resume, labels, pdfUrl } = Astro.props;
+const { resume, labels, pdfUrl, vcardUrl } = Astro.props;
 const { basics } = resume;
 const options = resume.meta.themeOptions ?? {};
 const intro = options.intro ?? (basics.summary ? [basics.summary] : []);
@@ -50,7 +51,7 @@ const PHOTO_SIZES = '(max-width: 30rem) 7rem, 9.25rem';
 
   {options.tagline && <Wire class="tagline" from={options.tagline.from} to={options.tagline.to} animate />}
 
-  <Actions resume={resume} labels={labels} pdfUrl={pdfUrl} label={labels.actions} />
+  <Actions resume={resume} labels={labels} pdfUrl={pdfUrl} vcardUrl={vcardUrl} label={labels.actions} />
 
   {intro.length > 0 && (
     <div class="intro measure">

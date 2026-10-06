@@ -1,10 +1,9 @@
 ---
 /**
- * The end of the page: how to get in touch, in a box in the colour of the sea. The address
- * in full, "Add to contacts" (a contact card built from the resume), the profiles and the
- * CV; and, when the site is configured for it, a contact form handled by the host
- * (Netlify Forms). The form works without JavaScript (a normal POST and a confirmation
- * page); with JavaScript it sends in place and announces the result.
+ * The end of the page, in a box in the colour of the sea: one way to write, not a repeat of
+ * the buttons at the top. With the form configured (Netlify Forms) the box is the form, which
+ * works without JavaScript (a normal POST and a confirmation page) and with JavaScript sends
+ * in place and announces the result; without it, the address as one large button.
  */
 import { getRelativeLocaleUrl } from 'astro:i18n';
 import type { Resume } from '../core/schema';
@@ -14,15 +13,12 @@ interface Props {
   resume: Resume;
   labels: Labels;
   locale: string;
-  pdfUrl: string;
-  vcardUrl: string;
   privacyUrl: string;
   form: 'netlify' | undefined;
 }
 
-const { resume, labels, locale, pdfUrl, vcardUrl, privacyUrl, form } = Astro.props;
-const { email, profiles } = resume.basics;
-const links = profiles.filter((profile) => profile.url);
+const { resume, labels, locale, privacyUrl, form } = Astro.props;
+const { email } = resume.basics;
 const text = labels.contact.form;
 // On a narrow phone the address may break after the @ (<wbr>), never in the middle of a
 // word; selected and copied, or read by a screen reader, it stays one address.
@@ -33,84 +29,61 @@ const FORM_NAME = 'contact';
 
 <section class:list={['contact', 'section', { 'with-form': form }]} id="contact" aria-labelledby="contact-title">
   <h2 id="contact-title">{labels.sections.contact}</h2>
-  <div class="layout">
-    <div class="direct">
+  {form === 'netlify' ? (
+    <form
+      class="form"
+      name={FORM_NAME}
+      method="POST"
+      action={getRelativeLocaleUrl(locale, labels.contact.sentPage.slug)}
+      data-netlify="true"
+      netlify-honeypot="bot-field"
+      data-contact-form
+      data-sending={text.sending}
+      data-sent={text.sent}
+      data-failed={text.failed}
+    >
+      <input type="hidden" name="form-name" value={FORM_NAME} />
+      <p class="intro wide">{text.intro}</p>
+      {/* A field people never see: bots fill it in, and Netlify drops what they send. */}
+      <p class="trap" aria-hidden="true">
+        <label>
+          bot-field <input type="text" name="bot-field" tabindex="-1" autocomplete="off" />
+        </label>
+      </p>
+      <p class="field">
+        <label for="contact-name">{text.name}</label>
+        <input id="contact-name" type="text" name="name" autocomplete="name" required maxlength="200" />
+      </p>
+      <p class="field">
+        <label for="contact-email">{text.email}</label>
+        <input id="contact-email" name="email" type="email" autocomplete="email" required maxlength="320" />
+      </p>
+      <p class="field wide">
+        <label for="contact-message">{text.message}</label>
+        <textarea id="contact-message" name="message" rows="5" required maxlength="5000"></textarea>
+      </p>
+      <p class="notice wide">
+        {text.notice} <a href={privacyUrl}>{text.noticeLink}</a>
+      </p>
+      <p class="send wide">
+        <button type="submit">{text.send}</button>
+        <span class="status" role="status"></span>
+      </p>
       {email && (
-        <p class="email">
-          <a class="address" href={`mailto:${email}`} aria-label={email}>
-            {at > 0 ? <span>{[`${email.slice(0, at)}@`, <wbr />, email.slice(at + 1)]}</span> : email}
-          </a>
+        <p class="fallback wide" data-fallback hidden>
+          {text.fallback} <a href={`mailto:${email}`}>{email}</a>
         </p>
       )}
-      <ul class="links">
-        <li>
-          <a href={vcardUrl} download type="text/vcard">
-            {labels.contact.vcard}
-          </a>
-        </li>
-        {links.map((profile) => (
-          <li>
-            <a href={profile.url} rel="me">
-              {profile.network ?? profile.url}
-            </a>
-          </li>
-        ))}
-        <li>
-          <a href={pdfUrl} download>
-            {labels.downloadCv}
-          </a>
-        </li>
-      </ul>
-    </div>
-
-    {form === 'netlify' && (
-      <form
-        class="form"
-        name={FORM_NAME}
-        method="POST"
-        action={getRelativeLocaleUrl(locale, labels.contact.sentPage.slug)}
-        data-netlify="true"
-        netlify-honeypot="bot-field"
-        data-contact-form
-        data-sending={text.sending}
-        data-sent={text.sent}
-        data-failed={text.failed}
-      >
-        <input type="hidden" name="form-name" value={FORM_NAME} />
-        <p class="intro">{text.intro}</p>
-        {/* A field people never see: bots fill it in, and Netlify drops what they send. */}
-        <p class="trap" aria-hidden="true">
-          <label>
-            bot-field <input type="text" name="bot-field" tabindex="-1" autocomplete="off" />
-          </label>
-        </p>
-        <p class="field">
-          <label for="contact-name">{text.name}</label>
-          <input id="contact-name" type="text" name="name" autocomplete="name" required maxlength="200" />
-        </p>
-        <p class="field">
-          <label for="contact-email">{text.email}</label>
-          <input id="contact-email" name="email" type="email" autocomplete="email" required maxlength="320" />
-        </p>
-        <p class="field">
-          <label for="contact-message">{text.message}</label>
-          <textarea id="contact-message" name="message" rows="5" required maxlength="5000"></textarea>
-        </p>
-        <p class="notice">
-          {text.notice} <a href={privacyUrl}>{text.noticeLink}</a>
-        </p>
-        <p class="send">
-          <button type="submit">{text.send}</button>
-          <span class="status" role="status"></span>
-        </p>
-        {email && (
-          <p class="fallback" data-fallback hidden>
-            {text.fallback} <a href={`mailto:${email}`}>{email}</a>
-          </p>
-        )}
-      </form>
-    )}
-  </div>
+    </form>
+  ) : (
+    email && (
+      <p class="email">
+        <a class="address" href={`mailto:${email}`} aria-label={email}>
+          {at > 0 ? <span>{[`${email.slice(0, at)}@`, <wbr />, email.slice(at + 1)]}</span> : email}
+        </a>
+      </p>
+    )
+  )}
 </section>
 
 <script>
@@ -124,19 +97,6 @@ const FORM_NAME = 'contact';
     border-radius: 1.375rem;
     background: var(--fascia);
     color: var(--fascia-ink);
-  }
-  .layout {
-    display: grid;
-    gap: 2rem 3rem;
-  }
-  .with-form .layout {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
-    align-items: start;
-  }
-  @media (min-width: 52rem) {
-    .with-form .layout {
-      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
-    }
   }
   .email {
     margin: 0;
@@ -158,41 +118,29 @@ const FORM_NAME = 'contact';
   .address:hover {
     transform: translateY(-2px);
   }
-  /* With the form, "Send" is the one ochre button of the box; the address is outlined. */
-  .with-form .address {
-    border: 1.5px solid var(--fascia-ink);
-    background: transparent;
-    color: inherit;
-  }
-  .links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem 1.625rem;
-    margin: 1.25rem 0 0;
-    padding: 0;
-    list-style: none;
-    font-weight: 600;
-  }
-  .with-form .links {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .links a {
-    display: inline-flex;
-    align-items: center;
-    min-height: 2.75rem;
-    color: inherit;
-  }
   .contact :focus-visible {
     outline-color: var(--gru);
   }
 
-  /* The form: white fields on the sea, labels above them. */
+  /* The form takes the whole box: white fields on the sea, labels above them; on wide
+     screens name and email side by side, everything else across both columns. */
+  .form {
+    display: grid;
+    gap: 0.875rem 1.5rem;
+  }
+  @media (min-width: 40rem) {
+    .form {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .wide {
+      grid-column: 1 / -1;
+    }
+  }
   .form p {
     margin: 0;
   }
   .intro {
-    margin-bottom: 1rem !important;
+    margin-bottom: 0.125rem !important;
   }
   .trap {
     display: none;
@@ -200,7 +148,6 @@ const FORM_NAME = 'contact';
   .field {
     display: grid;
     gap: 0.375rem;
-    margin-bottom: 0.875rem !important;
   }
   .field label {
     font-size: 0.9375rem;
@@ -243,7 +190,7 @@ const FORM_NAME = 'contact';
     flex-wrap: wrap;
     align-items: center;
     gap: 0.75rem 1rem;
-    margin-top: 1.125rem !important;
+    margin-top: 0.25rem !important;
   }
   .send button {
     min-height: 3.125rem;
@@ -259,9 +206,6 @@ const FORM_NAME = 'contact';
   .send button[aria-disabled='true'] {
     opacity: 0.7;
     cursor: progress;
-  }
-  .fallback {
-    margin-top: 0.5rem !important;
   }
   .fallback a {
     color: inherit;
@@ -300,7 +244,8 @@ const FORM_NAME = 'contact';
     .contact {
       padding: 0;
     }
-    .form {
+    /* A form means nothing on paper, and the contacts are already printed at the top. */
+    .contact.with-form {
       display: none;
     }
     .address {
@@ -309,15 +254,6 @@ const FORM_NAME = 'contact';
       border: 0;
       background: none;
       color: var(--ardesia);
-    }
-    /* Downloads mean nothing on paper. */
-    .links li:has(a[download]) {
-      display: none;
-    }
-    /* On paper a link is only as good as its address. */
-    .links a[href^='http']::after {
-      content: '\00a0(' attr(href) ')';
-      font-weight: 400;
     }
   }
 </style>

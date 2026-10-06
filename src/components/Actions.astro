@@ -1,7 +1,9 @@
 ---
 /**
- * The first screen's actions: one primary button (download the CV), then email and
- * profiles as secondary buttons. Text only: the labels are short and clear on their own.
+ * The first screen's actions: one primary button (download the CV), then email, "Add to
+ * contacts" (the contact card) and the profiles as secondary buttons. Text only: the labels
+ * are short and clear on their own. They are the only contact links on the page: the box at
+ * the end holds the form (or, without it, the address).
  */
 import type { Resume } from '../core/schema';
 import type { Labels } from '../i18n/labels';
@@ -10,11 +12,12 @@ interface Props {
   resume: Resume;
   labels: Labels;
   pdfUrl: string;
+  vcardUrl: string;
   /** Accessible name of the group. */
   label: string;
 }
 
-const { resume, labels, pdfUrl, label } = Astro.props;
+const { resume, labels, pdfUrl, vcardUrl, label } = Astro.props;
 const { email, profiles } = resume.basics;
 const links = profiles.filter((profile) => profile.url);
 ---
@@ -30,6 +33,9 @@ const links = profiles.filter((profile) => profile.url);
       {labels.email}
     </a>
   )}
+  <a class="button" href={vcardUrl} download type="text/vcard">
+    {labels.contact.vcard}
+  </a>
   {links.map((profile) => (
     <a class="button" href={profile.url} rel="me" data-href={profile.url}>
       {profile.network ?? profile.url}
@@ -81,16 +87,19 @@ const links = profiles.filter((profile) => profile.url);
     font-weight: 500;
     opacity: 0.85;
   }
-  /* Up to tablet width: the download button on its own row, the secondary buttons share
-     the next one in equal parts, however many there are. */
+  /* Up to tablet width: the download button on its own row, the secondary buttons two by two
+     below it (email with the contact card, then the profiles). */
   @media (max-width: 46rem) {
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
     .actions > .primary {
-      flex: 1 0 100%;
+      grid-column: 1 / -1;
     }
     .actions > :not(.primary) {
-      flex: 1 1 0;
-      min-width: 0;
       padding-inline: 0.5rem;
+      text-align: center;
     }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -108,9 +117,9 @@ const links = profiles.filter((profile) => profile.url);
       color: ButtonFace;
     }
   }
-  /* On paper the buttons become plain contact lines; the download button has no meaning there. */
+  /* On paper the buttons become plain contact lines; the downloads have no meaning there. */
   @media print {
-    .button.primary {
+    .button[download] {
       display: none;
     }
     .actions {

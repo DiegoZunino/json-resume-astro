@@ -8,6 +8,8 @@
       - /url: /cv-it.pdf
     - link "Email":
       - /url: mailto:ada@example.org
+    - link "Aggiungi ai contatti":
+      - /url: /vcard/ada-esempio.vcf
     - link "LinkedIn":
       - /url: https://www.linkedin.com/in/ada-esempio
     - link "GitHub":
@@ -37,7 +39,7 @@
           - button /Software Engineer, Azienda Due, \d+ – mag \d+/: /Software Engineer Azienda Due · \d+ – mag \d+/
       - listitem:
         - heading "Sviluppatrice, Progetti personali" [level=3]:
-          - button "Sviluppatrice, Progetti personali"
+          - button "Sviluppatrice, Progetti personali": Sviluppatrice Progetti personali
   - region "Talk":
     - heading "Talk" [level=2]
     - list:
@@ -113,22 +115,6 @@
         - paragraph: Lavorare con Ada è stato un piacere.
   - region "Contatti":
     - heading "Contatti" [level=2]
-    - paragraph:
-      - link "ada@example.org":
-        - /url: mailto:ada@example.org
-    - list:
-      - listitem:
-        - link "Aggiungi ai contatti":
-          - /url: /vcard/ada-esempio.vcf
-      - listitem:
-        - link "LinkedIn":
-          - /url: https://www.linkedin.com/in/ada-esempio
-      - listitem:
-        - link "GitHub":
-          - /url: https://github.com/ada
-      - listitem:
-        - link "Scarica il CV":
-          - /url: /cv-it.pdf
     - paragraph: "Scrivimi da qui: il messaggio arriva direttamente nella mia casella di posta. Tutti i campi sono obbligatori."
     - paragraph:
       - text: Nome
