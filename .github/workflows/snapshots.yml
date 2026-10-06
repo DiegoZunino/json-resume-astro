@@ -1,0 +1,35 @@
+# Renders the visual baselines on the same system as the checks and commits them to the
+# branch it runs on. Run it by hand after a deliberate change to the page.
+name: snapshots
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: snapshots-${{ github.ref }}
+
+jobs:
+  update:
+    name: Update the visual baselines
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build:fixtures
+      - run: npx playwright test tests/e2e/visual.spec.ts --update-snapshots=all
+      - name: Commit the new baselines
+        run: |
+          git add tests/e2e/__snapshots__
+          if git diff --cached --quiet; then echo "Baselines unchanged."; exit 0; fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "Update the visual baselines"
+          git push
