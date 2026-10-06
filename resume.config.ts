@@ -13,4 +13,6 @@ export default defineResumeConfig({
   pdfName: 'cv',
   repository: 'https://github.com/DiegoZunino/json-resume-astro',
   // contactForm: 'netlify', // contact form handled by Netlify Forms: see "Contatti" in the README
+  // What the privacy notice cannot work out by itself (see "Contatti" in the README).
+  privacy: { mailbox: 'Microsoft (Outlook.com)' },
 });
