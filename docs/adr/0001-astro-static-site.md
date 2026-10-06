@@ -4,7 +4,7 @@
 
 ## Contesto
 
-Una pagina personale con il CV: contenuto che cambia poche volte al mese, nessuna interazione lato server, priorità a velocità, accessibilità, costo zero di hosting. Il progetto è anche una ricerca sulle capacità di un generatore di siti statici moderno.
+Una pagina personale con il CV: contenuto che cambia poche volte al mese, nessuna interazione lato server, priorità a velocità, accessibilità, costo zero di hosting. Il progetto è anche un playground per fare esperienza con un generatore di siti statici moderno.
 
 ## Decisione
 

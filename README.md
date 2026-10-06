@@ -9,7 +9,7 @@ _A generic, accessible front end for JSON Resume built with Astro: web page, PDF
 
 ## Perché
 
-È un piccolo progetto di ricerca su cosa può fare oggi un generatore di siti statici, con un vincolo pratico: il CV deve restare **un dato standard**, aggiornabile senza toccare il codice, e da quel dato devono uscire, sempre allineati, la pagina, il PDF e ciò che leggono motori di ricerca e assistenti AI.
+È un playground per fare esperienza con Astro e con ciò che sa fare oggi un generatore di siti statici, con un vincolo pratico: il CV deve restare **un dato standard**, aggiornabile senza toccare il codice, e da quel dato devono uscire, sempre allineati, la pagina, il PDF e ciò che leggono motori di ricerca e assistenti AI.
 
 ## Cosa fa
 

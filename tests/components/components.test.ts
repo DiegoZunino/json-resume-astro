@@ -80,9 +80,9 @@ describe('Wire', () => {
   it('knows how wide one line must be for the phrases to share it', async () => {
     const short = await container.renderToString(Wire, { props: { from: 'Da qui', to: 'a lì' } });
     const long = await container.renderToString(Wire, {
-      props: { from: 'Dalle esigenze di partner e clienti', to: 'a integrazioni AI sui dati aziendali' },
+      props: { from: 'Dalle idee dei clienti di ogni settore', to: 'al software che il team sa mantenere bene' },
     });
     expect(short).toMatch(/class="inner fit-24"/);
-    expect(long).toMatch(/class="inner fit-40"/);
+    expect(long).toMatch(/class="inner fit-44"/);
   });
 });
