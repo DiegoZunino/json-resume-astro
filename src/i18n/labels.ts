@@ -5,6 +5,21 @@
 
 /** Date of the last review of the accessibility statement (update it with the statement). */
 export const STATEMENT_DATE = '2026-10-05';
+/** Date of the last review of the privacy notice (update it with the notice). */
+export const PRIVACY_DATE = '2026-10-06';
+
+/** What the privacy notice needs to know about the site. */
+export interface PrivacyFacts {
+  owner: string;
+  email?: string | undefined;
+  /** The contact form and who handles it. */
+  form?: 'netlify' | undefined;
+}
+
+export interface Notice {
+  title: string;
+  paragraphs: string[];
+}
 
 export interface Labels {
   sections: Record<
@@ -39,9 +54,6 @@ export interface Labels {
   downloadCv: string;
   downloadCvDetail: string;
   email: string;
-  copy: string;
-  copied: string;
-  copyFailed: string;
   expandAll: string;
   collapseAll: string;
   theme: { legend: string; system: string; light: string; dark: string };
@@ -54,6 +66,34 @@ export interface Labels {
     builtWith: string;
     data: string;
     accessibility: string;
+    privacy: string;
+  };
+  /** The Contact box at the end of the page. */
+  contact: {
+    /** "Add to contacts": downloads the contact card (.vcf). */
+    vcard: string;
+    form: {
+      /** One generic line above the form. */
+      intro: string;
+      name: string;
+      email: string;
+      message: string;
+      send: string;
+      sending: string;
+      sent: string;
+      failed: (email?: string) => string;
+      /** Short notice under the form, with a link to the full notice. */
+      notice: string;
+      noticeLink: string;
+    };
+    /** Page shown after sending without JavaScript. */
+    sentPage: { slug: string; title: string; body: string };
+  };
+  privacy: {
+    slug: string;
+    title: string;
+    reviewed: string;
+    sections: (facts: PrivacyFacts) => Notice[];
   };
   accessibility: {
     slug: string;
@@ -91,9 +131,6 @@ const en: Labels = {
   downloadCv: 'Download the CV',
   downloadCvDetail: 'PDF, English',
   email: 'Email',
-  copy: 'Copy the address',
-  copied: 'Address copied',
-  copyFailed: 'Could not copy: select the address instead',
   expandAll: 'Expand all roles',
   collapseAll: 'Collapse all roles',
   theme: { legend: 'Theme', system: 'Auto', light: 'Light', dark: 'Dark' },
@@ -105,6 +142,62 @@ const en: Labels = {
     builtWith: 'Built with Astro from a',
     data: 'The data: resume.json',
     accessibility: 'Accessibility',
+    privacy: 'Privacy',
+  },
+  contact: {
+    vcard: 'Add to contacts',
+    form: {
+      intro: 'Write to me here: your message goes straight to my inbox.',
+      name: 'Name',
+      email: 'Email',
+      message: 'Message',
+      send: 'Send',
+      sending: 'Sending…',
+      sent: 'Message sent. Thank you: I will reply as soon as I can.',
+      failed: (email) =>
+        email ? `The message could not be sent. Please write to ${email}.` : 'The message could not be sent.',
+      notice: 'I use your name, email and message only to reply to you.',
+      noticeLink: 'Privacy notice',
+    },
+    sentPage: { slug: 'message-sent', title: 'Message sent', body: 'Thank you: I will reply as soon as I can.' },
+  },
+  privacy: {
+    slug: 'privacy',
+    title: 'Privacy notice',
+    reviewed: 'Notice last reviewed on',
+    sections: ({ owner, email, form }) => [
+      {
+        title: 'Who is responsible',
+        paragraphs: [
+          `${owner} is the controller of the personal data described here${email ? `, and can be reached at ${email}` : ''}.`,
+        ],
+      },
+      {
+        title: 'Visiting the site',
+        paragraphs: [
+          'The site sets no cookies, uses no analytics and loads nothing from other sites: fonts and images are served by the site itself.',
+          'Like any web server, the service hosting the site records technical data about each request (IP address, page, time, browser) to deliver the pages and protect them from abuse.',
+        ],
+      },
+      ...(form === 'netlify'
+        ? [
+            {
+              title: 'The contact form',
+              paragraphs: [
+                'If you write through the form I receive your name, email address and message, and I use them only to read and answer your request. The legal basis is your request (Article 6(1)(b) GDPR) and, for messages unrelated to work, my legitimate interest in replying (Article 6(1)(f)). No consent is needed, the data is not used for anything else and is not shared with anyone.',
+                'Messages are received and stored by Netlify, Inc., which hosts the site and acts as processor under its data processing agreement; they are stored in the United States, under the EU-US Data Privacy Framework. Netlify checks messages for spam with the Akismet service and sends me a copy by email.',
+                'I keep messages for as long as the conversation needs, and no longer than 12 months after the last exchange; then I delete them from Netlify and from my inbox.',
+              ],
+            },
+          ]
+        : []),
+      {
+        title: 'Your rights',
+        paragraphs: [
+          `You can ask to access, correct or delete your data, to restrict or object to its use, and to receive it in a portable format (Articles 15-22 GDPR)${email ? ` by writing to ${email}` : ''}. You can also lodge a complaint with your data protection authority.`,
+        ],
+      },
+    ],
   },
   accessibility: {
     slug: 'accessibility',
@@ -150,9 +243,6 @@ const it: Labels = {
   downloadCv: 'Scarica il CV',
   downloadCvDetail: 'PDF, italiano',
   email: 'Email',
-  copy: 'Copia l’indirizzo',
-  copied: 'Indirizzo copiato',
-  copyFailed: 'Copia non riuscita: seleziona l’indirizzo',
   expandAll: 'Apri tutti i ruoli',
   collapseAll: 'Chiudi tutti i ruoli',
   theme: { legend: 'Tema', system: 'Auto', light: 'Chiaro', dark: 'Scuro' },
@@ -164,6 +254,61 @@ const it: Labels = {
     builtWith: 'Realizzato con Astro da un',
     data: 'I dati: resume.json',
     accessibility: 'Accessibilità',
+    privacy: 'Privacy',
+  },
+  contact: {
+    vcard: 'Aggiungi ai contatti',
+    form: {
+      intro: 'Scrivimi da qui: il messaggio arriva direttamente nella mia casella di posta.',
+      name: 'Nome',
+      email: 'Email',
+      message: 'Messaggio',
+      send: 'Invia',
+      sending: 'Invio in corso…',
+      sent: 'Messaggio inviato. Grazie: ti rispondo appena posso.',
+      failed: (email) => (email ? `Invio non riuscito. Scrivimi a ${email}.` : 'Invio non riuscito.'),
+      notice: 'Uso nome, email e messaggio solo per risponderti.',
+      noticeLink: 'Informativa privacy',
+    },
+    sentPage: { slug: 'messaggio-inviato', title: 'Messaggio inviato', body: 'Grazie: ti rispondo appena posso.' },
+  },
+  privacy: {
+    slug: 'privacy',
+    title: 'Informativa sulla privacy',
+    reviewed: 'Informativa aggiornata il',
+    sections: ({ owner, email, form }) => [
+      {
+        title: 'Chi tratta i dati',
+        paragraphs: [
+          `Il titolare del trattamento dei dati descritti qui è ${owner}${email ? `, che puoi contattare all’indirizzo ${email}` : ''}.`,
+        ],
+      },
+      {
+        title: 'La visita del sito',
+        paragraphs: [
+          'Il sito non usa cookie, non usa strumenti di statistica e non carica nulla da altri siti: caratteri e immagini sono serviti dal sito stesso.',
+          'Come ogni server web, il servizio che ospita il sito registra dati tecnici delle richieste (indirizzo IP, pagina, ora, browser) per mostrare le pagine e proteggerle dagli abusi.',
+        ],
+      },
+      ...(form === 'netlify'
+        ? [
+            {
+              title: 'Il modulo di contatto',
+              paragraphs: [
+                'Se mi scrivi dal modulo ricevo nome, indirizzo email e messaggio, e li uso solo per leggere e rispondere alla tua richiesta. La base giuridica è la tua richiesta (art. 6.1.b del GDPR) e, per i messaggi che non riguardano il lavoro, il mio legittimo interesse a risponderti (art. 6.1.f). Non serve un consenso; i dati non sono usati per altro né comunicati ad altri.',
+                'I messaggi sono ricevuti e conservati da Netlify, Inc., che ospita il sito e agisce come responsabile del trattamento secondo il suo accordo sul trattamento dei dati; sono conservati negli Stati Uniti, nel quadro dell’EU-US Data Privacy Framework. Netlify controlla i messaggi contro lo spam con il servizio Akismet e me ne invia una copia per email.',
+                'Conservo i messaggi per il tempo che serve alla conversazione e comunque non oltre 12 mesi dall’ultimo scambio; poi li cancello da Netlify e dalla mia casella.',
+              ],
+            },
+          ]
+        : []),
+      {
+        title: 'I tuoi diritti',
+        paragraphs: [
+          `Puoi chiedere di accedere ai tuoi dati, correggerli o cancellarli, limitarne l’uso o opporti, e riceverli in un formato portabile (artt. 15-22 del GDPR)${email ? ` scrivendo a ${email}` : ''}. Puoi anche presentare reclamo al Garante per la protezione dei dati personali.`,
+        ],
+      },
+    ],
   },
   accessibility: {
     slug: 'accessibilita',

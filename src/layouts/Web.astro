@@ -19,9 +19,11 @@ interface Props {
   alternates?: Alternate[];
   /** The home page carries the structured data. */
   structuredData?: boolean;
+  /** Pages that are not for search engines (the confirmation after sending a message). */
+  noindex?: boolean;
 }
 
-const { context, title, canonical, alternates, structuredData = false } = Astro.props;
+const { context, title, canonical, alternates, structuredData = false, noindex = false } = Astro.props;
 const { resume, labels, locale } = context;
 const pageTitle = title ?? joinParts([resume.basics.name, resume.basics.label]);
 const updated = resume.meta.lastModified ? referenceDate(resume.meta.lastModified, new Date(0)) : undefined;
@@ -40,6 +42,7 @@ const photoUrl = photo && Astro.site ? new URL(photo.src, Astro.site).href : und
   ogLocale={ogLocale(locale)}
   jsonLd={structuredData ? profilePage(resume, context.absoluteHomeUrl, photoUrl) : undefined}
   dataAlternate={context.dataUrl}
+  noindex={noindex}
 >
   <TopBar labels={labels} otherLocales={context.otherLocales} />
   <main id="content" class="page" tabindex="-1">
@@ -50,6 +53,7 @@ const photoUrl = photo && Astro.site ? new URL(photo.src, Astro.site).href : und
     updated={updated}
     repository={context.repository}
     accessibilityUrl={context.accessibilityUrl}
+    privacyUrl={context.privacyUrl}
     dataUrl={context.dataUrl}
     otherLocales={context.otherLocales}
   />

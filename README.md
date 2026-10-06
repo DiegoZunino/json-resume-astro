@@ -55,6 +55,19 @@ Opzioni del tema, tutte facoltative, in `meta.themeOptions` del JSON Resume:
 
 Esempio completo: [`fixtures/resume.it.json`](fixtures/resume.it.json).
 
+### Contatti
+
+Il riquadro in fondo alla pagina mostra l'indirizzo email per intero, i profili, il CV e **"Aggiungi ai contatti"**: una scheda contatto (vCard 3.0, `/vcard/<nome>.vcf`) generata dal JSON Resume con nome, ruolo, email, sito, città, profili e foto. Il telefono non c'è mai.
+
+**Modulo di contatto (facoltativo, solo su Netlify).** Con `contactForm: 'netlify'` in `resume.config.ts` (o `CONTACT_FORM=netlify`) il riquadro ha anche un modulo (nome, email, messaggio) gestito da [Netlify Forms](https://docs.netlify.com/manage/forms/setup/). Funziona solo se il sito è pubblicato su Netlify:
+
+1. nelle impostazioni del sito su Netlify, **Forms → Enable form detection** (spenta di default), poi un nuovo deploy; il modulo deve comparire tra gli _Active forms_;
+2. le notifiche per email si attivano in **Forms → Form notifications**;
+3. lo spam si ferma in due modi senza captcha né cookie: il filtro Akismet che Netlify applica a ogni invio e un campo trappola nascosto (`netlify-honeypot`) che i bot riempiono;
+4. senza JavaScript il modulo invia normalmente e Netlify mostra la pagina di conferma (`/messaggio-inviato/`); con JavaScript invia sul posto e annuncia l'esito.
+
+Con il modulo attivo la Content Security Policy passa da `form-action 'none'` a `form-action 'self'`, e la pagina `/privacy/` aggiunge la sezione sul modulo (Netlify come responsabile del trattamento, conservazione per al massimo 12 mesi). L'informativa è un modello generico in `src/i18n/labels.ts`: va letta e adattata da chi pubblica il sito, che ne è responsabile.
+
 ## Qualità
 
 ```sh
@@ -111,7 +124,8 @@ Si leggono dall'ambiente o da un file `.env` nella radice del progetto (mai vers
 | ------------------------ | --------------------------------------------------------------------------------------- |
 | `SITE_URL`               | indirizzo pubblico del sito (URL canonici, sitemap, anteprime)                          |
 | `RESUME_SOURCE_<LINGUA>` | sorgente di una lingua, file o URL (es. `RESUME_SOURCE_EN`); vince sulla configurazione |
-| `RESUME_STRICT_PHOTO`    | `1`: una foto che non si scarica ferma la build invece di usare il monogramma           |
+| `RESUME_STRICT_PHOTO`    | `1`: una foto (o una testata) che non si scarica ferma la build                         |
+| `CONTACT_FORM`           | `netlify` per il modulo di contatto, vuota per spegnerlo; vince sulla configurazione    |
 | `CONTRACT_FILES`         | file in più da verificare contro lo schema ufficiale nei test di contratto              |
 
 ## Pubblicazione

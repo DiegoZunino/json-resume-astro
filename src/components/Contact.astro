@@ -1,60 +1,116 @@
 ---
 /**
- * The end of the page: how to get in touch. The address in full (to read, copy or
- * click), the profiles and the CV, in a box in the colour of the sea.
+ * The end of the page: how to get in touch, in a box in the colour of the sea. The address
+ * in full, "Add to contacts" (a contact card built from the resume), the profiles and the
+ * CV; and, when the site is configured for it, a contact form handled by the host
+ * (Netlify Forms). The form works without JavaScript (a normal POST and a confirmation
+ * page); with JavaScript it sends in place and announces the result.
  */
+import { getRelativeLocaleUrl } from 'astro:i18n';
 import type { Resume } from '../core/schema';
 import type { Labels } from '../i18n/labels';
 
 interface Props {
   resume: Resume;
   labels: Labels;
+  locale: string;
   pdfUrl: string;
+  vcardUrl: string;
+  privacyUrl: string;
+  form: 'netlify' | undefined;
 }
 
-const { resume, labels, pdfUrl } = Astro.props;
+const { resume, labels, locale, pdfUrl, vcardUrl, privacyUrl, form } = Astro.props;
 const { email, profiles } = resume.basics;
 const links = profiles.filter((profile) => profile.url);
+const text = labels.contact.form;
 // On a narrow phone the address may break after the @ (<wbr>), never in the middle of a
 // word; selected and copied, or read by a screen reader, it stays one address.
 const at = email ? email.lastIndexOf('@') : -1;
+/** Netlify identifies a form by its name, the same in every language. */
+const FORM_NAME = 'contact';
 ---
 
-<section class="contact section" id="contact" aria-labelledby="contact-title">
+<section class:list={['contact', 'section', { 'with-form': form }]} id="contact" aria-labelledby="contact-title">
   <h2 id="contact-title">{labels.sections.contact}</h2>
-  {email && (
-    <p class="email">
-      <a class="address" href={`mailto:${email}`} aria-label={email}>
-        {email && at > 0 ? <span>{[`${email.slice(0, at)}@`, <wbr />, email.slice(at + 1)]}</span> : email}
-      </a>
-      <button
-        class="copy"
-        type="button"
-        data-copy={email}
-        data-copied={labels.copied}
-        data-failed={labels.copyFailed}
-        hidden
+  <div class="layout">
+    <div class="direct">
+      {email && (
+        <p class="email">
+          <a class="address" href={`mailto:${email}`} aria-label={email}>
+            {at > 0 ? <span>{[`${email.slice(0, at)}@`, <wbr />, email.slice(at + 1)]}</span> : email}
+          </a>
+        </p>
+      )}
+      <ul class="links">
+        <li>
+          <a href={vcardUrl} download type="text/vcard">
+            {labels.contact.vcard}
+          </a>
+        </li>
+        {links.map((profile) => (
+          <li>
+            <a href={profile.url} rel="me">
+              {profile.network ?? profile.url}
+            </a>
+          </li>
+        ))}
+        <li>
+          <a href={pdfUrl} download>
+            {labels.downloadCv}
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    {form === 'netlify' && (
+      <form
+        class="form"
+        name={FORM_NAME}
+        method="POST"
+        action={getRelativeLocaleUrl(locale, labels.contact.sentPage.slug)}
+        data-netlify="true"
+        netlify-honeypot="bot-field"
+        data-contact-form
+        data-sending={text.sending}
+        data-sent={text.sent}
+        data-failed={text.failed(email)}
       >
-        {labels.copy}
-      </button>
-      <span class="status" role="status"></span>
-    </p>
-  )}
-  <p class="links">
-    {links.map((profile) => (
-      <a href={profile.url} rel="me">
-        {profile.network ?? profile.url}
-      </a>
-    ))}
-    <a href={pdfUrl} download>
-      {labels.downloadCv}
-    </a>
-  </p>
+        <input type="hidden" name="form-name" value={FORM_NAME} />
+        <p class="intro">{text.intro}</p>
+        {/* A field people never see: bots fill it in, and Netlify drops what they send. */}
+        <p class="trap" aria-hidden="true">
+          <label>
+            bot-field <input type="text" name="bot-field" tabindex="-1" autocomplete="off" />
+          </label>
+        </p>
+        <p class="field">
+          <label for="contact-name">{text.name}</label>
+          <input id="contact-name" type="text" name="name" autocomplete="name" required maxlength="200" />
+        </p>
+        <p class="field">
+          <label for="contact-email">{text.email}</label>
+          <input id="contact-email" name="email" type="email" autocomplete="email" required maxlength="320" />
+        </p>
+        <p class="field">
+          <label for="contact-message">{text.message}</label>
+          <textarea id="contact-message" name="message" rows="5" required maxlength="5000"></textarea>
+        </p>
+        <p class="notice">
+          {text.notice} <a href={privacyUrl}>{text.noticeLink}</a>
+        </p>
+        <p class="send">
+          <button type="submit">{text.send}</button>
+          <span class="status" role="status"></span>
+        </p>
+      </form>
+    )}
+  </div>
 </section>
 
 <script>
-  import { initCopyButtons } from '../site/copy';
-  initCopyButtons();
+  import { initContactForms } from '../site/contact-form';
+  initContactForms();
 </script>
 
 <style>
@@ -64,11 +120,20 @@ const at = email ? email.lastIndexOf('@') : -1;
     background: var(--fascia);
     color: var(--fascia-ink);
   }
+  .layout {
+    display: grid;
+    gap: 2rem 3rem;
+  }
+  .with-form .layout {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    align-items: start;
+  }
+  @media (min-width: 52rem) {
+    .with-form .layout {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    }
+  }
   .email {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem 0.875rem;
     margin: 0;
   }
   .address {
@@ -88,27 +153,18 @@ const at = email ? email.lastIndexOf('@') : -1;
   .address:hover {
     transform: translateY(-2px);
   }
-  .copy {
-    min-height: 3.125rem;
-    padding: 0 1.125rem;
-    border-radius: var(--radius);
-    border: 1.5px solid var(--fascia-linea);
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    font-size: 0.9375rem;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .status {
-    font-size: 0.9375rem;
-  }
   .links {
     display: flex;
     flex-wrap: wrap;
     gap: 0.25rem 1.625rem;
     margin: 1.25rem 0 0;
+    padding: 0;
+    list-style: none;
     font-weight: 600;
+  }
+  .with-form .links {
+    flex-direction: column;
+    align-items: flex-start;
   }
   .links a {
     display: inline-flex;
@@ -119,6 +175,80 @@ const at = email ? email.lastIndexOf('@') : -1;
   .contact :focus-visible {
     outline-color: var(--gru);
   }
+
+  /* The form: white fields on the sea, labels above them. */
+  .form p {
+    margin: 0;
+  }
+  .intro {
+    margin-bottom: 1rem !important;
+  }
+  .trap {
+    display: none;
+  }
+  .field {
+    display: grid;
+    gap: 0.375rem;
+    margin-bottom: 0.875rem !important;
+  }
+  .field label {
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+  .field input,
+  .field textarea {
+    width: 100%;
+    min-height: 2.875rem;
+    padding: 0.625rem 0.875rem;
+    border: 1.5px solid transparent;
+    border-radius: var(--radius);
+    background: var(--campo);
+    color: var(--campo-ink);
+    font: inherit;
+    font-size: 1rem;
+  }
+  .field textarea {
+    resize: vertical;
+    min-height: 8rem;
+  }
+  .field input:focus-visible,
+  .field textarea:focus-visible {
+    outline: 3px solid var(--gru);
+    outline-offset: 2px;
+  }
+  .notice {
+    font-size: 0.875rem;
+  }
+  .notice a {
+    color: inherit;
+  }
+  .send {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    margin-top: 1.125rem !important;
+  }
+  .send button {
+    min-height: 3.125rem;
+    padding: 0 1.75rem;
+    border: 0;
+    border-radius: var(--radius);
+    background: var(--gru);
+    color: var(--gru-ink);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .send button:disabled {
+    opacity: 0.7;
+    cursor: progress;
+  }
+  .status {
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .address:hover {
       transform: none;
@@ -133,13 +263,19 @@ const at = email ? email.lastIndexOf('@') : -1;
       background: Canvas;
       color: LinkText;
     }
+    .field input,
+    .field textarea {
+      border-color: CanvasText;
+    }
+    .send button {
+      border: 2px solid ButtonText;
+    }
   }
   @media print {
     .contact {
       padding: 0;
     }
-    .copy,
-    .status {
+    .form {
       display: none;
     }
     .address {

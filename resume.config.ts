@@ -12,4 +12,5 @@ export default defineResumeConfig({
   private: ['basics.phone', 'x-objective', 'x-privacy', 'work.*.x-internal'],
   pdfName: 'cv',
   repository: 'https://github.com/DiegoZunino/json-resume-astro',
+  // contactForm: 'netlify', // contact form handled by Netlify Forms: see "Contatti" in the README
 });

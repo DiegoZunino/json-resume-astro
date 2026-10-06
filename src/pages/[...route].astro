@@ -1,7 +1,8 @@
 ---
 /**
- * Every locale gets a home page (the default locale at the root) and an accessibility
- * statement. Routing follows Astro's i18n configuration (prefixDefaultLocale: false).
+ * Every locale gets a home page (the default locale at the root), an accessibility
+ * statement, a privacy notice and, with the contact form, the page shown after sending
+ * without JavaScript. Routing follows Astro's i18n configuration (prefixDefaultLocale: false).
  */
 import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
 import { getAbsoluteLocaleUrl, getRelativeLocaleUrl } from 'astro:i18n';
@@ -9,16 +10,21 @@ import Contact from '../components/Contact.astro';
 import Hero from '../components/Hero.astro';
 import Sections from '../components/Sections.astro';
 import { formatLongDate } from '../core/dates';
-import { labelsFor, STATEMENT_DATE } from '../i18n/labels';
+import { labelsFor, PRIVACY_DATE, STATEMENT_DATE } from '../i18n/labels';
 import Web from '../layouts/Web.astro';
-import { alternatesFor, locales, pageContext, routeParam } from '../site/context';
+import { alternatesFor, contactForm, locales, pageContext, routeParam } from '../site/context';
 
 export const getStaticPaths = (() =>
   locales.flatMap((locale) => {
-    const statement = getRelativeLocaleUrl(locale, labelsFor(locale).accessibility.slug);
+    const labels = labelsFor(locale);
+    const route = (slug?: string) => routeParam(getRelativeLocaleUrl(locale, slug));
     return [
-      { params: { route: routeParam(getRelativeLocaleUrl(locale)) }, props: { locale, page: 'home' as const } },
-      { params: { route: routeParam(statement) }, props: { locale, page: 'accessibility' as const } },
+      { params: { route: route() }, props: { locale, page: 'home' as const } },
+      { params: { route: route(labels.accessibility.slug) }, props: { locale, page: 'accessibility' as const } },
+      { params: { route: route(labels.privacy.slug) }, props: { locale, page: 'privacy' as const } },
+      ...(contactForm
+        ? [{ params: { route: route(labels.contact.sentPage.slug) }, props: { locale, page: 'sent' as const } }]
+        : []),
     ];
   })) satisfies GetStaticPaths;
 
@@ -28,13 +34,60 @@ const { locale, page } = Astro.props;
 const context = await pageContext(locale, Astro.site);
 const { resume, labels } = context;
 const statementUrl = (other: string) => getAbsoluteLocaleUrl(other, labelsFor(other).accessibility.slug);
+const privacyUrl = (other: string) => getAbsoluteLocaleUrl(other, labelsFor(other).privacy.slug);
 ---
 
 {page === 'home' ? (
   <Web context={context} structuredData>
     <Hero resume={resume} labels={labels} pdfUrl={context.pdfUrl} />
     <Sections sections={context.sections} resume={resume} labels={labels} reference={context.reference} />
-    <Contact resume={resume} labels={labels} pdfUrl={context.pdfUrl} />
+    <Contact
+      resume={resume}
+      labels={labels}
+      locale={locale}
+      pdfUrl={context.pdfUrl}
+      vcardUrl={context.vcardUrl}
+      privacyUrl={context.privacyUrl}
+      form={context.contactForm}
+    />
+  </Web>
+) : page === 'privacy' ? (
+  <Web
+    context={context}
+    title={`${labels.privacy.title} · ${resume.basics.name}`}
+    canonical={privacyUrl(locale)}
+    alternates={alternatesFor(privacyUrl)}
+  >
+    <article class="statement measure">
+      <p class="back">
+        <a href={context.homeUrl}>{resume.basics.name}</a>
+      </p>
+      <h1>{labels.privacy.title}</h1>
+      {labels.privacy
+        .sections({ owner: resume.basics.name, email: resume.basics.email, form: context.contactForm })
+        .map((notice) => (
+          <section>
+            <h2>{notice.title}</h2>
+            {notice.paragraphs.map((paragraph) => (
+              <p>{paragraph}</p>
+            ))}
+          </section>
+        ))}
+      <p class="muted small">
+        {labels.privacy.reviewed}{' '}
+        <time datetime={PRIVACY_DATE}>{formatLongDate(new Date(PRIVACY_DATE), labels.intl)}</time>
+      </p>
+    </article>
+  </Web>
+) : page === 'sent' ? (
+  <Web context={context} title={`${labels.contact.sentPage.title} · ${resume.basics.name}`} noindex>
+    <article class="statement measure">
+      <h1>{labels.contact.sentPage.title}</h1>
+      <p>{labels.contact.sentPage.body}</p>
+      <p>
+        <a href={context.homeUrl}>{resume.basics.name}</a>
+      </p>
+    </article>
   </Web>
 ) : (
   <Web
@@ -66,5 +119,9 @@ const statementUrl = (other: string) => getAbsoluteLocaleUrl(other, labelsFor(ot
   .statement h1 {
     font-size: var(--step-3);
     margin: 0.5rem 0 1.5rem;
+  }
+  .statement h2 {
+    font-size: var(--step-1);
+    margin: 1.75rem 0 0.5rem;
   }
 </style>

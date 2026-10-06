@@ -1,8 +1,10 @@
 import { defineConfig, fontProviders } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import resumeConfig from './resume.config';
+import { contactFormFor } from './src/config/define';
 import { buildEnv } from './src/config/env';
 import { ARTIFACT_ROUTES } from './src/config/paths';
+import { labelsFor } from './src/i18n/labels';
 import { resumeArtifacts } from './src/integrations/artifacts';
 import { themeScriptHash } from './src/integrations/theme-script';
 
@@ -107,7 +109,8 @@ export default defineConfig({
         "img-src 'self' data:",
         "font-src 'self'",
         "base-uri 'self'",
-        "form-action 'none'",
+        // The contact form posts to the site itself (Netlify Forms); without it, no form at all.
+        contactFormFor(resumeConfig, env) ? "form-action 'self'" : "form-action 'none'",
       ],
       scriptDirective: { hashes: [themeScriptHash] },
     },
@@ -115,7 +118,13 @@ export default defineConfig({
 
   integrations: [
     sitemap({
-      filter: (page) => !ARTIFACT_ROUTES.some((route) => new URL(page).pathname.startsWith(`/${route}/`)),
+      filter: (page) => {
+        const path = new URL(page).pathname;
+        const sent = locales.map((locale) => `/${labelsFor(locale).contact.sentPage.slug}/`);
+        return (
+          !ARTIFACT_ROUTES.some((route) => path.startsWith(`/${route}/`)) && !sent.some((end) => path.endsWith(end))
+        );
+      },
       // Each URL lists its language alternates (xhtml:link), like the pages' hreflang links.
       i18n: {
         defaultLocale: resumeConfig.defaultLocale,

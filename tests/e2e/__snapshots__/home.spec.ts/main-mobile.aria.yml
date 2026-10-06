@@ -116,12 +116,33 @@
     - paragraph:
       - link "ada@example.org":
         - /url: mailto:ada@example.org
-      - button "Copia l’indirizzo"
-      - status
+    - list:
+      - listitem:
+        - link "Aggiungi ai contatti":
+          - /url: /vcard/ada-esempio.vcf
+      - listitem:
+        - link "LinkedIn":
+          - /url: https://www.linkedin.com/in/ada-esempio
+      - listitem:
+        - link "GitHub":
+          - /url: https://github.com/ada
+      - listitem:
+        - link "Scarica il CV":
+          - /url: /cv-it.pdf
+    - paragraph: "Scrivimi da qui: il messaggio arriva direttamente nella mia casella di posta."
     - paragraph:
-      - link "LinkedIn":
-        - /url: https://www.linkedin.com/in/ada-esempio
-      - link "GitHub":
-        - /url: https://github.com/ada
-      - link "Scarica il CV":
-        - /url: /cv-it.pdf
+      - text: Nome
+      - textbox "Nome"
+    - paragraph:
+      - text: Email
+      - textbox "Email"
+    - paragraph:
+      - text: Messaggio
+      - textbox "Messaggio"
+    - paragraph:
+      - text: Uso nome, email e messaggio solo per risponderti.
+      - link "Informativa privacy":
+        - /url: /privacy/
+    - paragraph:
+      - button "Invia"
+      - status

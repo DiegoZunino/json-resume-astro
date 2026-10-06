@@ -10,7 +10,7 @@ await new Promise((resolve) => server.once('listening', resolve));
 
 const build = spawn('npx', ['astro', 'build', ...process.argv.slice(2)], {
   stdio: 'inherit',
-  env: { ...process.env, FIXTURE_PHOTO_SERVER: '1', RESUME_STRICT_PHOTO: '1' },
+  env: { CONTACT_FORM: 'netlify', ...process.env, FIXTURE_PHOTO_SERVER: '1', RESUME_STRICT_PHOTO: '1' },
 });
 const code = await new Promise((resolve) => build.once('exit', resolve));
 server.close();

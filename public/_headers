@@ -10,3 +10,7 @@
 
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
+
+# Contact cards: address books open them only with their own media type.
+/vcard/*
+  Content-Type: text/vcard; charset=utf-8

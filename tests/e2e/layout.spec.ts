@@ -116,12 +116,14 @@ test.describe('the cover', () => {
       await expect(visible).toHaveCount(1);
       await expect(visible).toHaveAttribute('src', new RegExp(`^/_astro/cover-${colorScheme}.+\\.webp$`));
       await expect(page.locator('.cover')).toHaveAttribute('aria-hidden', 'true');
-      // The photo overlaps the band; the name starts below it.
+      // The photo rises into the band's lower part, as on a profile page.
       const [band, photo, name] = await Promise.all(
         ['.cover', '.hero .photo', 'h1'].map((s) => page.locator(s).boundingBox()),
       );
       expect(photo!.y).toBeLessThan(band!.y + band!.height);
-      expect(name!.y).toBeGreaterThanOrEqual(band!.y + band!.height);
+      expect(photo!.y + photo!.height).toBeGreaterThan(band!.y + band!.height);
+      // The name follows the photo: beside it on wide screens, below it on phones.
+      expect(name!.y + name!.height).toBeGreaterThan(band!.y + band!.height);
       await context.close();
     });
   }

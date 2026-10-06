@@ -114,14 +114,75 @@ test.describe('theme', () => {
 });
 
 test.describe('contact', () => {
-  test.use({ permissions: ['clipboard-read', 'clipboard-write'] });
-
-  test('shows the address in full and copies it, announcing the result', async ({ page }) => {
+  test('shows the address in full and offers the contact card, without the phone', async ({ page, request }) => {
     await page.goto('/');
     const contact = page.getByRole('region', { name: 'Contatti' });
-    await expect(contact.getByText('ada@example.org', { exact: true })).toBeVisible();
-    await contact.getByRole('button', { name: 'Copia l’indirizzo' }).click();
-    await expect(contact.getByRole('status')).toHaveText('Indirizzo copiato');
-    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('ada@example.org');
+    await expect(contact.getByRole('link', { name: 'ada@example.org' })).toHaveAttribute(
+      'href',
+      'mailto:ada@example.org',
+    );
+    const card = contact.getByRole('link', { name: 'Aggiungi ai contatti' });
+    await expect(card).toHaveAttribute('download', '');
+    const href = (await card.getAttribute('href'))!;
+    expect(href).toMatch(/^\/vcard\/ada-esempio\.vcf$/);
+    // The local server does not know .vcf; on Netlify the type comes from _headers.
+    expect(await (await request.get('/_headers')).text()).toMatch(/\/vcard\/\*\s+Content-Type: text\/vcard/);
+    const text = await (await request.get(href)).text();
+    expect(text).toContain('FN:Ada Esempio');
+    expect(text).toMatch(/PHOTO;ENCODING=b;TYPE=JPEG:/);
+    expect(text).not.toMatch(/TEL|555/);
+  });
+
+  test('the form sends in place and announces the result', async ({ page }) => {
+    let posted = '';
+    await page.route('/', async (route) => {
+      if (route.request().method() !== 'POST') return route.continue();
+      posted = route.request().postData() ?? '';
+      await route.fulfill({ status: 200, body: 'ok' });
+    });
+    await page.goto('/');
+    const form = page.locator('form[data-contact-form]');
+    await form.getByLabel('Nome').fill('Grace');
+    await form.getByLabel('Email').fill('grace@example.org');
+    await form.getByLabel('Messaggio').fill('Ciao, parliamo di un ruolo?');
+    await form.getByRole('button', { name: 'Invia' }).click();
+    await expect(form.getByRole('status')).toHaveText(/^Messaggio inviato/);
+    expect(new URLSearchParams(posted).get('form-name')).toBe('contact');
+    expect(new URLSearchParams(posted).get('email')).toBe('grace@example.org');
+    await expect(form.getByLabel('Nome')).toHaveValue('');
+  });
+
+  test('a failed send says where to write instead', async ({ page }) => {
+    await page.route('/', (route) =>
+      route.request().method() === 'POST' ? route.fulfill({ status: 500 }) : route.continue(),
+    );
+    await page.goto('/');
+    const form = page.locator('form[data-contact-form]');
+    await form.getByLabel('Nome').fill('Grace');
+    await form.getByLabel('Email').fill('grace@example.org');
+    await form.getByLabel('Messaggio').fill('Ciao');
+    await form.getByRole('button', { name: 'Invia' }).click();
+    await expect(form.getByRole('status')).toHaveText('Invio non riuscito. Scrivimi a ada@example.org.');
+  });
+
+  test('without JavaScript the form posts to a confirmation page that search engines skip', async ({ page }) => {
+    await page.goto('/');
+    const form = page.locator('form[data-contact-form]');
+    await expect(form).toHaveAttribute('method', 'POST');
+    await expect(form).toHaveAttribute('action', '/messaggio-inviato/');
+    await expect(form.locator('input[name="bot-field"]')).toBeHidden();
+    const csp = await page.locator('meta[http-equiv="content-security-policy"]').getAttribute('content');
+    expect(csp).toContain("form-action 'self'");
+    await page.goto('/messaggio-inviato/');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Messaggio inviato');
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex');
+  });
+
+  test('the privacy notice is one click away and names who handles the messages', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('form[data-contact-form]').getByRole('link', { name: 'Informativa privacy' }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Informativa sulla privacy');
+    await expect(page.getByText(/Netlify, Inc\./)).toBeVisible();
+    await expect(page.getByText(/non usa cookie/)).toBeVisible();
   });
 });

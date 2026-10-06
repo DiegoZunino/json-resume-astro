@@ -24,6 +24,11 @@ export const ResumeConfig = z
       .default('cv'),
     /** Public repository of this site, linked in the footer. */
     repository: z.url().optional(),
+    /**
+     * Contact form in the Contact box, handled by the host. Only Netlify Forms for now: the
+     * site must be deployed on Netlify with form detection enabled. `CONTACT_FORM` overrides it.
+     */
+    contactForm: z.enum(['netlify']).optional(),
   })
   .superRefine((config, ctx) => {
     if (!(config.defaultLocale in config.sources))
@@ -52,3 +57,16 @@ export function defineResumeConfig(config: z.input<typeof ResumeConfig>): Resume
 
 /** Name of the environment variable that overrides the source of a locale: `RESUME_SOURCE_EN_GB`. */
 export const sourceVariable = (locale: string): string => `RESUME_SOURCE_${locale.replace('-', '_').toUpperCase()}`;
+
+/** The contact form in use: the environment (`CONTACT_FORM`, empty to turn it off) wins over the file. */
+export function contactFormFor(
+  config: Pick<ResumeConfig, 'contactForm'>,
+  env: Record<string, string | undefined>,
+): ResumeConfig['contactForm'] {
+  const value = env.CONTACT_FORM;
+  if (value === undefined) return config.contactForm;
+  if (value === '') return undefined;
+  if (value !== 'netlify')
+    throw new Error(`CONTACT_FORM="${value}" is not supported: use "netlify" or leave it empty.`);
+  return value;
+}

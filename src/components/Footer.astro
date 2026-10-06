@@ -13,11 +13,12 @@ interface Props {
   updated: Date | undefined;
   repository: string | undefined;
   accessibilityUrl: string;
+  privacyUrl: string;
   dataUrl: string;
   otherLocales: LocaleLink[];
 }
 
-const { labels, updated, repository, accessibilityUrl, dataUrl, otherLocales } = Astro.props;
+const { labels, updated, repository, accessibilityUrl, privacyUrl, dataUrl, otherLocales } = Astro.props;
 ---
 
 <footer class="footer page">
@@ -51,6 +52,7 @@ const { labels, updated, repository, accessibilityUrl, dataUrl, otherLocales } =
         </span>
       )}
       <a href={accessibilityUrl}>{labels.footer.accessibility}</a>
+      <a href={privacyUrl}>{labels.footer.privacy}</a>
       {otherLocales.map((link) => (
         <a href={link.href} hreflang={link.locale} lang={link.locale}>
           {link.name}

@@ -10,7 +10,10 @@ import { visibleSections, type Section } from '../core/sections';
 import type { Resume } from '../core/schema';
 import { shorten } from '../core/text';
 import { labelsFor, languageName, type Labels } from '../i18n/labels';
+import { contactFormFor } from '../config/define';
+import { buildEnv } from '../config/env';
 import { ogFile, pdfFile } from '../config/paths';
+import { vcardName } from '../core/vcard';
 
 export const locales = Object.keys(resumeConfig.sources);
 export const defaultLocale = resumeConfig.defaultLocale;
@@ -36,10 +39,23 @@ export interface PageContext {
   accessibilityUrl: string;
   otherLocales: LocaleLink[];
   repository: string | undefined;
+  privacyUrl: string;
+  vcardUrl: string;
+  contactForm: 'netlify' | undefined;
 }
+
+/** The contact form in use, from the configuration and the environment. */
+export const contactForm = contactFormFor(resumeConfig, buildEnv(process.cwd()));
 
 /** Route parameter for a rest route from a locale URL: "/" → undefined, "/en/x/" → "en/x". */
 export const routeParam = (path: string): string | undefined => path.replace(/^\/|\/$/g, '') || undefined;
+
+/** Path of the contact card of a locale: /vcard/ada-esempio.vcf, /vcard/ada-esempio.en.vcf. */
+export async function vcardPath(locale: string): Promise<string> {
+  const entry = await getEntry('resume', locale);
+  const file = vcardName(entry?.data.basics.name ?? 'contact');
+  return `/vcard/${locale === defaultLocale ? file : file.replace(/\.vcf$/, `.${locale}.vcf`)}`;
+}
 
 /** Path of the public JSON Resume of a locale: /resume.json, /resume.en.json. */
 export const dataPath = (locale: string): string =>
@@ -70,6 +86,9 @@ export async function pageContext(locale: string, site: URL | undefined): Promis
       .filter((other) => other !== locale)
       .map((other) => ({ locale: other, name: languageName(other), href: getRelativeLocaleUrl(other) })),
     repository: resumeConfig.repository,
+    privacyUrl: getRelativeLocaleUrl(locale, labels.privacy.slug),
+    vcardUrl: await vcardPath(locale),
+    contactForm,
   };
 }
 
