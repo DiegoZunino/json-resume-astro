@@ -160,8 +160,13 @@ export const ThemeOptions = z.looseObject({
   order: list.optional(),
   /** Sections not shown on the page or in the PDF (the data stays in the source). */
   hide: list.optional(),
-  /** Sections shown on the page but left out of the PDF, to keep it short (e.g. a list of talks). */
+  /**
+   * Sections shown on the page but left out of the PDF, to keep it short (e.g. a list of talks);
+   * `"tagline"` leaves out the tagline too.
+   */
   printHide: list.optional(),
+  /** A closing line printed at the foot of the PDF only, e.g. the consent to data processing. */
+  printNote: text.optional(),
   /**
    * Header image above the photo, like a profile cover: decorative, the owner's own image
    * (hosted wherever they like, e.g. next to their profile photo). `dark` is used with the

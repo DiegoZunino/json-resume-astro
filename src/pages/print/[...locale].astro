@@ -43,6 +43,8 @@ const range = (start?: string, end?: string) => formatRange(start, end, labels.i
 const reach = [
   basics.location?.city && { label: basics.location.city },
   basics.email && { label: basics.email, href: `mailto:${basics.email}` },
+  // Present only in a build that keeps it (`npm run pdf`): private on the published site.
+  basics.phone && { label: basics.phone, href: `tel:${basics.phone.replace(/[^\d+]/g, '')}` },
 ].filter((contact): contact is { label: string; href?: string } => Boolean(contact));
 const links = [
   basics.url && { label: displayUrl(basics.url), href: basics.url },
@@ -128,6 +130,7 @@ const links = [
         )}
       </section>
     ))}
+    {options.printNote && <p class="note">{options.printNote}</p>}
   </div>
 </Document>
 
@@ -281,6 +284,13 @@ const links = [
     border-radius: 50%;
     background: var(--barra);
     vertical-align: 0.12em;
+  }
+  /* The closing line (e.g. consent to data processing): small, after everything else. */
+  .note {
+    margin: 7mm 0 0;
+    color: var(--nebbia);
+    font-size: 0.85rem;
+    break-inside: avoid;
   }
   section :global(.pairs > div) {
     padding: 1mm 0;

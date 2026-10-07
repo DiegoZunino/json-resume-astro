@@ -28,6 +28,13 @@ describe('sources', () => {
     expect(loaded.withheld).toContain('+39 011 555 0199');
   });
 
+  it('keeps the paths listed in RESUME_KEEP, for a build that is never published', async () => {
+    const loaded = await loadResume(config, 'it', { root: process.cwd(), env: { RESUME_KEEP: 'basics.phone, other' } });
+    expect(loaded.resume.basics.phone).toBe('+39 011 555 0199');
+    expect(loaded.resume['x-objective']).toBeUndefined();
+    expect(loaded.withheld).not.toContain('+39 011 555 0199');
+  });
+
   it('reads URLs with the given fetch and reports HTTP errors', async () => {
     const ok = (async () => new Response(JSON.stringify({ basics: { name: 'Remote' } }))) as typeof fetch;
     const missing = (async () => new Response('', { status: 404, statusText: 'Not Found' })) as typeof fetch;

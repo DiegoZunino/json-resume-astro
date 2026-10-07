@@ -21,5 +21,8 @@ test.describe('PDF text order', () => {
     expect(at('Rilasci settimanali')).toBeLessThan(at('Tech Lead'));
     // A dated entry: title first, then its meta line.
     expect(at('Un talk di esempio')).toBeLessThan(at('Conferenza di esempio'));
+    // The closing note comes last; the published PDF never carries the phone.
+    expect(at('Autorizzo il trattamento')).toBeGreaterThan(at('Un talk di esempio'));
+    expect(text.replace(/\s/g, '')).not.toContain('5550199');
   });
 });

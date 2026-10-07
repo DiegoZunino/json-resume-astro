@@ -8,7 +8,7 @@
       - /url: /cv-it.pdf
     - link "Email":
       - /url: mailto:ada@example.org
-    - link "Aggiungi ai contatti":
+    - link "Salva contatto":
       - /url: /vcard/ada-esempio.vcf
     - link "LinkedIn":
       - /url: https://www.linkedin.com/in/ada-esempio
@@ -115,7 +115,11 @@
         - paragraph: Lavorare con Ada è stato un piacere.
   - region "Contatti":
     - heading "Contatti" [level=2]
-    - paragraph: "Scrivimi da qui: il messaggio arriva direttamente nella mia casella di posta. Tutti i campi sono obbligatori."
+    - paragraph:
+      - text: Scrivimi da qui o all’indirizzo
+      - link "ada@example.org":
+        - /url: mailto:ada@example.org
+      - text: . Tutti i campi sono obbligatori.
     - paragraph:
       - text: Nome
       - textbox "Nome"
