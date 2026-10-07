@@ -39,8 +39,12 @@ const printed = context.sections.filter((section) => !printHidden.has(section.ke
 const title = (key: string) =>
   key === 'work' && !overrides.work ? labels.print.work : sectionTitle(key, labels, overrides);
 const range = (start?: string, end?: string) => formatRange(start, end, labels.intl, labels.ongoing);
-const contacts = [
+/** Two short lines rather than one that wraps anywhere: where and how to write, then the links. */
+const reach = [
+  basics.location?.city && { label: basics.location.city },
   basics.email && { label: basics.email, href: `mailto:${basics.email}` },
+].filter((contact): contact is { label: string; href?: string } => Boolean(contact));
+const links = [
   basics.url && { label: displayUrl(basics.url), href: basics.url },
   ...basics.profiles
     .filter((profile) => profile.url)
@@ -55,18 +59,24 @@ const contacts = [
       <div class="who">
         <h1>{basics.name}</h1>
         {basics.label && <p class="role">{basics.label}</p>}
-        <p class="contacts">
-          {joinParts([basics.location?.city], '')}
-          {contacts.map((contact, index) => (
-            <>
-              {(index > 0 || basics.location?.city) && <span class="sep"> · </span>}
-              <a href={contact.href}>{contact.label}</a>
-            </>
-          ))}
-        </p>
+        {[reach, links].map(
+          (line) =>
+            line.length > 0 && (
+              <p class="contacts">
+                {line.map((contact, index) => (
+                  <>
+                    {index > 0 && <span class="sep"> · </span>}
+                    {contact.href ? <a href={contact.href}>{contact.label}</a> : contact.label}
+                  </>
+                ))}
+              </p>
+            ),
+        )}
       </div>
     </header>
-    {options.tagline && <Wire class="tagline" from={options.tagline.from} to={options.tagline.to} />}
+    {options.tagline && !printHidden.has('tagline') && (
+      <Wire class="tagline" from={options.tagline.from} to={options.tagline.to} />
+    )}
 
     {basics.summary && (
       <section>
@@ -124,31 +134,35 @@ const contacts = [
 <style>
   @page {
     size: A4;
-    margin: 14mm 15mm 13mm;
+    margin: 15mm 16mm 14mm;
   }
+  /* 10pt with generous leading: two full pages read better than one crowded page and a
+     half-empty one. */
   :global(html) {
-    font-size: 9.4pt;
+    font-size: 10pt;
     --pietra: #fff;
   }
   :global(html body) {
     background: #fff;
     font-size: 1rem;
-    line-height: 1.42;
+    line-height: 1.45;
   }
   .sheet {
-    --photo-size: 17mm;
-    --label: 44mm; /* label column of skills, studies and dated entries */
+    --photo-size: 21mm;
+    --label: 47mm; /* label column of skills, studies and dated entries */
     --body-min: 60mm;
     color: var(--ardesia);
   }
   .head {
     display: flex;
     align-items: center;
-    gap: 5mm;
+    gap: 6mm;
+    padding-bottom: 4mm;
+    border-bottom: 1.2pt solid var(--gru);
   }
   h1 {
     margin: 0;
-    font-size: 2.2rem;
+    font-size: 2.5rem;
     font-weight: 700;
     letter-spacing: -0.02em;
   }
@@ -160,7 +174,7 @@ const contacts = [
   }
   .contacts {
     margin: 0;
-    color: var(--nebbia);
+    color: var(--ardesia);
     font-size: 0.92rem;
   }
   .contacts a {
@@ -182,11 +196,11 @@ const contacts = [
     border: 1.4pt solid var(--gru);
   }
   h2 {
-    margin: 5mm 0 2mm;
-    padding-bottom: 1mm;
+    margin: 6.5mm 0 2.5mm;
+    padding-bottom: 1.2mm;
     border-bottom: 0.6pt solid var(--linea);
     color: var(--mare);
-    font-size: 1rem;
+    font-size: 1.2rem;
     font-weight: 700;
     letter-spacing: 0;
     break-after: avoid;
@@ -207,7 +221,8 @@ const contacts = [
     font-size: 1rem;
   }
   .org-name {
-    margin: 2mm 0 1mm;
+    margin: 2mm 0 0.5mm;
+    font-size: 1.08rem;
     font-weight: 700;
   }
   .org-about {
@@ -217,7 +232,7 @@ const contacts = [
   }
   .org .job {
     break-inside: avoid;
-    margin-bottom: 2mm;
+    margin-bottom: 2.6mm;
   }
   .org:has(.org-name) .job {
     padding-left: 3mm;
