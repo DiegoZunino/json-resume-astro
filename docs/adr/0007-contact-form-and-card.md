@@ -19,4 +19,4 @@ Il modulo lega il sito a Netlify: con un altro hosting si spegne. Netlify non ca
 
 ## Aggiornamento (07/10/2026)
 
-Anche così il riquadro ripeteva profili e CV dei bottoni in alto, e confondeva. "Aggiungi ai contatti" passa tra i bottoni in alto, accanto all'email; il riquadro serve solo a scrivere: con il modulo è il modulo, a tutta larghezza; senza, l'indirizzo in grande. L'indirizzo per intero resta nella pagina dell'informativa e nel messaggio che il modulo mostra se l'invio non riesce.
+Anche così il riquadro ripeteva profili e CV dei bottoni in alto, e confondeva. "Aggiungi ai contatti" passa tra i bottoni in alto, accanto all'email; il riquadro serve solo a scrivere: con il modulo è il modulo, a tutta larghezza; senza, l'indirizzo in grande. L'indirizzo per intero resta nella riga che introduce il modulo, per chi preferisce copiarlo nella propria posta (07/10, su osservazione del proprietario: altrimenti non compariva da nessuna parte), oltre che nella pagina dell'informativa. Il bottone diventa "Salva contatto", più corto.

@@ -167,6 +167,7 @@
       },
       "order": ["work", "x-talks", "projects", "skills"],
       "expanded": 2,
+      "printNote": "Autorizzo il trattamento dei dati personali ai sensi del Reg. UE 2016/679.",
       "cover": {
         "light": "http://127.0.0.1:4599/cover-light.png",
         "dark": "http://127.0.0.1:4599/cover-dark.png"

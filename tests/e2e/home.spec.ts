@@ -117,9 +117,9 @@ test.describe('contact', () => {
   test('the box holds only the form; the contact card sits with the buttons at the top', async ({ page, request }) => {
     await page.goto('/');
     const contact = page.getByRole('region', { name: 'Contatti' });
-    // No repeat of the buttons at the top: the form is the only way in the box.
-    await expect(contact.getByRole('link')).toHaveText(['Informativa privacy']);
-    const card = page.getByRole('group', { name: 'CV e contatti' }).getByRole('link', { name: 'Aggiungi ai contatti' });
+    // No repeat of the buttons at the top: the form, with the address in full for who prefers to copy it.
+    await expect(contact.getByRole('link')).toHaveText(['ada@example.org', 'Informativa privacy']);
+    const card = page.getByRole('group', { name: 'CV e contatti' }).getByRole('link', { name: 'Salva contatto' });
     await expect(card).toHaveAttribute('download', '');
     const href = (await card.getAttribute('href'))!;
     expect(href).toMatch(/^\/vcard\/ada-esempio\.vcf$/);
@@ -161,7 +161,10 @@ test.describe('contact', () => {
     await form.getByLabel('Messaggio').fill('Ciao');
     await form.getByRole('button', { name: 'Invia' }).click();
     await expect(form.getByRole('status')).toHaveText('Invio non riuscito.');
-    await expect(form.getByRole('link', { name: 'ada@example.org' })).toHaveAttribute('href', 'mailto:ada@example.org');
+    await expect(form.locator('[data-fallback]').getByRole('link', { name: 'ada@example.org' })).toHaveAttribute(
+      'href',
+      'mailto:ada@example.org',
+    );
     // The button keeps the keyboard focus through the attempt.
     await expect(form.getByRole('button', { name: 'Invia' })).toBeFocused();
   });

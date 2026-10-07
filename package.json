@@ -56,7 +56,8 @@
     "test:e2e": "playwright test",
     "validate:html": "html-validate \"dist/**/*.html\"",
     "verify": "npm run lint && npm run check && npm run test -- --coverage && npm run build:fixtures && npm run validate:html && npm run test:e2e",
-    "build:fixtures": "node scripts/build-fixtures.mjs"
+    "build:fixtures": "node scripts/build-fixtures.mjs",
+    "pdf": "node scripts/pdf.mjs"
   },
   "overrides": {
     "playwright-core": "1.63.0"

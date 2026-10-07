@@ -57,7 +57,7 @@ Esempio completo: [`fixtures/resume.it.json`](fixtures/resume.it.json).
 
 ### Contatti
 
-I bottoni in alto (CV, email, **"Aggiungi ai contatti"**, profili) sono gli unici collegamenti di contatto della pagina. "Aggiungi ai contatti" scarica una scheda contatto (vCard 3.0, `/vcard/<nome>.vcf`) generata dal JSON Resume con nome, ruolo, email, sito, città, profili e foto; il telefono non c'è mai. Il riquadro in fondo serve solo a scrivere: con il modulo è il modulo, senza è l'indirizzo email in grande.
+I bottoni in alto (CV, email, **"Salva contatto"**, profili) sono gli unici collegamenti di contatto della pagina. "Salva contatto" scarica una scheda contatto (vCard 3.0, `/vcard/<nome>.vcf`) generata dal JSON Resume con nome, ruolo, email, sito, città, profili e foto; il telefono non c'è mai. Il riquadro in fondo serve solo a scrivere: con il modulo è il modulo, con l'indirizzo per intero nella riga che lo introduce (per chi preferisce copiarlo); senza, è l'indirizzo email in grande.
 
 **Modulo di contatto (facoltativo, solo su Netlify).** Con `contactForm: 'netlify'` in `resume.config.ts` (o `CONTACT_FORM=netlify`) il riquadro diventa un modulo (nome, email, messaggio) gestito da [Netlify Forms](https://docs.netlify.com/manage/forms/setup/). Serve `basics.email`: senza, la build si ferma, perché l'informativa deve dire come contattare il titolare. Funziona solo se il sito è pubblicato su Netlify:
 

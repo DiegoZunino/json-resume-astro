@@ -43,7 +43,12 @@ const FORM_NAME = 'contact';
       data-failed={text.failed}
     >
       <input type="hidden" name="form-name" value={FORM_NAME} />
-      <p class="intro wide">{text.intro}</p>
+      <p class="intro wide">
+        {text
+          .intro(email!)
+          .split(email!)
+          .flatMap((part, index) => (index ? [<a href={`mailto:${email}`}>{email}</a>, part] : [part]))}
+      </p>
       {/* A field people never see: bots fill it in, and Netlify drops what they send. */}
       <p class="trap" aria-hidden="true">
         <label>
@@ -138,6 +143,10 @@ const FORM_NAME = 'contact';
   }
   .form p {
     margin: 0;
+  }
+  .intro a {
+    color: inherit;
+    font-weight: 600;
   }
   .intro {
     margin-bottom: 0.125rem !important;

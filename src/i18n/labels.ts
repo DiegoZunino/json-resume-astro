@@ -78,11 +78,11 @@ export interface Labels {
   };
   /** The Contact box at the end of the page. */
   contact: {
-    /** "Add to contacts": downloads the contact card (.vcf). */
+    /** "Save contact": downloads the contact card (.vcf). */
     vcard: string;
     form: {
-      /** One generic line above the form. */
-      intro: string;
+      /** One generic line above the form, with the address in full for who prefers to copy it. */
+      intro: (email: string) => string;
       name: string;
       email: string;
       message: string;
@@ -157,9 +157,9 @@ const en: Labels = {
     privacy: 'Privacy',
   },
   contact: {
-    vcard: 'Add to contacts',
+    vcard: 'Save contact',
     form: {
-      intro: 'Write to me here: your message goes straight to my inbox. All fields are required.',
+      intro: (email) => `Write to me here or at ${email}. All fields are required.`,
       name: 'Name',
       email: 'Email',
       message: 'Message',
@@ -275,10 +275,9 @@ const it: Labels = {
     privacy: 'Privacy',
   },
   contact: {
-    vcard: 'Aggiungi ai contatti',
+    vcard: 'Salva contatto',
     form: {
-      intro:
-        'Scrivimi da qui: il messaggio arriva direttamente nella mia casella di posta. Tutti i campi sono obbligatori.',
+      intro: (email) => `Scrivimi da qui o all’indirizzo ${email}. Tutti i campi sono obbligatori.`,
       name: 'Nome',
       email: 'Email',
       message: 'Messaggio',

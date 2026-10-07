@@ -54,10 +54,19 @@ export async function readRaw(source: string, options: SourceOptions): Promise<u
   }
 }
 
+/**
+ * The private paths of this build. `RESUME_KEEP` (comma-separated paths) keeps some of them
+ * for a build that is never published, such as the PDFs to send (`npm run pdf`).
+ */
+export function privatePaths(config: ResumeConfig, env: SourceOptions['env']): string[] {
+  const keep = new Set((env.RESUME_KEEP ?? '').split(',').map((path) => path.trim()));
+  return config.private.filter((path) => !keep.has(path));
+}
+
 export async function loadResume(config: ResumeConfig, locale: string, options: SourceOptions): Promise<LoadedResume> {
   const source = sourceFor(config, locale, options.env);
   const raw = await readRaw(source, options);
-  const { data, values, matched } = withhold(raw, config.private);
+  const { data, values, matched } = withhold(raw, privatePaths(config, options.env));
   return {
     locale,
     source,
