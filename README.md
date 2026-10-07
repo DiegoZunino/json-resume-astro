@@ -49,7 +49,7 @@ Opzioni del tema, tutte facoltative, in `meta.themeOptions` del JSON Resume:
 | `description`           | meta description (altrimenti il sommario accorciato)                                                                                              |
 | `labels`                | titoli delle sezioni, anche delle estensioni (`{ "x-talks": "Talk" }`)                                                                            |
 | `order`, `hide`         | ordine delle sezioni e sezioni da non mostrare                                                                                                    |
-| `printHide`             | sezioni mostrate nella pagina ma non nel PDF (per tenerlo corto)                                                                                  |
+| `printHide`             | sezioni mostrate nella pagina ma non nel PDF (per tenerlo corto); con `"tagline"` anche il titolo con il filo, che sulla carta si può omettere    |
 | `expanded`              | quanti ruoli recenti restano aperti (predefinito 2)                                                                                               |
 | `cover`                 | immagine di testata, `{ "light": URL, "dark": URL }` (dark facoltativa): la propria, ospitata dove si vuole, come la foto; senza, nessuna testata |
 
