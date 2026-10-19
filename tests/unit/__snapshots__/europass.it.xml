@@ -1,0 +1,276 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Candidate xmlns="http://www.europass.eu/1.0" xmlns:eures="http://www.europass_eures.eu/1.0" xmlns:hr="http://www.hr-xml.org/3" xmlns:oa="http://www.openapplications.org/oagis/9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.europass.eu/1.0 Candidate.xsd">
+  <hr:DocumentID schemeID="jsonresume-to-europass" schemeName="DocumentIdentifier" schemeAgencyName="EUROPASS" schemeVersionID="4.0">00000000-0000-4000-8000-000000000001</hr:DocumentID>
+  <CandidateSupplier>
+    <hr:PartyID schemeName="PartyID" schemeAgencyName="EUROPASS" schemeVersionID="1.0">00000000-0000-4000-8000-000000000002</hr:PartyID>
+    <hr:PartyName>Owner</hr:PartyName>
+    <PersonContact>
+      <PersonName>
+        <oa:GivenName>Ada</oa:GivenName>
+        <hr:FamilyName>Esempio</hr:FamilyName>
+      </PersonName>
+      <Communication>
+        <ChannelCode>Email</ChannelCode>
+        <oa:URI>ada@example.org</oa:URI>
+      </Communication>
+    </PersonContact>
+    <hr:PrecedenceCode>1</hr:PrecedenceCode>
+  </CandidateSupplier>
+  <CandidatePerson>
+    <PersonName>
+      <oa:GivenName>Ada</oa:GivenName>
+      <hr:FamilyName>Esempio</hr:FamilyName>
+    </PersonName>
+    <Communication>
+      <ChannelCode>Email</ChannelCode>
+      <oa:URI>ada@example.org</oa:URI>
+    </Communication>
+    <Communication>
+      <Address>
+        <oa:CityName>Torino</oa:CityName>
+        <CountryCode>it</CountryCode>
+      </Address>
+    </Communication>
+    <Communication>
+      <ChannelCode>Web</ChannelCode>
+      <oa:URI>https://example.org</oa:URI>
+    </Communication>
+    <Communication>
+      <ChannelCode>Social Media</ChannelCode>
+      <UseCode>linkedin</UseCode>
+      <oa:URI>https://www.linkedin.com/in/ada-esempio</oa:URI>
+    </Communication>
+    <Communication>
+      <ChannelCode>Social Media</ChannelCode>
+      <UseCode>other</UseCode>
+      <OtherTitle>GitHub</OtherTitle>
+      <oa:URI>https://github.com/ada</oa:URI>
+    </Communication>
+    <PrimaryLanguageCode name="NORMAL">ita</PrimaryLanguageCode>
+  </CandidatePerson>
+  <CandidateProfile languageCode="it">
+    <hr:ID schemeName="CandidateProfileID" schemeAgencyName="EUROPASS" schemeVersionID="1.0">00000000-0000-4000-8000-000000000003</hr:ID>
+    <hr:ProfileName>CV Ada Esempio</hr:ProfileName>
+    <hr:ExecutiveSummary>&lt;p&gt;Engineering Manager&lt;/p&gt;&lt;p&gt;Persona di esempio per i test: guida un team di prodotto, scrive codice quando serve e parla a conferenze. Copre tutte le sezioni dello schema JSON Resume, comprese le estensioni.&lt;/p&gt;</hr:ExecutiveSummary>
+    <EmploymentHistory>
+      <EmployerHistory>
+        <hr:OrganizationName>Azienda Uno</hr:OrganizationName>
+        <OrganizationContact>
+          <Communication>
+            <Address>
+              <oa:CityName>Torino</oa:CityName>
+              <CountryCode>it</CountryCode>
+            </Address>
+          </Communication>
+        </OrganizationContact>
+        <PositionHistory>
+          <PositionTitle typeCode="FREETEXT">Engineering Manager</PositionTitle>
+          <eures:EmploymentPeriod>
+            <eures:StartDate>
+              <hr:FormattedDateTime>2022-03</hr:FormattedDateTime>
+            </eures:StartDate>
+            <hr:CurrentIndicator>true</hr:CurrentIndicator>
+          </eures:EmploymentPeriod>
+          <oa:Description>&lt;p&gt;Software house di prodotti per la logistica.&lt;/p&gt;&lt;p&gt;Guida di un team di prodotto di otto persone.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Roadmap trimestrale condivisa con prodotto e vendite.&lt;/li&gt;&lt;li&gt;Rilasci settimanali al posto di quelli trimestrali.&lt;/li&gt;&lt;/ul&gt;</oa:Description>
+          <City>Torino</City>
+          <Country>it</Country>
+        </PositionHistory>
+      </EmployerHistory>
+      <EmployerHistory>
+        <hr:OrganizationName>Azienda Uno</hr:OrganizationName>
+        <PositionHistory>
+          <PositionTitle typeCode="FREETEXT">Tech Lead</PositionTitle>
+          <eures:EmploymentPeriod>
+            <eures:StartDate>
+              <hr:FormattedDateTime>2019-06</hr:FormattedDateTime>
+            </eures:StartDate>
+            <eures:EndDate>
+              <hr:FormattedDateTime>2022-02</hr:FormattedDateTime>
+            </eures:EndDate>
+            <hr:CurrentIndicator>false</hr:CurrentIndicator>
+          </eures:EmploymentPeriod>
+          <oa:Description>&lt;p&gt;Riferimento tecnico del team, revisione del codice e delle architetture.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Introduzione della revisione del codice obbligatoria.&lt;/li&gt;&lt;/ul&gt;</oa:Description>
+          <Country>it</Country>
+        </PositionHistory>
+      </EmployerHistory>
+      <EmployerHistory>
+        <hr:OrganizationName>Azienda Due</hr:OrganizationName>
+        <PositionHistory>
+          <PositionTitle typeCode="FREETEXT">Software Engineer</PositionTitle>
+          <eures:EmploymentPeriod>
+            <eures:StartDate>
+              <hr:FormattedDateTime>2014</hr:FormattedDateTime>
+            </eures:StartDate>
+            <eures:EndDate>
+              <hr:FormattedDateTime>2019-05</hr:FormattedDateTime>
+            </eures:EndDate>
+            <hr:CurrentIndicator>false</hr:CurrentIndicator>
+          </eures:EmploymentPeriod>
+          <oa:Description>&lt;ul&gt;&lt;li&gt;Servizi di integrazione con i sistemi dei clienti.&lt;/li&gt;&lt;/ul&gt;</oa:Description>
+          <Country>it</Country>
+        </PositionHistory>
+      </EmployerHistory>
+      <EmployerHistory>
+        <hr:OrganizationName>Progetti personali</hr:OrganizationName>
+        <PositionHistory>
+          <PositionTitle typeCode="FREETEXT">Sviluppatrice</PositionTitle>
+          <oa:Description>&lt;p&gt;Ruolo senza date: deve restare visibile anche senza barra.&lt;/p&gt;</oa:Description>
+          <Country>it</Country>
+        </PositionHistory>
+      </EmployerHistory>
+    </EmploymentHistory>
+    <EducationHistory>
+      <EducationOrganizationAttendance>
+        <hr:OrganizationName>Università di Esempio</hr:OrganizationName>
+        <AttendancePeriod>
+          <StartDate>
+            <hr:FormattedDateTime>2010</hr:FormattedDateTime>
+          </StartDate>
+          <EndDate>
+            <hr:FormattedDateTime>2014</hr:FormattedDateTime>
+          </EndDate>
+          <Ongoing>false</Ongoing>
+        </AttendancePeriod>
+        <EducationDegree>
+          <hr:DegreeName>Laurea Informatica</hr:DegreeName>
+        </EducationDegree>
+      </EducationOrganizationAttendance>
+      <EducationOrganizationAttendance>
+        <hr:OrganizationName>Ente</hr:OrganizationName>
+        <AttendancePeriod>
+          <EndDate>
+            <hr:FormattedDateTime>2020-01</hr:FormattedDateTime>
+          </EndDate>
+          <Ongoing>false</Ongoing>
+        </AttendancePeriod>
+        <EducationDegree>
+          <hr:DegreeName>Certificazione di esempio</hr:DegreeName>
+          <OccupationalSkillsCovered>&lt;p&gt;Valida fino a 2027-01&lt;/p&gt;</OccupationalSkillsCovered>
+        </EducationDegree>
+        <Link>https://example.org/cert</Link>
+      </EducationOrganizationAttendance>
+    </EducationHistory>
+    <PersonQualifications>
+      <PersonCompetency>
+        <CompetencyID schemeName="NORMAL">eng</CompetencyID>
+        <hr:TaxonomyID>language</hr:TaxonomyID>
+        <eures:CompetencyDimension>
+          <hr:CompetencyDimensionTypeCode>CEF-Understanding-Listening</hr:CompetencyDimensionTypeCode>
+          <eures:Score>
+            <hr:ScoreText>C1</hr:ScoreText>
+          </eures:Score>
+        </eures:CompetencyDimension>
+        <eures:CompetencyDimension>
+          <hr:CompetencyDimensionTypeCode>CEF-Understanding-Reading</hr:CompetencyDimensionTypeCode>
+          <eures:Score>
+            <hr:ScoreText>C1</hr:ScoreText>
+          </eures:Score>
+        </eures:CompetencyDimension>
+        <eures:CompetencyDimension>
+          <hr:CompetencyDimensionTypeCode>CEF-Speaking-Interaction</hr:CompetencyDimensionTypeCode>
+          <eures:Score>
+            <hr:ScoreText>C1</hr:ScoreText>
+          </eures:Score>
+        </eures:CompetencyDimension>
+        <eures:CompetencyDimension>
+          <hr:CompetencyDimensionTypeCode>CEF-Speaking-Production</hr:CompetencyDimensionTypeCode>
+          <eures:Score>
+            <hr:ScoreText>C1</hr:ScoreText>
+          </eures:Score>
+        </eures:CompetencyDimension>
+        <eures:CompetencyDimension>
+          <hr:CompetencyDimensionTypeCode>CEF-Writing-Production</hr:CompetencyDimensionTypeCode>
+          <eures:Score>
+            <hr:ScoreText>C1</hr:ScoreText>
+          </eures:Score>
+        </eures:CompetencyDimension>
+      </PersonCompetency>
+    </PersonQualifications>
+    <Skills>
+      <SkillsGroup>
+        <Title>Guida</Title>
+        <PersonCompetency>
+          <hr:TaxonomyID>Digital_Skill</hr:TaxonomyID>
+          <hr:CompetencyName>mentoring</hr:CompetencyName>
+        </PersonCompetency>
+        <PersonCompetency>
+          <hr:TaxonomyID>Digital_Skill</hr:TaxonomyID>
+          <hr:CompetencyName>delivery</hr:CompetencyName>
+        </PersonCompetency>
+        <PersonCompetency>
+          <hr:TaxonomyID>Digital_Skill</hr:TaxonomyID>
+          <hr:CompetencyName>roadmap</hr:CompetencyName>
+        </PersonCompetency>
+      </SkillsGroup>
+      <SkillsGroup>
+        <Title>Tecnologie</Title>
+        <PersonCompetency>
+          <hr:TaxonomyID>Digital_Skill</hr:TaxonomyID>
+          <hr:CompetencyName>TypeScript</hr:CompetencyName>
+        </PersonCompetency>
+        <PersonCompetency>
+          <hr:TaxonomyID>Digital_Skill</hr:TaxonomyID>
+          <hr:CompetencyName>Go</hr:CompetencyName>
+        </PersonCompetency>
+        <PersonCompetency>
+          <hr:TaxonomyID>Digital_Skill</hr:TaxonomyID>
+          <hr:CompetencyName>PostgreSQL</hr:CompetencyName>
+        </PersonCompetency>
+      </SkillsGroup>
+    </Skills>
+    <NetworksAndMemberships>
+      <NetworkAndMembership>
+        <Activity>
+          <Title>Community di esempio</Title>
+          <Date>
+            <StartDate>
+              <hr:FormattedDateTime>2019-01</hr:FormattedDateTime>
+            </StartDate>
+            <Ongoing>true</Ongoing>
+          </Date>
+          <Description>&lt;p&gt;Organizzatrice&lt;/p&gt;&lt;p&gt;Meetup mensili e una conferenza all'anno.&lt;/p&gt;</Description>
+        </Activity>
+      </NetworkAndMembership>
+    </NetworksAndMemberships>
+    <Others>
+      <Title>Objective</Title>
+      <Other>
+        <Title>Objective</Title>
+        <Description>&lt;p&gt;Obiettivo riservato per i test: non deve comparire sul sito.&lt;/p&gt;</Description>
+      </Other>
+    </Others>
+  </CandidateProfile>
+  <RenderingInformation>
+    <Design>
+      <Template>Template1</Template>
+      <Color>Default</Color>
+      <FontSize>Medium</FontSize>
+      <Logo>FirstPage</Logo>
+      <PageNumbers>false</PageNumbers>
+      <SectionsOrder>
+        <Section>
+          <Title>work-experience</Title>
+        </Section>
+        <Section>
+          <Title>education-training</Title>
+        </Section>
+        <Section>
+          <Title>language</Title>
+        </Section>
+        <Section>
+          <Title>profile-skills</Title>
+        </Section>
+        <Section>
+          <Title>membership</Title>
+        </Section>
+      </SectionsOrder>
+    </Design>
+    <ClosingStatement>
+      <Statement>Consenso di esempio per i test, riservato</Statement>
+      <Place>Torino</Place>
+      <Date>
+        <hr:FormattedDateTime>2026-10-19</hr:FormattedDateTime>
+      </Date>
+    </ClosingStatement>
+  </RenderingInformation>
+</Candidate>

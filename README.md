@@ -17,6 +17,7 @@ _A generic, accessible front end for JSON Resume built with Astro: web page, PDF
 - **Una lingua per file**, con routing i18n di Astro: la lingua predefinita alla radice, le altre in `/<lingua>/`. I testi dell'interfaccia esistono in italiano e inglese; per un'altra lingua si aggiunge il suo catalogo in [`src/i18n/labels.ts`](src/i18n/labels.ts) (senza, la configurazione si ferma).
 - **Prima schermata** con nome, ruolo, una frase e le azioni (CV, email, profili); **percorso** come accordion accessibile con le barre nel tempo; tema chiaro, scuro o automatico.
 - **CV in PDF** (A4, testo selezionabile, font incorporati) e **immagine di condivisione** 1200×630 per lingua, generati dagli stessi componenti.
+- **CV Europass** in XML, da importare nell'editor CV di Europass ([`npm run europass`](#europass)).
 - **Per motori e agenti**: JSON-LD `ProfilePage`, Open Graph, `hreflang`, sitemap, robots, e il JSON Resume pubblico (`/resume.json`, proiettato sullo schema: solo campi dichiarati e sezioni visibili) dichiarato con `<link rel="alternate">`.
 - **Campi privati** tolti prima di tutto, con controllo sul risultato della build ([ADR 3](docs/adr/0003-privacy-fail-closed.md)).
 - **Content Security Policy** con hash, nessun cookie, nessun tracciamento.
@@ -83,6 +84,39 @@ Con il modulo attivo la Content Security Policy passa da `form-action 'none'` a 
 
 L'informativa è un modello in `src/i18n/labels.ts`, scritto in prima persona: chi pubblica il sito la legge, la adatta e ne è responsabile. Prima di pubblicarla va verificata a mano l'adesione di Netlify all'EU-US Data Privacy Framework sul [registro ufficiale](https://www.dataprivacyframework.gov/list). Le scelte sono motivate nell'[ADR 7](docs/adr/0007-contact-form-and-card.md).
 
+### Europass
+
+`npm run europass` scrive il CV in formato Europass XML (schema «Europass2 CV XML» v3.0.0, radice `Candidate`), il file che l'editor CV di [Europass](https://europa.eu/europass/eportfolio/screen/cv-editor) importa con "Inizia dal CV Europass". Non pubblica nulla.
+
+```sh
+npm run europass -- --source cv/resume.json --out cv.xml
+```
+
+| Opzione                      | Effetto                                                                                         |
+| ---------------------------- | ----------------------------------------------------------------------------------------------- |
+| `--source`                   | il JSON Resume, file o URL                                                                      |
+| `--out`                      | il file XML da scrivere                                                                         |
+| `--lang`                     | lingua del profilo (predefinita `meta.x-lang`, poi `it`)                                        |
+| `--photo` / `--no-photo`     | la foto, JPEG o PNG, file o URL; senza: `basics.image`                                          |
+| `--with-phone`               | scrive il telefono (serve anche `--keep basics.phone`)                                          |
+| `--no-rendering`             | toglie la dichiarazione finale (`x-privacy`, altrimenti `meta.themeOptions.printNote`)          |
+| `--other-skill-group <nome>` | un gruppo di `skills` va in una sezione libera invece che in "Competenze digitali" (ripetibile) |
+| `--title x-chiave=Titolo`    | il titolo della sezione libera di una chiave `x-` (ripetibile)                                  |
+| `--profile-name`             | il nome del CV nella biblioteca Europass (predefinito "CV Nome Cognome")                        |
+| `--keep <percorsi>`          | campi privati da tenere, separati da virgola (es. `basics.phone,x-privacy`)                     |
+
+I campi privati di `resume.config.ts` restano fuori, come nel sito, salvo quelli in `--keep` (anche `x-privacy`: senza, la dichiarazione finale è `printNote`). Ciò che non si può convertire (sezioni senza equivalente, date non valide, il telefono escluso) è segnalato come avviso.
+
+Cosa sapere sull'importazione, ricavato dalle prove con l'editor:
+
+- l'editor mostra solo le sezioni standard elencate in `RenderingInformation/Design/SectionsOrder`: senza, l'import riesce ma esperienze, istruzione, lingue e competenze non compaiono. Il convertitore lo scrive sempre;
+- prefissi di namespace (`hr:`, `oa:`, `eures:`) e ordine degli elementi sono quelli di un export reale dell'editor; nomi di organizzazioni e competenze entro 99 caratteri; lingue in ISO 639-2/B (`ita`, `eng`), livelli QCER nelle cinque abilità (`"B2"` vale per tutte; livelli diversi con `x-cefr`);
+- `awards`, `publications`, `interests`, `references` e `projects` non hanno una struttura attestata e non vengono esportati; le certificazioni finiscono tra l'istruzione, come fa l'editor;
+- la **struttura del telefono non è verificata**: viene dalla documentazione, nessun export reale la contiene. Per questo è esclusa se non la si chiede;
+- l'XSD ufficiale non è pubblico: il file è ben formato ma non validabile. Europass può cambiare l'importer in qualsiasi momento.
+
+Fonti e scelte nell'[ADR 9](docs/adr/0009-europass.md).
+
 ## Variabili d'ambiente
 
 Si leggono dall'ambiente o da un file `.env` nella radice del progetto (mai versionato).
@@ -113,6 +147,7 @@ Per le candidature servono spesso PDF con dati che il sito non mostra, come il t
 
 - `fields` si unisce a ogni lingua del CV; i campi che contiene restano nei PDF anche se sono tra i `private` della configurazione.
 - In `https://<sito>/<path>/` ci sono, per ogni lingua, `<pdfName>-<lingua>.pdf` (con la foto) e `<pdfName>-<lingua>-no-photo.pdf`: con la configurazione di esempio `cv-it.pdf`, `cv-it-no-photo.pdf`, `cv-en.pdf`, `cv-en-no-photo.pdf`.
+- Accanto ai PDF, `europass-<lingua>.xml`: il CV per l'editor Europass (sotto, "Europass"), con la foto e senza telefono.
 - La cartella non è indicizzata (`X-Robots-Tag: noindex`) e i log non mostrano né il percorso né i valori. È riservatezza, non protezione: chi ha l'indirizzo scarica i file.
 - Un nome casuale si genera per esempio con `openssl rand -hex 16`.
 
