@@ -145,6 +145,7 @@ Per le candidature servono spesso PDF con dati che il sito non mostra, come il t
 
 - `fields` si unisce a ogni lingua del CV; i campi che contiene restano nei PDF anche se sono tra i `private` della configurazione.
 - In `https://<sito>/<path>/` ci sono, per ogni lingua, `<pdfName>-<lingua>.pdf` (con la foto) e `<pdfName>-<lingua>-no-photo.pdf`: con la configurazione di esempio `cv-it.pdf`, `cv-it-no-photo.pdf`, `cv-en.pdf`, `cv-en-no-photo.pdf`.
+- Accanto ai PDF, `europass-<lingua>.xml`: il CV per l'editor Europass (sotto, "Europass"), con la foto e senza telefono.
 - La cartella non è indicizzata (`X-Robots-Tag: noindex`) e i log non mostrano né il percorso né i valori. È riservatezza, non protezione: chi ha l'indirizzo scarica i file.
 - Un nome casuale si genera per esempio con `openssl rand -hex 16`.
 

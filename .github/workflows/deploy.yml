@@ -18,7 +18,7 @@
 # "verify" checks that the live site serves the revision that was just built.
 #
 # A fourth job, "private", builds the reserved CVs (PDFs with private fields such as the phone,
-# with and without photo) when the RESUME_PRIVATE secret exists; they are published under a
+# with and without photo, and the Europass XML) when the RESUME_PRIVATE secret exists; they are published under a
 # secret path that nothing on the site links to (ADR 8). The job hands them to "publish" only
 # encrypted, because artifacts of a public repository can be downloaded by anyone.
 #
@@ -262,6 +262,12 @@ jobs:
           npm run pdf -- --source "it=$src/it.json" --source "en=$src/en.json" --out private "${keep[@]}"
           npm run pdf -- --source "it=$src/it.json" --source "en=$src/en.json" --out private "${keep[@]}" \
             --no-photo --name '{pdf}-no-photo'
+          # Europass CV XML for each locale, for the import into the Europass editor (no phone:
+          # its XML structure is not verified, ADR 9).
+          for locale in it en; do
+            npm run europass -- --source "$src/$locale.json" --out "private/europass-$locale.xml" --lang "$locale" \
+              --keep "$KEEP"
+          done
           rm -rf "$src"
           ls -l private
       - if: steps.check.outputs.enabled == 'true'
