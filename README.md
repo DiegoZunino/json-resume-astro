@@ -13,7 +13,7 @@ _A generic, accessible front end for JSON Resume built with Astro: web page, PDF
 
 ## Cosa fa
 
-- **Qualunque JSON Resume v1.0.0**: tutte le sezioni dello schema, più le estensioni `x-` (elenchi di testi o di oggetti con `title`, `url`, `event`, `date`, `summary` e `language`, il codice della lingua della voce, ad esempio `it`: la pagina lo dichiara con `lang` e lo segnala a chi legge).
+- **Qualunque JSON Resume** (schema 1.3.1, l'ultimo pubblicato): tutte le sezioni dello schema, più le estensioni `x-` (elenchi di testi o di oggetti con `title`, `url`, `event`, `date`, `summary` e `language`, il codice della lingua della voce, ad esempio `it`: la pagina lo dichiara con `lang` e lo segnala a chi legge).
 - **Una lingua per file**, con routing i18n di Astro: la lingua predefinita alla radice, le altre in `/<lingua>/`. I testi dell'interfaccia esistono in italiano e inglese; per un'altra lingua si aggiunge il suo catalogo in [`src/i18n/labels.ts`](src/i18n/labels.ts) (senza, la configurazione si ferma).
 - **Prima schermata** con nome, ruolo, una frase e le azioni (CV, email, profili); **percorso** come accordion accessibile con le barre nel tempo; tema chiaro, scuro o automatico.
 - **CV in PDF** (A4, testo selezionabile, font incorporati) e **immagine di condivisione** 1200×630 per lingua, generati dagli stessi componenti.
@@ -54,6 +54,8 @@ Opzioni del tema, tutte facoltative, in `meta.themeOptions` del JSON Resume:
 | `cover`                 | immagine di testata, `{ "light": URL, "dark": URL }` (dark facoltativa): la propria, ospitata dove si vuole, come la foto; senza, nessuna testata |
 
 Esempio completo: [`fixtures/resume.it.json`](fixtures/resume.it.json).
+
+Il file dichiara lo schema con `$schema`: conviene la versione più recente, `https://unpkg.com/@jsonresume/schema@1.3.1/schema.json`. La v1.0.0 non ammette chiavi aggiuntive al primo livello, quindi rifiuta le estensioni `x-`; dalla v1.1.0 sono ammesse.
 
 ### Contatti
 
