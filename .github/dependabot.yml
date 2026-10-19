@@ -2,8 +2,9 @@ version: 2
 updates:
   - package-ecosystem: npm
     directory: /
+    # Monthly, grouped: a handful of pull requests a month instead of one per package a week.
     schedule:
-      interval: weekly
+      interval: monthly
     groups:
       astro:
         patterns: ['astro', '@astrojs/*']
@@ -11,6 +12,10 @@ updates:
         patterns: ['vitest', '@vitest/*', 'playwright', 'playwright-core', '@playwright/*', '@axe-core/*']
       lint:
         patterns: ['eslint*', '@eslint/*', 'typescript-eslint', 'prettier*', 'globals']
+      # Everything else that is not a major update, in one pull request.
+      other:
+        patterns: ['*']
+        update-types: ['minor', 'patch']
     ignore:
       # Follows the Node version in .nvmrc, not the latest Node.
       - dependency-name: '@types/node'
@@ -23,6 +28,12 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
+    groups:
+      # init and upload-sarif must move together: half an update breaks the analysis.
+      codeql:
+        patterns: ['github/codeql-action*']
+      actions:
+        patterns: ['*']
     commit-message:
       prefix: 'ci(deps)'
