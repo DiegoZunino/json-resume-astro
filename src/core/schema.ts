@@ -1,5 +1,5 @@
 /**
- * JSON Resume v1.0.0 (https://jsonresume.org/schema) as a Zod schema.
+ * JSON Resume (https://jsonresume.org/schema, @jsonresume/schema 1.3.1) as a Zod schema.
  *
  * Like the official JSON Schema, every object accepts additional properties
  * (`z.looseObject`), so `x-` extensions and theme options pass through. Formats
