@@ -6,8 +6,9 @@
 //
 // Sources are files or URLs, as in RESUME_SOURCE_<LOCALE>. A photo or cover given as a local
 // path (relative to its JSON file) is served on 127.0.0.1 while the build runs. The PDFs land
-// in --out as <name>.pdf, where {locale} is replaced (without it: <name>-<locale>.pdf); by
-// default as published, <pdfName>-<locale>.pdf.
+// in --out as <name>.pdf, where {locale} is replaced by the locale and {pdf} by the published
+// name without extension (without either: <name>-<locale>.pdf); by default as published,
+// <pdfName>-<locale>.pdf. Example: --no-photo --name '{pdf}-no-photo' gives cv-it-no-photo.pdf.
 import { spawn } from 'node:child_process';
 import { copyFile, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
@@ -77,8 +78,9 @@ if (code !== 0) process.exit(code ?? 1);
 await mkdir(values.out, { recursive: true });
 for (const file of (await readdir(dist)).filter((entry) => entry.endsWith('.pdf'))) {
   const locale = file.slice(file.lastIndexOf('-') + 1, -'.pdf'.length);
-  const named = values.name?.includes('{locale}')
-    ? values.name.replaceAll('{locale}', locale)
+  const published = file.slice(0, -'.pdf'.length);
+  const named = /\{(locale|pdf)\}/.test(values.name ?? '')
+    ? values.name.replaceAll('{locale}', locale).replaceAll('{pdf}', published)
     : `${values.name}-${locale}`;
   const target = join(values.out, values.name ? `${named}.pdf` : file);
   await copyFile(join(dist, file), target);

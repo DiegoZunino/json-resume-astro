@@ -97,11 +97,24 @@ Si leggono dall'ambiente o da un file `.env` nella radice del progetto (mai vers
 
 ## Pubblicazione
 
-`.github/workflows/deploy.yml` pubblica su Netlify in tre job con privilegi separati: **build** (npm e Chromium, dai dati veri, senza alcun segreto), **publish** (solo `curl` e `jq` con il token, attende che Netlify dichiari il deploy pronto), **verify** (il sito pubblico serve la build appena fatta, descritta in `/build-info.json`). Si costruisce sempre e solo un commit di `main` con i controlli passati. Il sito si ricostruisce dopo ogni push verde, una volta alla settimana e quando il CV cambia: chi aggiorna il gist invia un `repository_dispatch` di tipo `resume-updated` con la revisione, e un controllo orario confronta commit e revisione con quelli pubblicati ([ADR 5](docs/adr/0005-deploy-and-updates.md)). Prima di pubblicare, la build verifica che il repository linkato nel piè di pagina risponda: finché il repository è privato il controllo fallisce e il deploy si ferma. Per pubblicare con il repository privato, togliere `repository` da `resume.config.ts`.
+`.github/workflows/deploy.yml` pubblica su Netlify in tre job con privilegi separati (più un quarto, facoltativo, per i CV riservati): **build** (npm e Chromium, dai dati veri, senza alcun segreto), **publish** (solo `curl` e `jq` con il token, attende che Netlify dichiari il deploy pronto), **verify** (il sito pubblico serve la build appena fatta, descritta in `/build-info.json`). Si costruisce sempre e solo un commit di `main` con i controlli passati. Il sito si ricostruisce dopo ogni push verde, una volta alla settimana e quando il CV cambia: chi aggiorna il gist invia un `repository_dispatch` di tipo `resume-updated` con la revisione, e un controllo orario confronta commit e revisione con quelli pubblicati ([ADR 5](docs/adr/0005-deploy-and-updates.md)). Prima di pubblicare, la build verifica che il repository linkato nel piè di pagina risponda: finché il repository è privato il controllo fallisce e il deploy si ferma. Per pubblicare con il repository privato, togliere `repository` da `resume.config.ts`.
 
-Variabili: `SITE_URL`, `RESUME_GIST` (oppure `RESUME_SOURCE_<LINGUA>`). Segreti: `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`.
+Variabili: `SITE_URL`, `RESUME_GIST` (oppure `RESUME_SOURCE_<LINGUA>`). Segreti: `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`; facoltativo `RESUME_PRIVATE` (sotto).
 
 **Privacy.** Se la sorgente è pubblica (un gist), i campi privati vanno tolti _prima_ di pubblicarla: la configurazione `private` protegge il sito, non la sorgente.
+
+### CV riservati (facoltativo)
+
+Per le candidature servono spesso PDF con dati che il sito non mostra, come il telefono. Con il secret `RESUME_PRIVATE` il deploy li genera a ogni pubblicazione, dallo stesso CV e con lo stesso layout, e li mette in una cartella dal nome segreto che nessuna pagina collega ([ADR 8](docs/adr/0008-reserved-cvs.md)):
+
+```json
+{ "path": "una-stringa-casuale-di-almeno-16-caratteri", "fields": { "basics": { "phone": "+39 …" } } }
+```
+
+- `fields` si unisce a ogni lingua del CV; i campi che contiene restano nei PDF anche se sono tra i `private` della configurazione.
+- In `https://<sito>/<path>/` ci sono, per ogni lingua, `<pdfName>-<lingua>.pdf` (con la foto) e `<pdfName>-<lingua>-no-photo.pdf`: con la configurazione di esempio `cv-it.pdf`, `cv-it-no-photo.pdf`, `cv-en.pdf`, `cv-en-no-photo.pdf`.
+- La cartella non è indicizzata (`X-Robots-Tag: noindex`) e i log non mostrano né il percorso né i valori. È riservatezza, non protezione: chi ha l'indirizzo scarica i file.
+- Un nome casuale si genera per esempio con `openssl rand -hex 16`.
 
 ## Licenza
 

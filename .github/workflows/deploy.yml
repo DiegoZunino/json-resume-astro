@@ -17,7 +17,12 @@
 # Netlify token; "publish" sees the token but runs no third-party code (curl and jq only);
 # "verify" checks that the live site serves the revision that was just built.
 #
-# Secrets: NETLIFY_AUTH_TOKEN, NETLIFY_SITE_ID.
+# A fourth job, "private", builds the reserved CVs (PDFs with private fields such as the phone,
+# with and without photo) when the RESUME_PRIVATE secret exists; they are published under a
+# secret path that nothing on the site links to (ADR 8). The job hands them to "publish" only
+# encrypted, because artifacts of a public repository can be downloaded by anyone.
+#
+# Secrets: NETLIFY_AUTH_TOKEN, NETLIFY_SITE_ID; optional RESUME_PRIVATE (see the README).
 # Variables: SITE_URL; RESUME_GIST ("<user>/<id>", or just "<id>" for a gist of the repository
 # owner, with resume.json and resume.en.json) or RESUME_SOURCE_IT / RESUME_SOURCE_EN (any URL, e.g. an API).
 name: deploy
@@ -179,9 +184,107 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
+  private:
+    name: Reserved CVs (only with the RESUME_PRIVATE secret)
+    needs: revision
+    if: needs.revision.outputs.build == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - id: check
+        name: Is RESUME_PRIVATE set?
+        env:
+          RESUME_PRIVATE: ${{ secrets.RESUME_PRIVATE }}
+        run: |
+          set -euo pipefail
+          if [ -z "$RESUME_PRIVATE" ]; then
+            echo "No RESUME_PRIVATE secret: only the public CVs are published."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          # {"path": "<16+ letters, digits, - or _>", "fields": {<private fields, e.g. "basics": {"phone": "…"}>}}
+          jq -e '(.path | type == "string" and test("^[A-Za-z0-9_-]{16,}$")) and (.fields | type == "object")' \
+            <<<"$RESUME_PRIVATE" >/dev/null || { echo "::error::RESUME_PRIVATE is not valid (see the README)"; exit 1; }
+          echo "::add-mask::$(jq -r .path <<<"$RESUME_PRIVATE")"
+          jq -r '.fields | [paths(scalars) as $p | getpath($p) | tostring] | .[]' <<<"$RESUME_PRIVATE" \
+            | while IFS= read -r value; do echo "::add-mask::$value"; done
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
+      - if: steps.check.outputs.enabled == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ needs.revision.outputs.sha }}
+      - if: steps.check.outputs.enabled == 'true'
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - if: steps.check.outputs.enabled == 'true'
+        run: npm ci
+      - if: steps.check.outputs.enabled == 'true'
+        run: npx playwright install --with-deps chromium
+      - if: steps.check.outputs.enabled == 'true'
+        name: Resume sources with the private fields
+        env:
+          GIST: ${{ vars.RESUME_GIST }}
+          OWNER: ${{ github.repository_owner }}
+          REVISION: ${{ needs.revision.outputs.revision }}
+          SOURCE_IT: ${{ vars.RESUME_SOURCE_IT }}
+          SOURCE_EN: ${{ vars.RESUME_SOURCE_EN }}
+          RESUME_PRIVATE: ${{ secrets.RESUME_PRIVATE }}
+        run: |
+          set -euo pipefail
+          if [ -n "$GIST" ]; then
+            [[ "$GIST" == */* ]] || GIST="$OWNER/$GIST"
+            base="https://gist.githubusercontent.com/$GIST/raw${REVISION:+/$REVISION}"
+            SOURCE_IT="$base/resume.json"; SOURCE_EN="$base/resume.en.json"
+          fi
+          mkdir -p "$RUNNER_TEMP/private-src"
+          for pair in "it=$SOURCE_IT" "en=$SOURCE_EN"; do
+            locale="${pair%%=*}"; source="${pair#*=}"
+            [ -n "$source" ] || { echo "::error::No resume source for $locale"; exit 1; }
+            curl -fsS --max-time 30 "$source" \
+              | jq --argjson fields "$(jq .fields <<<"$RESUME_PRIVATE")" '. * $fields' \
+              > "$RUNNER_TEMP/private-src/$locale.json"
+          done
+          # The private fields to keep in the PDFs: every leaf of "fields", as dotted paths.
+          keep="$(jq -r '.fields | [paths(scalars) | map(tostring) | join(".")] | join(",")' <<<"$RESUME_PRIVATE")"
+          echo "KEEP=$keep" >> "$GITHUB_ENV"
+      - if: steps.check.outputs.enabled == 'true'
+        name: Reserved PDFs, with and without photo
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          set -euo pipefail
+          src="$RUNNER_TEMP/private-src"
+          keep=(); IFS=, read -ra paths <<<"$KEEP"; for p in "${paths[@]}"; do keep+=(--keep "$p"); done
+          # Same names as the public PDFs (pdfName in resume.config.ts), plus "-no-photo".
+          npm run pdf -- --source "it=$src/it.json" --source "en=$src/en.json" --out private "${keep[@]}"
+          npm run pdf -- --source "it=$src/it.json" --source "en=$src/en.json" --out private "${keep[@]}" \
+            --no-photo --name '{pdf}-no-photo'
+          rm -rf "$src"
+          ls -l private
+      - if: steps.check.outputs.enabled == 'true'
+        name: Encrypt (the artifact of a public repository is public)
+        env:
+          RESUME_PRIVATE: ${{ secrets.RESUME_PRIVATE }}
+        run: |
+          set -euo pipefail
+          tar -C private -cf - . | openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt \
+            -pass env:RESUME_PRIVATE -out private.tar.enc
+          rm -rf private
+      - if: steps.check.outputs.enabled == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: private
+          path: private.tar.enc
+          retention-days: 1
+          if-no-files-found: error
+
   publish:
     name: Publish to Netlify
-    needs: build
+    needs: [build, private]
+    if: always() && needs.build.result == 'success' && needs.private.result == 'success'
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -193,6 +296,25 @@ jobs:
         with:
           name: site
           path: dist
+      - if: needs.private.outputs.enabled == 'true'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: private
+          path: .
+      - if: needs.private.outputs.enabled == 'true'
+        name: Reserved CVs under the secret path, never indexed
+        env:
+          RESUME_PRIVATE: ${{ secrets.RESUME_PRIVATE }}
+        run: |
+          set -euo pipefail
+          dir="$(jq -r .path <<<"$RESUME_PRIVATE")"
+          echo "::add-mask::$dir"
+          mkdir -p "dist/$dir"
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass env:RESUME_PRIVATE -in private.tar.enc \
+            | tar -C "dist/$dir" -xf -
+          rm private.tar.enc
+          printf '\n/%s/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n  Cache-Control: no-store\n' "$dir" >> dist/_headers
+          ls "dist/$dir"
       - id: upload
         name: Zip upload through the API (curl only, no third-party code sees the token)
         env:
@@ -214,12 +336,25 @@ jobs:
               "https://api.netlify.com/api/v1/deploys/$id" | jq -r .state || echo unknown)"
             echo "Deploy $id: $state"
             case "$state" in
-              ready) exit 0 ;;
+              ready) break ;;
               error) echo "::error::Netlify could not publish deploy $id"; exit 1 ;;
             esac
             sleep 10
           done
-          echo "::error::Deploy $id not ready after five minutes"; exit 1
+          [ "$state" = ready ] || { echo "::error::Deploy $id not ready after five minutes"; exit 1; }
+      - if: needs.private.outputs.enabled == 'true'
+        name: The reserved CVs are online and not indexable
+        env:
+          RESUME_PRIVATE: ${{ secrets.RESUME_PRIVATE }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          set -euo pipefail
+          dir="$(jq -r .path <<<"$RESUME_PRIVATE")"
+          echo "::add-mask::$dir"
+          for file in dist/"$dir"/*; do
+            headers="$(curl -fsSI --max-time 15 "$SITE_URL/$dir/$(basename "$file")")"
+            grep -qi 'x-robots-tag: noindex' <<<"$headers" || { echo "::error::$(basename "$file") is indexable"; exit 1; }
+          done
 
   verify:
     name: Verify the live site
